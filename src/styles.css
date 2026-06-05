@@ -146,15 +146,66 @@ body {
 }
 .hint { color: var(--text-faint); font-size: 14px; text-align: center; margin-top: 40px; }
 
-.turn { margin: 18px 0; white-space: pre-wrap; }
+.turn { margin: 18px 0; }
 .turn.user {
   color: var(--user);
   border-left: 3px solid var(--border);
   padding-left: 12px;
   font-style: italic;
+  white-space: pre-wrap;
 }
 .turn.story { color: var(--text); }
 .dim { color: var(--text-faint); }
+
+/* 서술자 본문 — 마크다운 렌더 요소들 */
+.turn.story > :first-child { margin-top: 0; }
+.turn.story > :last-child { margin-bottom: 0; }
+.turn.story p { margin: 0 0 12px; }
+.turn.story h1,
+.turn.story h2 { font-size: 18px; letter-spacing: 0.04em; margin: 0 0 2px; }
+.turn.story h3 { font-size: 13px; font-weight: 400; color: var(--text-dim); margin: 0 0 10px; }
+.turn.story hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 14px; }
+.turn.story blockquote {
+  margin: 0 0 12px;
+  padding-left: 12px;
+  border-left: 3px solid var(--border);
+  color: var(--text-dim);
+}
+.turn.story ul,
+.turn.story ol { margin: 0 0 12px; padding-left: 22px; }
+.turn.story li { margin: 2px 0; }
+.turn.story strong { font-weight: 700; }
+.turn.story em { font-style: italic; }
+.turn.story code {
+  background: var(--surface-2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+.turn.story pre {
+  background: var(--surface-2);
+  padding: 10px 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.turn.story pre code { background: none; padding: 0; }
+.turn.story table { border-collapse: collapse; margin: 0 0 12px; }
+.turn.story th,
+.turn.story td { border: 1px solid var(--border); padding: 4px 8px; }
+
+/* 메시지 액션(복사 등) — 평소 흐리게, 올리면 또렷 */
+.turn-actions { margin-top: 6px; opacity: 0.35; transition: opacity 0.15s; }
+.turn:hover .turn-actions { opacity: 1; }
+.turn-btn {
+  font-size: 11px;
+  color: var(--text-faint);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 9px;
+  cursor: pointer;
+}
+.turn-btn:hover { color: var(--text); border-color: var(--accent); }
 
 /* 포드라 문자(라틴) = 서명·명문체 (Pinyon Script). 서명란 등에도 재사용. */
 .script {

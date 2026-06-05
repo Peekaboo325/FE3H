@@ -3,25 +3,13 @@ import Characters from './Characters';
 import LorePanel from './Lore';
 import Stories from './Stories';
 import Menu, { type MenuItem } from './Menu';
+import StoryText from './StoryText';
+import { stripMarkdown } from './podraScript';
 
 type Turn = { role: 'user' | 'assistant'; content: string };
 type Story = { id: number; title: string };
 
 const LS_STORY = 'fe3h.currentStoryId';
-
-// 본문 속 라틴(=포드라 문자: 서명·명문) 구간을 필기체(Pinyon Script)로 렌더.
-function 포드라문자_렌더(text: string) {
-  const parts = text.split(/([A-Za-z][A-Za-z '’\-]*[A-Za-z]|[A-Za-z])/g);
-  return parts.map((p, i) =>
-    /[A-Za-z]/.test(p) ? (
-      <span key={i} className="script">
-        {p}
-      </span>
-    ) : (
-      p
-    ),
-  );
-}
 
 export default function App() {
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -33,6 +21,7 @@ export default function App() {
   const [showLore, setShowLore] = useState(false);
   const [showStories, setShowStories] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState<number | null>(null);
   const 끝 = useRef<HTMLDivElement>(null);
 
   // 드로어 메뉴 항목 — 늘릴 땐 여기 한 줄만 추가하면 됨.
@@ -147,6 +136,17 @@ export default function App() {
     }
   }
 
+  // 결과값을 평문(마크다운 제거)으로 클립보드에 복사.
+  async function 복사하기(i: number, text: string) {
+    try {
+      await navigator.clipboard.writeText(stripMarkdown(text));
+      setCopied(i);
+      setTimeout(() => setCopied((c) => (c === i ? null : c)), 1500);
+    } catch {
+      /* 클립보드 거부 — 무시 */
+    }
+  }
+
   function 붙이기(조각: string) {
     setTurns((prev) => {
       const copy = [...prev];
@@ -188,13 +188,22 @@ export default function App() {
         )}
         {turns.map((t, i) => (
           <div key={i} className={t.role === 'user' ? 'turn user' : 'turn story'}>
-            {t.content
-              ? t.role === 'assistant'
-                ? 포드라문자_렌더(t.content)
-                : t.content
-              : busy && i === turns.length - 1
-                ? <span className="dim">…집필 중…</span>
-                : null}
+            {t.content ? (
+              t.role === 'assistant' ? (
+                <StoryText content={t.content} />
+              ) : (
+                t.content
+              )
+            ) : busy && i === turns.length - 1 ? (
+              <span className="dim">…집필 중…</span>
+            ) : null}
+            {t.role === 'assistant' && t.content && (
+              <div className="turn-actions">
+                <button className="turn-btn" onClick={() => 복사하기(i, t.content)}>
+                  {copied === i ? '복사됨' : '복사'}
+                </button>
+              </div>
+            )}
           </div>
         ))}
         <div ref={끝} />
