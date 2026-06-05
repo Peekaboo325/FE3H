@@ -82,3 +82,18 @@
 - **항상 한국어로 설명한다.** 비개발자가 따라올 수 있게, 전문용어는 풀어서 쓴다.
 - 코드 변경 시: 무엇을·왜 바꾸는지 평이하게 설명한다.
 - **git 작업(add / commit / push 등)은 알아서 처리한다.** 커밋 메시지도 알아서 적절히 단다. 단, 이미 올라간 기록을 되돌리거나 지우는 등 위험한 작업은 먼저 확인한다.
+
+---
+
+## 8. 개발 연속성 (컨텍스트를 비워도 이어가기)
+
+- **작업을 시작할 때 `docs/개발기록.md`(DEVLOG)를 먼저 읽는다.** 거기에 현재 아키텍처·빌드된 기능·파일 지도·주요 결정과 이유·알려진 한계·다음 할 일이 정리되어 있다.
+- **의미 있는 변경(기능 추가·구조 변경·결정)을 한 뒤에는 `docs/개발기록.md`를 갱신한다.** 이 문서가 새 세션의 기억이다 — 최신이어야 가치가 있다.
+
+### 운영 치트시트 (자주 안 바뀌는 핵심)
+- v2.0 = 루트. Vite + React 19 + TS. 서버 한 겹: 로컬 `server/index.mjs`(Express), 배포 `api/*.mjs`(Vercel 함수).
+- 명령: `npm run dev`(로컬), `npm run build`(=bake+vite), `npm run lint`(tsc), `npm run bake`(md→`lib/worldview.mjs`).
+- **배포 = `main`에 push** → Vercel 자동 배포. 작업 브랜치 `claude/wizardly-dirac-WjCg3` → `main` fast-forward 머지 → 양쪽 push. 배포 전 lint+build 통과 확인.
+- 저장소 = Supabase(표: `turns` / `characters` / `lore`, RLS on·정책 없음). 브라우저는 직접 접근 안 함, 서버가 **service_role** 키로만.
+- 환경변수: `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`(필수), `GEMINI_API_KEY`(미사용). **비밀 키에 `VITE_` 금지.**
+- 진단: `/api/turns`·`/api/characters`·`/api/lore` 열어 `{dbReady,error}` 확인.
