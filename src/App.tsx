@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import Characters from './Characters';
 import LorePanel from './Lore';
 import Stories from './Stories';
+import Menu, { type MenuItem } from './Menu';
 
 type Turn = { role: 'user' | 'assistant'; content: string };
 type Story = { id: number; title: string };
@@ -31,7 +32,15 @@ export default function App() {
   const [showChars, setShowChars] = useState(false);
   const [showLore, setShowLore] = useState(false);
   const [showStories, setShowStories] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const 끝 = useRef<HTMLDivElement>(null);
+
+  // 드로어 메뉴 항목 — 늘릴 땐 여기 한 줄만 추가하면 됨.
+  const menuItems: MenuItem[] = [
+    { label: '이야기', hint: '세이브 전환·관리', onClick: () => setShowStories(true) },
+    { label: '인물', hint: '캐릭터 프로필', onClick: () => setShowChars(true) },
+    { label: '견문록', hint: '연재 고유 설정', onClick: () => setShowLore(true) },
+  ];
 
   // 특정 이야기의 본문을 불러온다.
   async function loadTurnsFor(id: number | null) {
@@ -152,22 +161,21 @@ export default function App() {
   return (
     <div className="page">
       <header className="head">
-        <div className="nav-group">
-          <button className="nav" onClick={() => setShowStories(true)}>
-            이야기
-          </button>
-          <button className="nav" onClick={() => setShowChars(true)}>
-            인물
-          </button>
-          <button className="nav" onClick={() => setShowLore(true)}>
-            견문록
-          </button>
-        </div>
+        <button className="hamburger" onClick={() => setMenuOpen(true)} aria-label="메뉴">
+          ☰
+        </button>
         <div className="title">
           <h1>풍화설월</h1>
           <p className="sub">{storyTitle || '— 기록되지 않은 이야기를 잇는 곳 —'}</p>
         </div>
       </header>
+
+      <Menu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        subtitle={storyTitle || undefined}
+        items={menuItems}
+      />
 
       {showStories && (
         <Stories currentStoryId={storyId} onSwitch={switchStory} onClose={() => setShowStories(false)} />
