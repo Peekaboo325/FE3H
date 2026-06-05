@@ -19,8 +19,13 @@ import {
   saveCharacter,
   deleteCharacter,
   loadCharactersForInjection,
+  listLore,
+  saveLore,
+  deleteLore,
+  loadLoreForInjection,
 } from '../lib/db.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
+import { buildLoreContext } from '../lib/loreContext.mjs';
 
 const PORT = process.env.PORT || 8787;
 const MODEL = 'claude-opus-4-8';
@@ -63,6 +68,28 @@ app.delete('/api/characters', async (req, res) => {
   res.status(r.error ? 500 : 200).json(r);
 });
 
+// ── 견문록 (목록/저장/삭제) ────────────────────────────────────────────────
+app.get('/api/lore', async (_req, res) => {
+  const { lore, error } = await listLore();
+  res.json({ dbReady: dbReady(), lore, error });
+});
+
+app.post('/api/lore', async (req, res) => {
+  const entry = req.body?.entry;
+  if (!entry?.title?.trim()) {
+    res.status(400).json({ error: '제목은 필수입니다.' });
+    return;
+  }
+  const r = await saveLore(entry);
+  res.status(r.error ? 500 : 200).json(r);
+});
+
+app.delete('/api/lore', async (req, res) => {
+  const id = req.query?.id ?? req.body?.id;
+  const r = await deleteLore(Number(id));
+  res.status(r.error ? 500 : 200).json(r);
+});
+
 app.post('/api/story', async (req, res) => {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
@@ -83,8 +110,15 @@ app.post('/api/story', async (req, res) => {
   const 새입력 = messages[messages.length - 1];
   if (새입력?.role === 'user') await saveTurn('user', 새입력.content);
 
-  const 인물블록 = buildCharacterContext(await loadCharactersForInjection());
+  // 활성 견문록(세계 설정) + 활성 인물을 박제 세계관 뒤에 붙인다(캐싱 유지).
+  const [설정원천, 인물원천] = await Promise.all([
+    loadLoreForInjection(),
+    loadCharactersForInjection(),
+  ]);
+  const 설정블록 = buildLoreContext(설정원천);
+  const 인물블록 = buildCharacterContext(인물원천);
   const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
 
   const client = new Anthropic({ apiKey: key });

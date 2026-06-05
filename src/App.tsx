@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Characters from './Characters';
+import LorePanel from './Lore';
 
 type Turn = { role: 'user' | 'assistant'; content: string };
 
@@ -8,6 +9,7 @@ export default function App() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [showChars, setShowChars] = useState(false);
+  const [showLore, setShowLore] = useState(false);
   const 끝 = useRef<HTMLDivElement>(null);
 
   // 화면을 켜면, 저장돼 있던 이야기를 불러와 복원한다.
@@ -82,9 +84,14 @@ export default function App() {
   return (
     <div className="page">
       <header className="head">
-        <button className="nav" onClick={() => setShowChars(true)}>
-          인물
-        </button>
+        <div className="nav-group">
+          <button className="nav" onClick={() => setShowChars(true)}>
+            인물
+          </button>
+          <button className="nav" onClick={() => setShowLore(true)}>
+            견문록
+          </button>
+        </div>
         <div className="title">
           <h1>풍화설월</h1>
           <p className="sub">— 기록되지 않은 이야기를 잇는 곳 —</p>
@@ -92,6 +99,7 @@ export default function App() {
       </header>
 
       {showChars && <Characters onClose={() => setShowChars(false)} />}
+      {showLore && <LorePanel onClose={() => setShowLore(false)} />}
 
       <main className="scroll">
         {turns.length === 0 && (

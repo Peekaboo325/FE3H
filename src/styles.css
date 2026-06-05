@@ -24,10 +24,14 @@ body {
 }
 .head h1 { margin: 0; font-size: 28px; letter-spacing: 0.3em; }
 .sub { margin: 4px 0 0; font-size: 13px; color: #8a8175; }
-.nav {
+.nav-group {
   position: absolute;
   left: 16px;
   top: 28px;
+  display: flex;
+  gap: 8px;
+}
+.nav {
   padding: 6px 14px;
   border: 1px solid #d8cfbd;
   border-radius: 999px;
