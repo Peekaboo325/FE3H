@@ -1,21 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
-
-export type Character = {
-  id?: number;
-  name: string;
-  english_name?: string;
-  aliases?: string;
-  faction?: string;
-  title?: string;
-  appearance?: string;
-  personality?: string;
-  combat?: string;
-  notes?: string;
-  life_status?: 'alive' | 'deceased' | 'unknown';
-  is_active?: boolean;
-  thumbnail?: string;
-};
+import { useCharacters, type Character } from './useCharacters';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -33,30 +18,10 @@ const 빈인물 = (): Character => ({
 });
 
 export default function Characters({ onClose }: { onClose: () => void }) {
-  const [chars, setChars] = useState<Character[]>([]);
+  // 목록은 캐시 훅이 관리한다(열 때마다 즉시 표시 + 뒤에서 동기화).
+  const { chars, loading, dbReady, err, refresh } = useCharacters();
   const [editing, setEditing] = useState<Character | null>(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [dbReady, setDbReady] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
-
-  async function load() {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/characters');
-      const data = await res.json();
-      setDbReady(!!data.dbReady);
-      setErr(data.error || null);
-      setChars(Array.isArray(data.characters) ? data.characters : []);
-    } catch (e) {
-      setErr((e as Error).message);
-    }
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
 
   function set<K extends keyof Character>(k: K, v: Character[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
@@ -91,7 +56,7 @@ export default function Characters({ onClose }: { onClose: () => void }) {
         alert('저장 실패: ' + (data.error || '알 수 없는 오류'));
         return;
       }
-      await load();
+      await refresh();
       setEditing(null);
     } finally {
       setSaving(false);
@@ -111,7 +76,7 @@ export default function Characters({ onClose }: { onClose: () => void }) {
       alert('삭제 실패: ' + (data.error || ''));
       return;
     }
-    await load();
+    await refresh();
     setEditing(null);
   }
 
