@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n web,서고 -c cyan,magenta \"vite\" \"node server/index.mjs\"",
+    "bake": "node scripts/bake-worldview.mjs",
+    "dev": "npm run bake && concurrently -k -n web,서고 -c cyan,magenta \"vite\" \"node server/index.mjs\"",
     "web": "vite",
     "server": "node server/index.mjs",
-    "build": "vite build",
+    "build": "npm run bake && vite build",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
