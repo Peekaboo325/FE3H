@@ -4,6 +4,21 @@ import LorePanel from './Lore';
 
 type Turn = { role: 'user' | 'assistant'; content: string };
 
+// 본문 속 라틴(=포드라 문자: 서명·명문) 구간을 필기체(Pinyon Script)로 렌더.
+// 한글 등 나머지는 그대로 둔다.
+function 포드라문자_렌더(text: string) {
+  const parts = text.split(/([A-Za-z][A-Za-z '’\-]*[A-Za-z]|[A-Za-z])/g);
+  return parts.map((p, i) =>
+    /[A-Za-z]/.test(p) ? (
+      <span key={i} className="script">
+        {p}
+      </span>
+    ) : (
+      p
+    ),
+  );
+}
+
 export default function App() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
@@ -109,7 +124,13 @@ export default function App() {
         )}
         {turns.map((t, i) => (
           <div key={i} className={t.role === 'user' ? 'turn user' : 'turn story'}>
-            {t.content || (busy && i === turns.length - 1 ? <span className="dim">…집필 중…</span> : null)}
+            {t.content
+              ? t.role === 'assistant'
+                ? 포드라문자_렌더(t.content)
+                : t.content
+              : busy && i === turns.length - 1
+                ? <span className="dim">…집필 중…</span>
+                : null}
           </div>
         ))}
         <div ref={끝} />

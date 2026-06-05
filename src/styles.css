@@ -218,6 +218,13 @@ body {
 .turn.story { color: #2a2521; }
 .dim { color: #b5ac9c; }
 
+/* 포드라 문자(라틴) = 서명·명문체 (Pinyon Script). 서명란 등에도 재사용. */
+.script {
+  font-family: 'Pinyon Script', cursive;
+  font-size: 1.3em;
+  line-height: 1;
+}
+
 .compose {
   display: flex;
   gap: 8px;
