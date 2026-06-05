@@ -18,14 +18,37 @@
   src: url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/static/woff2/SUIT-Bold.woff2') format('woff2');
 }
 
-/* 임시 외관 — 속이 도는 걸 확인하기 위한 최소한의 차림. 꾸미기는 나중에. */
+/* ── 다크 테마 팔레트 (색은 여기서만 바꾸면 됨) ─────────────────────────── */
+:root {
+  color-scheme: dark;
+  --bg: #2d2d3a;        /* 메인 배경 */
+  --surface: #363645;   /* 패널·모달 */
+  --surface-2: #3b3b4a; /* 입력칸·태그 */
+  --hover: #40404f;     /* 호버 */
+
+  --text: #e6e4ee;      /* 본문 글자 */
+  --text-dim: #a3a0b2;  /* 보조 */
+  --text-faint: #6f6c80;/* 흐림 */
+  --border: #45444f;    /* 경계선 */
+
+  --accent: #c2a36b;        /* 강조(양피지 금빛) */
+  --accent-ink: #2a2532;    /* 강조 버튼 위 글자 */
+  --user: #9a97b0;          /* 유저 입력(라벤더 그레이) */
+  --danger: #d98a78;        /* 삭제 */
+
+  --warn-bg: #38324a;
+  --warn-border: #564a73;
+  --warn-text: #cdb4e0;
+}
+
 * { box-sizing: border-box; }
-button, input, textarea, select { font-family: inherit; }
+button, input, textarea, select { font-family: inherit; color: inherit; }
+::placeholder { color: var(--text-faint); }
 
 body {
   margin: 0;
-  background: #f4f1ea;
-  color: #2a2521;
+  background: var(--bg);
+  color: var(--text);
   /* 영문 = Hanken Grotesk, 국문 = SUIT, 그 외 시스템 국문 폴백 */
   font-family: 'Hanken Grotesk', 'SUIT', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   line-height: 1.8;
@@ -39,13 +62,14 @@ body {
   flex-direction: column;
 }
 
+/* ── 헤더 ─────────────────────────────────────────────── */
 .head {
   position: relative;
   text-align: center;
   padding: 32px 16px 8px;
 }
 .head h1 { margin: 0; font-size: 28px; letter-spacing: 0.3em; }
-.sub { margin: 4px 0 0; font-size: 13px; color: #8a8175; }
+.sub { margin: 4px 0 0; font-size: 13px; color: var(--text-dim); }
 .nav-group {
   position: absolute;
   left: 16px;
@@ -55,20 +79,75 @@ body {
 }
 .nav {
   padding: 6px 14px;
-  border: 1px solid #d8cfbd;
+  border: 1px solid var(--border);
   border-radius: 999px;
-  background: #fffdf8;
-  color: #6b5d4a;
-  font-family: inherit;
+  background: var(--surface);
+  color: var(--text-dim);
   font-size: 14px;
   cursor: pointer;
 }
+.nav:hover { color: var(--text); border-color: var(--accent); }
 
-/* ── 인물 프로필창 ─────────────────────────────────────────── */
+/* ── 본문 영역 ─────────────────────────────────────────── */
+.scroll {
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+.hint { color: var(--text-faint); font-size: 14px; text-align: center; margin-top: 40px; }
+
+.turn { margin: 18px 0; white-space: pre-wrap; }
+.turn.user {
+  color: var(--user);
+  border-left: 3px solid var(--border);
+  padding-left: 12px;
+  font-style: italic;
+}
+.turn.story { color: var(--text); }
+.dim { color: var(--text-faint); }
+
+/* 포드라 문자(라틴) = 서명·명문체 (Pinyon Script). 서명란 등에도 재사용. */
+.script {
+  font-family: 'Pinyon Script', cursive;
+  font-size: 1.3em;
+  line-height: 1;
+}
+
+/* ── 입력 바 ──────────────────────────────────────────── */
+.compose {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.compose textarea {
+  flex: 1;
+  resize: none;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.compose button {
+  align-self: flex-end;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 15px;
+  cursor: pointer;
+}
+.compose button:disabled { background: #4d4c59; color: var(--text-faint); cursor: default; }
+
+/* ── 모달(인물·견문록) ─────────────────────────────────── */
 .modal-bg {
   position: fixed;
   inset: 0;
-  background: rgba(40, 33, 25, 0.45);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -79,10 +158,11 @@ body {
 .modal {
   width: 100%;
   max-width: 560px;
-  background: #faf7f0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 20px 22px 26px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 .modal-head { display: flex; justify-content: space-between; align-items: center; }
 .modal-head h2 { margin: 0; font-size: 20px; letter-spacing: 0.1em; }
@@ -90,16 +170,16 @@ body {
   border: none;
   background: none;
   font-size: 18px;
-  color: #8a8175;
+  color: var(--text-dim);
   cursor: pointer;
 }
 .warn {
-  background: #fbeee0;
-  border: 1px solid #e8c9a3;
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 13px;
-  color: #8a5a2a;
+  color: var(--warn-text);
 }
 .small { font-size: 12px; }
 
@@ -107,11 +187,10 @@ body {
   width: 100%;
   padding: 10px;
   margin: 14px 0 10px;
-  border: 1px dashed #c9b79c;
+  border: 1px dashed var(--border);
   border-radius: 8px;
-  background: #fffdf8;
-  color: #8a6f4e;
-  font-family: inherit;
+  background: var(--surface-2);
+  color: var(--accent);
   font-size: 15px;
   cursor: pointer;
 }
@@ -125,7 +204,7 @@ body {
   border-radius: 8px;
   cursor: pointer;
 }
-.char-row:hover { background: #f1ebdd; }
+.char-row:hover { background: var(--hover); }
 .thumb {
   width: 48px;
   height: 48px;
@@ -137,35 +216,34 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e3ddcf;
-  color: #8a8175;
+  background: var(--surface-2);
+  color: var(--text-dim);
   font-size: 18px;
 }
 .char-name { font-size: 16px; }
-.char-sub { font-size: 13px; color: #8a8175; }
+.char-sub { font-size: 13px; color: var(--text-dim); }
 .tag {
   font-size: 11px;
   margin-left: 6px;
   padding: 1px 6px;
   border-radius: 999px;
-  background: #e8d8c2;
-  color: #8a5a2a;
+  background: var(--surface-2);
+  color: var(--accent);
 }
-.tag.dimtag { background: #e3ddcf; color: #9a9183; }
+.tag.dimtag { background: #33323f; color: var(--text-faint); }
 
 /* 편집 폼 */
 .editor { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
-.editor label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #6b5d4a; }
+.editor label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-dim); }
 .editor input,
 .editor textarea,
 .editor select {
   padding: 8px 10px;
-  border: 1px solid #d8cfbd;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fffdf8;
-  font-family: inherit;
+  background: var(--surface-2);
   font-size: 14px;
-  color: #2a2521;
+  color: var(--text);
   resize: vertical;
 }
 .row2 { display: flex; gap: 12px; }
@@ -178,80 +256,23 @@ body {
 .thumb.big.empty { font-size: 13px; }
 .filebtn {
   padding: 6px 14px;
-  border: 1px solid #d8cfbd;
+  border: 1px solid var(--border);
   border-radius: 999px;
-  background: #fffdf8;
-  color: #6b5d4a;
+  background: var(--surface-2);
+  color: var(--text-dim);
   font-size: 13px;
   cursor: pointer;
 }
-.link { border: none; background: none; color: #a86b4e; font-size: 12px; cursor: pointer; }
+.link { border: none; background: none; color: var(--accent); font-size: 12px; cursor: pointer; }
 
 .editor-actions { display: flex; gap: 8px; margin-top: 6px; }
 .editor-actions button {
   padding: 9px 18px;
-  border: 1px solid #d8cfbd;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fffdf8;
-  font-family: inherit;
+  background: var(--surface-2);
   font-size: 14px;
   cursor: pointer;
 }
-.editor-actions .primary { background: #8a6f4e; color: #fff; border-color: #8a6f4e; }
-.editor-actions .danger { margin-left: auto; color: #a8412e; border-color: #e0b3a8; }
-
-.scroll {
-  flex: 1;
-  padding: 16px 20px;
-  overflow-y: auto;
-}
-
-.hint { color: #a59c8c; font-size: 14px; text-align: center; margin-top: 40px; }
-
-.turn { margin: 18px 0; white-space: pre-wrap; }
-.turn.user {
-  color: #6b5d4a;
-  border-left: 3px solid #c9b79c;
-  padding-left: 12px;
-  font-style: italic;
-}
-.turn.story { color: #2a2521; }
-.dim { color: #b5ac9c; }
-
-/* 포드라 문자(라틴) = 서명·명문체 (Pinyon Script). 서명란 등에도 재사용. */
-.script {
-  font-family: 'Pinyon Script', cursive;
-  font-size: 1.3em;
-  line-height: 1;
-}
-
-.compose {
-  display: flex;
-  gap: 8px;
-  padding: 12px 20px 24px;
-  border-top: 1px solid #e3ddcf;
-  background: #f4f1ea;
-}
-.compose textarea {
-  flex: 1;
-  resize: none;
-  padding: 10px 12px;
-  border: 1px solid #d8cfbd;
-  border-radius: 8px;
-  background: #fffdf8;
-  font-family: inherit;
-  font-size: 15px;
-  line-height: 1.6;
-}
-.compose button {
-  align-self: flex-end;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 8px;
-  background: #8a6f4e;
-  color: #fff;
-  font-family: inherit;
-  font-size: 15px;
-  cursor: pointer;
-}
-.compose button:disabled { background: #c3b8a4; cursor: default; }
+.editor-actions .primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.editor-actions .danger { margin-left: auto; color: var(--danger); border-color: #6a4a44; }
