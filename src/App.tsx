@@ -8,6 +8,17 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const 끝 = useRef<HTMLDivElement>(null);
 
+  // 화면을 켜면, 저장돼 있던 이야기를 불러와 복원한다.
+  // (Supabase 미설정이면 빈 목록이 와서 새 이야기로 시작.)
+  useEffect(() => {
+    fetch('/api/turns')
+      .then((r) => (r.ok ? r.json() : { turns: [] }))
+      .then((d) => {
+        if (Array.isArray(d?.turns) && d.turns.length > 0) setTurns(d.turns as Turn[]);
+      })
+      .catch(() => {});
+  }, []);
+
   // 새 문장이 흘러나올 때마다 맨 아래로 따라간다.
   useEffect(() => {
     끝.current?.scrollIntoView({ behavior: 'smooth' });

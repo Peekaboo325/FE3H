@@ -1,23 +1,36 @@
 // ─────────────────────────────────────────────────────────────────────────
-//  서고(書庫) — 로컬 개발용 서버. (Vercel 배포 시엔 api/story.mjs 가 이 역할)
+//  서고(書庫) — 로컬 개발용 서버. (Vercel 배포 시엔 api/*.mjs 가 이 역할)
 //
-//  하는 일은 api/story.mjs 와 동일하다:
-//   열쇠를 쥐고 → 박제 세계관을 주입해 → 클로드 본문을 스트리밍한다.
-//  세계관은 lib/worldview.mjs(굽기 결과)에서 가져온다 — Vercel 함수와 같은 출처.
+//  하는 일은 api/story.mjs + api/turns.mjs 와 동일하다:
+//   열쇠를 쥐고 → 박제 세계관을 주입해 → 클로드 본문을 스트리밍하고,
+//   이야기를 Supabase에 영구 저장/복원한다.
+//  세계관은 lib/worldview.mjs, 저장소는 lib/db.mjs — Vercel 함수와 같은 출처.
 // ─────────────────────────────────────────────────────────────────────────
 
 import 'dotenv/config';
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
+import { loadTurns, saveTurn } from '../lib/db.mjs';
 
 const PORT = process.env.PORT || 8787;
-const MODEL = 'claude-opus-4-8'; // 메인 본문 = Opus 4.8 (CLAUDE.md)
+const MODEL = 'claude-opus-4-8';
 
 console.log(`[서고] 세계관 박제 ${SYSTEM.length.toLocaleString()}자 적재 완료.`);
 
 const app = express();
 app.use(express.json({ limit: '1mb' }));
+
+// 지금까지의 이야기를 불러온다 (화면 복원용).
+app.get('/api/turns', async (_req, res) => {
+  let turns = [];
+  try {
+    turns = await loadTurns();
+  } catch (e) {
+    console.error('[보관소] /api/turns 오류:', e?.message || e);
+  }
+  res.json({ turns });
+});
 
 app.post('/api/story', async (req, res) => {
   const key = process.env.ANTHROPIC_API_KEY;
@@ -36,9 +49,13 @@ app.post('/api/story', async (req, res) => {
     return;
   }
 
+  const 새입력 = messages[messages.length - 1];
+  if (새입력?.role === 'user') await saveTurn('user', 새입력.content);
+
   const client = new Anthropic({ apiKey: key });
   res.status(200).type('text/plain; charset=utf-8');
 
+  let 본문 = '';
   try {
     const stream = client.messages.stream({
       model: MODEL,
@@ -49,8 +66,13 @@ app.post('/api/story', async (req, res) => {
       messages,
     });
 
-    stream.on('text', (delta) => res.write(delta));
+    stream.on('text', (delta) => {
+      본문 += delta;
+      res.write(delta);
+    });
     await stream.finalMessage();
+
+    if (본문.trim()) await saveTurn('assistant', 본문);
     res.end();
   } catch (err) {
     const 사유 = err?.message || String(err);

@@ -2,18 +2,19 @@
 //  /api/story — Vercel 서버리스 함수 버전의 '서고'.
 //
 //  로컬 개발에선 server/index.mjs(Express)가 이 역할을 하고,
-//  Vercel 배포에선 이 파일이 그 역할을 한다. 둘 다 하는 일은 같다:
-//    열쇠를 쥐고 → 박제 세계관을 주입해 → 클로드 본문을 스트리밍한다.
+//  Vercel 배포에선 이 파일이 그 역할을 한다. 하는 일:
+//    열쇠를 쥐고 → 박제 세계관을 주입해 → 클로드 본문을 스트리밍하고,
+//    유저 입력과 완성된 본문을 Supabase에 영구 저장한다.
 //
-//  열쇠(ANTHROPIC_API_KEY)는 Vercel 프로젝트 설정의 '환경 변수'에 넣는다.
+//  열쇠(ANTHROPIC_API_KEY, SUPABASE_*)는 Vercel 환경 변수에 넣는다.
 // ─────────────────────────────────────────────────────────────────────────
 
 import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
+import { saveTurn } from '../lib/db.mjs';
 
 const MODEL = 'claude-opus-4-8'; // 메인 본문 = Opus 4.8 (CLAUDE.md)
 
-// Vercel 함수가 본문 생성을 기다릴 수 있는 최대 시간(초). 본문이 길어질 수 있어 넉넉히.
 export const config = { maxDuration: 60 };
 
 export default async function handler(req, res) {
@@ -24,9 +25,7 @@ export default async function handler(req, res) {
 
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
-    res
-      .status(400)
-      .setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.status(400).setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.end(
       '[서고] 아직 클로드 API 열쇠가 꽂히지 않았습니다.\n' +
         'Vercel 프로젝트 설정 → Environment Variables 에 ANTHROPIC_API_KEY 를 추가하고 다시 배포해 주세요.',
@@ -41,28 +40,32 @@ export default async function handler(req, res) {
     return;
   }
 
-  const client = new Anthropic({ apiKey: key });
+  // 이번 차례의 새 유저 입력을 먼저 영구 저장한다(설정돼 있으면).
+  const 새입력 = messages[messages.length - 1];
+  if (새입력?.role === 'user') await saveTurn('user', 새입력.content);
 
+  const client = new Anthropic({ apiKey: key });
   res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');
 
+  let 본문 = '';
   try {
     const stream = client.messages.stream({
       model: MODEL,
-      max_tokens: 8000, // 폭주 방지용 안전벨트. 길이는 프롬프트(한 화=한 장면)로 제어.
-      thinking: { type: 'adaptive' }, // extended thinking 켜되 짧게 (CLAUDE.md)
-      output_config: { effort: 'low' }, // 노력 '낮음' (CLAUDE.md)
-      system: [
-        {
-          type: 'text',
-          text: SYSTEM,
-          cache_control: { type: 'ephemeral' }, // 고정 세계관 → 프롬프트 캐싱
-        },
-      ],
+      max_tokens: 8000,
+      thinking: { type: 'adaptive' },
+      output_config: { effort: 'low' },
+      system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
       messages,
     });
 
-    stream.on('text', (delta) => res.write(delta));
+    stream.on('text', (delta) => {
+      본문 += delta;
+      res.write(delta);
+    });
     await stream.finalMessage();
+
+    // 완성된 본문을 영구 저장한다.
+    if (본문.trim()) await saveTurn('assistant', 본문);
     res.end();
   } catch (err) {
     const 사유 = err?.message || String(err);
