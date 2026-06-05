@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import Characters from './Characters';
 import LorePanel from './Lore';
+import Stories from './Stories';
 
 type Turn = { role: 'user' | 'assistant'; content: string };
+type Story = { id: number; title: string };
+
+const LS_STORY = 'fe3h.currentStoryId';
 
 // 본문 속 라틴(=포드라 문자: 서명·명문) 구간을 필기체(Pinyon Script)로 렌더.
-// 한글 등 나머지는 그대로 둔다.
 function 포드라문자_렌더(text: string) {
   const parts = text.split(/([A-Za-z][A-Za-z '’\-]*[A-Za-z]|[A-Za-z])/g);
   return parts.map((p, i) =>
@@ -23,19 +26,63 @@ export default function App() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [storyId, setStoryId] = useState<number | null>(null);
+  const [storyTitle, setStoryTitle] = useState('');
   const [showChars, setShowChars] = useState(false);
   const [showLore, setShowLore] = useState(false);
+  const [showStories, setShowStories] = useState(false);
   const 끝 = useRef<HTMLDivElement>(null);
 
-  // 화면을 켜면, 저장돼 있던 이야기를 불러와 복원한다.
-  // (Supabase 미설정이면 빈 목록이 와서 새 이야기로 시작.)
+  // 특정 이야기의 본문을 불러온다.
+  async function loadTurnsFor(id: number | null) {
+    try {
+      const url = id ? `/api/turns?story_id=${id}` : '/api/turns';
+      const r = await fetch(url);
+      const d = await r.json();
+      setTurns(Array.isArray(d?.turns) ? (d.turns as Turn[]) : []);
+    } catch {
+      setTurns([]);
+    }
+  }
+
+  // 화면을 켜면 '현재 이야기'를 정하고(없으면 만들고) 그 본문을 복원한다.
   useEffect(() => {
-    fetch('/api/turns')
-      .then((r) => (r.ok ? r.json() : { turns: [] }))
-      .then((d) => {
-        if (Array.isArray(d?.turns) && d.turns.length > 0) setTurns(d.turns as Turn[]);
-      })
-      .catch(() => {});
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/stories');
+        const data = await res.json();
+        if (!data.dbReady) {
+          // Supabase 미설정 — 이야기 개념 없이 동작(휘발).
+          loadTurnsFor(null);
+          return;
+        }
+        const list: Story[] = Array.isArray(data.stories) ? data.stories : [];
+        const saved = Number(localStorage.getItem(LS_STORY)) || null;
+        let cur: Story | undefined = saved ? list.find((s) => s.id === saved) : undefined;
+        if (!cur) cur = list[0];
+        if (!cur) {
+          // 하나도 없으면 기본 이야기 생성.
+          const cr = await fetch('/api/stories', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ title: '이야기 1' }),
+          });
+          const cd = await cr.json();
+          cur = cd.story;
+        }
+        if (!alive || !cur) return;
+        setStoryId(cur.id);
+        setStoryTitle(cur.title);
+        localStorage.setItem(LS_STORY, String(cur.id));
+        loadTurnsFor(cur.id);
+      } catch {
+        /* 무시 — 빈 화면으로 시작 */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
   // 새 문장이 흘러나올 때마다 맨 아래로 따라간다.
@@ -43,24 +90,32 @@ export default function App() {
     끝.current?.scrollIntoView({ behavior: 'smooth' });
   }, [turns, busy]);
 
+  // 이야기 전환(불러오기).
+  function switchStory(id: number, title: string) {
+    setStoryId(id);
+    setStoryTitle(title);
+    localStorage.setItem(LS_STORY, String(id));
+    setTurns([]);
+    loadTurnsFor(id);
+    setShowStories(false);
+  }
+
   async function 보내기() {
     const 입력 = input.trim();
     if (!입력 || busy) return;
 
-    // 유저 입력 + 비어 있는 서술자 칸을 먼저 띄운다(곧 채워진다).
     const 다음: Turn[] = [...turns, { role: 'user', content: 입력 }, { role: 'assistant', content: '' }];
     setTurns(다음);
     setInput('');
     setBusy(true);
 
-    // 서버로 보낼 대화 기록(빈 서술자 칸은 제외).
     const messages = 다음.slice(0, -1).map((t) => ({ role: t.role, content: t.content }));
 
     try {
       const res = await fetch('/api/story', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({ messages, story_id: storyId }),
       });
 
       if (!res.ok || !res.body) {
@@ -69,7 +124,6 @@ export default function App() {
         return;
       }
 
-      // 스트리밍으로 들어오는 문장 조각을 마지막 칸에 이어 붙인다.
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       for (;;) {
@@ -84,7 +138,6 @@ export default function App() {
     }
   }
 
-  // 마지막(서술자) 칸에 텍스트를 이어 붙인다.
   function 붙이기(조각: string) {
     setTurns((prev) => {
       const copy = [...prev];
@@ -100,6 +153,9 @@ export default function App() {
     <div className="page">
       <header className="head">
         <div className="nav-group">
+          <button className="nav" onClick={() => setShowStories(true)}>
+            이야기
+          </button>
           <button className="nav" onClick={() => setShowChars(true)}>
             인물
           </button>
@@ -109,10 +165,13 @@ export default function App() {
         </div>
         <div className="title">
           <h1>풍화설월</h1>
-          <p className="sub">— 기록되지 않은 이야기를 잇는 곳 —</p>
+          <p className="sub">{storyTitle || '— 기록되지 않은 이야기를 잇는 곳 —'}</p>
         </div>
       </header>
 
+      {showStories && (
+        <Stories currentStoryId={storyId} onSwitch={switchStory} onClose={() => setShowStories(false)} />
+      )}
       {showChars && <Characters onClose={() => setShowChars(false)} />}
       {showLore && <LorePanel onClose={() => setShowLore(false)} />}
 

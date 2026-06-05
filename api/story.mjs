@@ -11,7 +11,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
-import { saveTurn, loadCharactersForInjection, loadLoreForInjection } from '../lib/db.mjs';
+import { saveTurn, touchStory, loadCharactersForInjection, loadLoreForInjection } from '../lib/db.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 
@@ -42,9 +42,11 @@ export default async function handler(req, res) {
     return;
   }
 
+  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
+
   // 이번 차례의 새 유저 입력을 먼저 영구 저장한다(설정돼 있으면).
   const 새입력 = messages[messages.length - 1];
-  if (새입력?.role === 'user') await saveTurn('user', 새입력.content);
+  if (새입력?.role === 'user') await saveTurn('user', 새입력.content, storyId);
 
   // 활성 견문록(세계 설정) + 활성 인물을 박제 세계관 뒤에 붙인다(캐싱 유지).
   const [설정원천, 인물원천] = await Promise.all([
@@ -77,8 +79,11 @@ export default async function handler(req, res) {
     });
     await stream.finalMessage();
 
-    // 완성된 본문을 영구 저장한다.
-    if (본문.trim()) await saveTurn('assistant', 본문);
+    // 완성된 본문을 영구 저장하고, 이야기의 최근 플레이 시각을 갱신한다.
+    if (본문.trim()) {
+      await saveTurn('assistant', 본문, storyId);
+      await touchStory(storyId);
+    }
     res.end();
   } catch (err) {
     const 사유 = err?.message || String(err);

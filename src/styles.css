@@ -205,6 +205,19 @@ body {
   cursor: pointer;
 }
 .char-row:hover { background: var(--hover); }
+.char-row.current { background: var(--surface-2); }
+.char-meta { flex: 1; min-width: 0; }
+.char-meta.clickable { cursor: pointer; }
+.rowbtn {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+}
+.rowbtn.danger { color: var(--danger); border-color: #6a4a44; }
 .thumb {
   width: 48px;
   height: 48px;
