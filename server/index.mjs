@@ -11,7 +11,7 @@ import 'dotenv/config';
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
-import { loadTurns, saveTurn } from '../lib/db.mjs';
+import { loadTurns, saveTurn, dbReady } from '../lib/db.mjs';
 
 const PORT = process.env.PORT || 8787;
 const MODEL = 'claude-opus-4-8';
@@ -23,13 +23,13 @@ app.use(express.json({ limit: '1mb' }));
 
 // 지금까지의 이야기를 불러온다 (화면 복원용).
 app.get('/api/turns', async (_req, res) => {
-  let turns = [];
+  let result = { turns: [], error: null };
   try {
-    turns = await loadTurns();
+    result = await loadTurns();
   } catch (e) {
-    console.error('[보관소] /api/turns 오류:', e?.message || e);
+    result = { turns: [], error: e?.message || String(e) };
   }
-  res.json({ turns });
+  res.json({ dbReady: dbReady(), turns: result.turns, error: result.error });
 });
 
 app.post('/api/story', async (req, res) => {
