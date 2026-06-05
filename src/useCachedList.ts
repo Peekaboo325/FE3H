@@ -3,28 +3,28 @@ import { idbGet, idbSet } from './idbCache';
 
 // ─────────────────────────────────────────────────────────────────────────
 //  공용 캐시 목록 훅 — "즉시 보여주고, 뒤에서 동기화" (stale-while-revalidate)
-//  인물·견문록·앞으로의 목록들이 모두 이걸 쓴다.
+//  인물·견문록 등 이야기별 목록이 모두 이걸 쓴다.
 //
-//   - 진짜 원본은 서버(Supabase). 여기 캐시는 빠른 임시 사본일 뿐.
-//   - 메모리 캐시: 같은 세션에서 패널 재오픈 시 '동기'라 번쩍임 0.
-//   - IndexedDB 캐시: 새로고침에도 빠르게 복원(용량 걱정 없음).
-//   - 열 때마다 서버와 조용히 동기화.
-//
-//  endpoint : 불러올 API 경로 (예: '/api/characters')
-//  cacheKey : IndexedDB/메모리 캐시 키 (예: 'characters')
+//  endpoint : 불러올 API 경로(이야기별이라 story_id 포함). null이면 조회 안 함.
+//  cacheKey : 캐시 키 (이야기별로 다름, 예: 'characters:3')
 //  itemsKey : 응답 JSON에서 목록이 담긴 칸 이름 (예: 'characters' | 'lore')
 // ─────────────────────────────────────────────────────────────────────────
 
 const mem: Record<string, unknown[] | undefined> = {};
 
-export function useCachedList<T>(endpoint: string, cacheKey: string, itemsKey: string) {
-  const seed = (mem[cacheKey] as T[] | undefined) ?? null;
+export function useCachedList<T>(endpoint: string | null, cacheKey: string, itemsKey: string) {
+  const seed = endpoint ? ((mem[cacheKey] as T[] | undefined) ?? null) : ([] as T[]);
   const [items, setItems] = useState<T[]>(seed ?? []);
-  const [loading, setLoading] = useState(seed === null);
+  const [loading, setLoading] = useState(endpoint ? seed === null : false);
   const [dbReady, setDbReady] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    if (!endpoint) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch(endpoint);
       const data = await res.json();
@@ -43,6 +43,11 @@ export function useCachedList<T>(endpoint: string, cacheKey: string, itemsKey: s
 
   useEffect(() => {
     let alive = true;
+    if (!endpoint) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
     if (mem[cacheKey] == null) {
       idbGet<T[]>(cacheKey)
         .then((cached) => {
@@ -58,7 +63,7 @@ export function useCachedList<T>(endpoint: string, cacheKey: string, itemsKey: s
     return () => {
       alive = false;
     };
-  }, [refresh, cacheKey]);
+  }, [refresh, cacheKey, endpoint]);
 
   return { items, loading, dbReady, err, refresh };
 }

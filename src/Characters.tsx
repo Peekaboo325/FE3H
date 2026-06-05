@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
 import { useCharacters, type Character } from './useCharacters';
+import ImportDialog from './ImportDialog';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -17,11 +18,18 @@ const 빈인물 = (): Character => ({
   thumbnail: '',
 });
 
-export default function Characters({ onClose }: { onClose: () => void }) {
-  // 목록은 캐시 훅이 관리한다(열 때마다 즉시 표시 + 뒤에서 동기화).
-  const { chars, loading, dbReady, err, refresh } = useCharacters();
+export default function Characters({
+  storyId,
+  onClose,
+}: {
+  storyId: number | null;
+  onClose: () => void;
+}) {
+  // 현재 이야기의 인물만 본다(이야기별 분리).
+  const { chars, loading, dbReady, err, refresh } = useCharacters(storyId);
   const [editing, setEditing] = useState<Character | null>(null);
   const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   function set<K extends keyof Character>(k: K, v: Character[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
@@ -49,7 +57,7 @@ export default function Characters({ onClose }: { onClose: () => void }) {
       const res = await fetch('/api/characters', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ character: editing }),
+        body: JSON.stringify({ character: { ...editing, story_id: storyId } }),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
@@ -102,12 +110,19 @@ export default function Characters({ onClose }: { onClose: () => void }) {
           </p>
         )}
 
+        {storyId == null && <p className="warn">이야기를 먼저 만들어 주세요.</p>}
+
         {/* 목록 화면 */}
         {!editing && (
           <div className="modal-body">
             <button className="new" onClick={() => setEditing(빈인물())}>
               ＋ 새 인물
             </button>
+            {storyId != null && (
+              <button className="new" onClick={() => setImporting(true)}>
+                ↧ 다른 이야기에서 불러오기
+              </button>
+            )}
             {loading ? (
               <p className="dim">불러오는 중…</p>
             ) : chars.length === 0 ? (
@@ -265,6 +280,19 @@ export default function Characters({ onClose }: { onClose: () => void }) {
               )}
             </div>
           </div>
+        )}
+
+        {importing && storyId != null && (
+          <ImportDialog<Character>
+            title="인물 불러오기"
+            endpoint="/api/characters"
+            itemsKey="characters"
+            payloadKey="character"
+            currentStoryId={storyId}
+            labelOf={(c) => c.name}
+            onClose={() => setImporting(false)}
+            onDone={refresh}
+          />
         )}
       </div>
     </div>

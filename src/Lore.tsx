@@ -1,12 +1,20 @@
 import { useState } from 'react';
 import { useLore, type Lore } from './useLore';
+import ImportDialog from './ImportDialog';
 
 const 빈설정 = (): Lore => ({ title: '', category: '', body: '', is_active: true });
 
-export default function LorePanel({ onClose }: { onClose: () => void }) {
-  const { entries, loading, dbReady, err, refresh } = useLore();
+export default function LorePanel({
+  storyId,
+  onClose,
+}: {
+  storyId: number | null;
+  onClose: () => void;
+}) {
+  const { entries, loading, dbReady, err, refresh } = useLore(storyId);
   const [editing, setEditing] = useState<Lore | null>(null);
   const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   function set<K extends keyof Lore>(k: K, v: Lore[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
@@ -23,7 +31,7 @@ export default function LorePanel({ onClose }: { onClose: () => void }) {
       const res = await fetch('/api/lore', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ entry: editing }),
+        body: JSON.stringify({ entry: { ...editing, story_id: storyId } }),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
@@ -74,6 +82,7 @@ export default function LorePanel({ onClose }: { onClose: () => void }) {
             <span className="dim">({err})</span>
           </p>
         )}
+        {storyId == null && <p className="warn">이야기를 먼저 만들어 주세요.</p>}
 
         {!editing && (
           <div className="modal-body">
@@ -83,6 +92,11 @@ export default function LorePanel({ onClose }: { onClose: () => void }) {
             <button className="new" onClick={() => setEditing(빈설정())}>
               ＋ 새 설정
             </button>
+            {storyId != null && (
+              <button className="new" onClick={() => setImporting(true)}>
+                ↧ 다른 이야기에서 불러오기
+              </button>
+            )}
             {loading ? (
               <p className="dim">불러오는 중…</p>
             ) : entries.length === 0 ? (
@@ -158,6 +172,19 @@ export default function LorePanel({ onClose }: { onClose: () => void }) {
               )}
             </div>
           </div>
+        )}
+
+        {importing && storyId != null && (
+          <ImportDialog<Lore>
+            title="견문록 불러오기"
+            endpoint="/api/lore"
+            itemsKey="lore"
+            payloadKey="entry"
+            currentStoryId={storyId}
+            labelOf={(e) => e.title}
+            onClose={() => setImporting(false)}
+            onDone={refresh}
+          />
         )}
       </div>
     </div>

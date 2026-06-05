@@ -9,7 +9,8 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   try {
     if (req.method === 'GET') {
-      const { characters, error } = await listCharacters();
+      const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
+      const { characters, error } = await listCharacters(storyId);
       res.status(200).end(JSON.stringify({ dbReady: dbReady(), characters, error }));
       return;
     }

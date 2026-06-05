@@ -172,8 +172,8 @@ export default function App() {
       {showStories && (
         <Stories currentStoryId={storyId} onSwitch={switchStory} onClose={() => setShowStories(false)} />
       )}
-      {showChars && <Characters onClose={() => setShowChars(false)} />}
-      {showLore && <LorePanel onClose={() => setShowLore(false)} />}
+      {showChars && <Characters storyId={storyId} onClose={() => setShowChars(false)} />}
+      {showLore && <LorePanel storyId={storyId} onClose={() => setShowLore(false)} />}
 
       <main className="scroll">
         {turns.length === 0 && (

@@ -50,8 +50,8 @@ export default async function handler(req, res) {
 
   // 활성 견문록(세계 설정) + 활성 인물을 박제 세계관 뒤에 붙인다(캐싱 유지).
   const [설정원천, 인물원천] = await Promise.all([
-    loadLoreForInjection(),
-    loadCharactersForInjection(),
+    loadLoreForInjection(storyId),
+    loadCharactersForInjection(storyId),
   ]);
   const 설정블록 = buildLoreContext(설정원천);
   const 인물블록 = buildCharacterContext(인물원천);
