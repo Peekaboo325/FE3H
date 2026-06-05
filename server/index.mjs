@@ -18,7 +18,9 @@ import {
   listCharacters,
   saveCharacter,
   deleteCharacter,
+  loadCharactersForInjection,
 } from '../lib/db.mjs';
+import { buildCharacterContext } from '../lib/charContext.mjs';
 
 const PORT = process.env.PORT || 8787;
 const MODEL = 'claude-opus-4-8';
@@ -81,6 +83,10 @@ app.post('/api/story', async (req, res) => {
   const 새입력 = messages[messages.length - 1];
   if (새입력?.role === 'user') await saveTurn('user', 새입력.content);
 
+  const 인물블록 = buildCharacterContext(await loadCharactersForInjection());
+  const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  if (인물블록) system.push({ type: 'text', text: 인물블록 });
+
   const client = new Anthropic({ apiKey: key });
   res.status(200).type('text/plain; charset=utf-8');
 
@@ -91,7 +97,7 @@ app.post('/api/story', async (req, res) => {
       max_tokens: 8000,
       thinking: { type: 'adaptive' },
       output_config: { effort: 'low' },
-      system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
+      system,
       messages,
     });
 

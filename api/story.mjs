@@ -11,7 +11,8 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
-import { saveTurn } from '../lib/db.mjs';
+import { saveTurn, loadCharactersForInjection } from '../lib/db.mjs';
+import { buildCharacterContext } from '../lib/charContext.mjs';
 
 const MODEL = 'claude-opus-4-8'; // 메인 본문 = Opus 4.8 (CLAUDE.md)
 
@@ -44,6 +45,11 @@ export default async function handler(req, res) {
   const 새입력 = messages[messages.length - 1];
   if (새입력?.role === 'user') await saveTurn('user', 새입력.content);
 
+  // 활성 인물을 '현재 등장인물' 블록으로 조립 (박제 세계관 뒤에 붙여 캐싱 유지).
+  const 인물블록 = buildCharacterContext(await loadCharactersForInjection());
+  const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  if (인물블록) system.push({ type: 'text', text: 인물블록 });
+
   const client = new Anthropic({ apiKey: key });
   res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');
 
@@ -54,7 +60,7 @@ export default async function handler(req, res) {
       max_tokens: 8000,
       thinking: { type: 'adaptive' },
       output_config: { effort: 'low' },
-      system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
+      system,
       messages,
     });
 
