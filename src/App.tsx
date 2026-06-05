@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import Characters from './Characters';
 
 type Turn = { role: 'user' | 'assistant'; content: string };
 
@@ -6,6 +7,7 @@ export default function App() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [showChars, setShowChars] = useState(false);
   const 끝 = useRef<HTMLDivElement>(null);
 
   // 화면을 켜면, 저장돼 있던 이야기를 불러와 복원한다.
@@ -80,9 +82,16 @@ export default function App() {
   return (
     <div className="page">
       <header className="head">
-        <h1>풍화설월</h1>
-        <p className="sub">— 기록되지 않은 이야기를 잇는 곳 —</p>
+        <button className="nav" onClick={() => setShowChars(true)}>
+          인물
+        </button>
+        <div className="title">
+          <h1>풍화설월</h1>
+          <p className="sub">— 기록되지 않은 이야기를 잇는 곳 —</p>
+        </div>
       </header>
+
+      {showChars && <Characters onClose={() => setShowChars(false)} />}
 
       <main className="scroll">
         {turns.length === 0 && (

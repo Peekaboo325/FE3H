@@ -11,7 +11,14 @@ import 'dotenv/config';
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
-import { loadTurns, saveTurn, dbReady } from '../lib/db.mjs';
+import {
+  loadTurns,
+  saveTurn,
+  dbReady,
+  listCharacters,
+  saveCharacter,
+  deleteCharacter,
+} from '../lib/db.mjs';
 
 const PORT = process.env.PORT || 8787;
 const MODEL = 'claude-opus-4-8';
@@ -30,6 +37,28 @@ app.get('/api/turns', async (_req, res) => {
     result = { turns: [], error: e?.message || String(e) };
   }
   res.json({ dbReady: dbReady(), turns: result.turns, error: result.error });
+});
+
+// ── 인물 프로필 (목록/저장/삭제) ──────────────────────────────────────────
+app.get('/api/characters', async (_req, res) => {
+  const { characters, error } = await listCharacters();
+  res.json({ dbReady: dbReady(), characters, error });
+});
+
+app.post('/api/characters', async (req, res) => {
+  const ch = req.body?.character;
+  if (!ch?.name?.trim()) {
+    res.status(400).json({ error: '이름은 필수입니다.' });
+    return;
+  }
+  const r = await saveCharacter(ch);
+  res.status(r.error ? 500 : 200).json(r);
+});
+
+app.delete('/api/characters', async (req, res) => {
+  const id = req.query?.id ?? req.body?.id;
+  const r = await deleteCharacter(Number(id));
+  res.status(r.error ? 500 : 200).json(r);
 });
 
 app.post('/api/story', async (req, res) => {
