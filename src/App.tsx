@@ -164,10 +164,7 @@ export default function App() {
         <button className="hamburger" onClick={() => setMenuOpen(true)} aria-label="메뉴">
           ☰
         </button>
-        <div className="title">
-          <h1>풍화설월</h1>
-          <p className="sub">{storyTitle || '— 기록되지 않은 이야기를 잇는 곳 —'}</p>
-        </div>
+        <p className="story-tag">{storyTitle}</p>
       </header>
 
       <Menu

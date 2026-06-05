@@ -66,14 +66,19 @@ body {
 .head {
   position: relative;
   text-align: center;
-  padding: 32px 16px 8px;
+  padding: 14px 16px 10px;
+  min-height: 30px;
 }
-.head h1 { margin: 0; font-size: 28px; letter-spacing: 0.3em; }
-.sub { margin: 4px 0 0; font-size: 13px; color: var(--text-dim); }
+.story-tag {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.08em;
+}
 .hamburger {
   position: absolute;
   left: 16px;
-  top: 26px;
+  top: 10px;
   padding: 5px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
