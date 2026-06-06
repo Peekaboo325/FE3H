@@ -145,7 +145,7 @@ export default function Characters({
 
   return (
     <div className="modal-bg" onClick={onClose}>
-      <div className={'modal' + (viewMode ? ' has-hero' : '')} onClick={(e) => e.stopPropagation()}>
+      <div className={'modal' + (viewMode || editing ? ' has-hero' : '')} onClick={(e) => e.stopPropagation()}>
         {/* 헤더·안내 — 뷰 모드에선 히어로가 대신하므로 숨김 */}
         {!viewMode && (
           <>

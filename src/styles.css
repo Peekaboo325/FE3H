@@ -792,11 +792,11 @@ body::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0.62em;
-  width: 7px;
-  height: 7px;
+  top: 0.72em;
+  width: 4px;
+  height: 4px;
   background: var(--text-faint, #6b6b78);
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 /* 신원·용모 2분할 (데스크탑 2열 / 모바일 1열로 자동) */
