@@ -1,11 +1,12 @@
 // 업로드한 이미지를 브라우저에서 바로 줄이고 WebP로 변환한다.
 // (별도 프로그램·서버 처리 없이, 캔버스로 그 자리에서 처리)
-//   - 긴 변을 maxEdge(기본 600px)까지 축소
-//   - WebP 데이터 URL 문자열로 돌려줌 → 그대로 인물 정보에 저장
+//   - 긴 변을 maxEdge(기본 1400px)까지 축소 — 히어로(풀블리드)에서 레티나로도 또렷하게
+//   - 투명(알파) 보존: 배경을 깔지 않고 그대로 그려 WebP의 투명 채널 유지 → 배경 뺀 컷아웃 OK
+//   - WebP 데이터 URL 문자열로 돌려줌 → 그대로 인물 정보에 저장 (모델엔 미주입 = 토큰 비용 0)
 export async function 이미지를_썸네일로(
   file: File,
-  maxEdge = 600,
-  quality = 0.85,
+  maxEdge = 1400,
+  quality = 0.9,
 ): Promise<string> {
   const dataUrl: string = await new Promise((resolve, reject) => {
     const reader = new FileReader();

@@ -238,7 +238,7 @@ export default function Characters({
                   지우기
                 </button>
               )}
-              <p className="dim small">600px·WebP로 자동 변환됩니다.</p>
+              <p className="dim small">WebP로 자동 변환됩니다(투명 배경 유지·고화질).</p>
             </div>
 
             <div className="row2">
