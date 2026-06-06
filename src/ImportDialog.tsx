@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import Dropdown from './Dropdown';
+import { Check } from 'lucide-react';
 
 type Story = { id: number; title: string };
 
@@ -94,63 +96,42 @@ export default function ImportDialog<T extends { id?: number }>({
         </div>
 
         <div className="modal-body">
-          <p className="dim small">
-            다른 장에서 골라 <b>필사</b>해 반입합니다. 반입한 뒤 고쳐도 본래의 장은 그대로예요.
-          </p>
-
-          <label>
-            <span className="dim small">어느 장에서?</span>
-            <select
-              value={sourceId ?? ''}
-              onChange={(e) => pickStory(Number(e.target.value))}
-              style={{
-                width: '100%',
-                marginTop: 4,
-                padding: '8px 10px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: 'var(--surface-2)',
-                color: 'var(--text)',
-              }}
-            >
-              <option value="" disabled>
-                장 고르기…
-              </option>
-              {stories.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.title}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Dropdown
+            value={sourceId != null ? String(sourceId) : ''}
+            options={stories.map((s) => ({ value: String(s.id), label: s.title }))}
+            onChange={(v) => pickStory(Number(v))}
+            placeholder="반출할 장을 선택하십시오."
+          />
 
           {sourceId != null && (
             <>
               {loading ? (
-                <p className="dim">펼치는 중…</p>
+                <p className="dim import-msg">펼치는 중…</p>
               ) : items.length === 0 ? (
-                <p className="dim">그 장엔 반입할 것이 없어요.</p>
+                <p className="dim import-msg">그 장엔 반입할 것이 없어요.</p>
               ) : (
-                <ul className="char-list" style={{ marginTop: 10 }}>
-                  {items.map((it) => (
-                    <li key={it.id} className="char-row" onClick={() => it.id != null && toggle(it.id)}>
-                      <input
-                        type="checkbox"
-                        checked={it.id != null && picked.has(it.id)}
-                        readOnly
-                        style={{ marginRight: 4 }}
-                      />
-                      <div className="char-meta">
-                        <div className="char-name">{labelOf(it)}</div>
-                      </div>
-                    </li>
-                  ))}
+                <ul className="char-list import-list">
+                  {items.map((it) => {
+                    const on = it.id != null && picked.has(it.id);
+                    return (
+                      <li
+                        key={it.id}
+                        className={'char-row import-row' + (on ? ' picked' : '')}
+                        onClick={() => it.id != null && toggle(it.id)}
+                      >
+                        <div className="char-meta">
+                          <div className="char-name">{labelOf(it)}</div>
+                        </div>
+                        {on && <Check className="import-check" size={18} />}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
 
               <div className="editor-actions">
                 <button className="primary" onClick={가져오기} disabled={busy || picked.size === 0}>
-                  {busy ? '반입 중…' : `${picked.size}개 반입`}
+                  {busy ? <span className="spinner" /> : `${picked.size}개 반입`}
                 </button>
                 <button onClick={onClose}>취소</button>
               </div>

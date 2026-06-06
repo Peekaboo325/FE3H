@@ -683,7 +683,7 @@ export default function Characters({
 
         {importing && storyId != null && (
           <ImportDialog<Character>
-            title="인물 반입"
+            title="명부 반입"
             endpoint="/api/characters"
             itemsKey="characters"
             payloadKey="character"
