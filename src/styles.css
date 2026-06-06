@@ -470,6 +470,12 @@ body::before {
 }
 .small { font-size: 12px; }
 
+/* 연대 문헌 — 화별 줄거리 목록(읽기 전용) */
+.chronicle-list { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-direction: column; gap: 14px; }
+.chronicle-row { padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
+.chronicle-title { font-size: 15px; color: var(--text); margin-bottom: 6px; letter-spacing: 0.02em; }
+.chronicle-summary { font-size: 13px; color: var(--text-dim); line-height: 1.75; white-space: pre-wrap; }
+
 /* 앱 내부 디제틱 다이얼로그 (브라우저 alert/confirm 대체) — 모달 위에도 뜨도록 z-index 높임 */
 .dialog-bg {
   position: fixed;

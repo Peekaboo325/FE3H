@@ -35,6 +35,8 @@ import {
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
+import { loadTurnsForSummary } from '../lib/db.mjs';
+import { ensureEpisodeSummaries, buildChronicle } from '../lib/chronicle.mjs';
 import {
   parseAnchors,
   buildAnchorContext,
@@ -98,6 +100,18 @@ app.delete('/api/stories', async (req, res) => {
   const id = req.query?.id ?? req.body?.id;
   const r = await deleteStory(Number(id));
   res.status(r.error ? 500 : 200).json(r);
+});
+
+// ── 연대 문헌 (화별 요약 조회 + 빠진 요약 lazy 생성) ───────────────────────
+app.get('/api/chronicle', async (req, res) => {
+  const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
+  try {
+    const { turns, hasSummaryCol } = await loadTurnsForSummary(storyId);
+    if (hasSummaryCol && storyId) await ensureEpisodeSummaries(turns);
+    res.json({ dbReady: dbReady(), ready: hasSummaryCol, chronicle: buildChronicle(turns) });
+  } catch (e) {
+    res.json({ dbReady: dbReady(), ready: false, chronicle: [], error: e?.message || String(e) });
+  }
 });
 
 // ── 인물 프로필 (목록/저장/삭제) ──────────────────────────────────────────

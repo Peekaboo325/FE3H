@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Characters from './Characters';
 import LorePanel from './Lore';
+import Chronicle from './Chronicle';
 import Stories from './Stories';
 import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
@@ -39,6 +40,7 @@ export default function App() {
   const [storyTitle, setStoryTitle] = useState('');
   const [showChars, setShowChars] = useState(false);
   const [showLore, setShowLore] = useState(false);
+  const [showChronicle, setShowChronicle] = useState(false);
   const [showStories, setShowStories] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState<number | null>(null);
@@ -75,6 +77,7 @@ export default function App() {
   const menuItems: MenuItem[] = [
     { label: '인물 명부', onClick: () => setShowChars(true) },
     { label: '대륙 문헌', onClick: () => setShowLore(true) },
+    { label: '연대 문헌', onClick: () => setShowChronicle(true) },
     { label: '천각의 박동', onClick: () => setShowStories(true) },
   ];
 
@@ -378,6 +381,7 @@ export default function App() {
       )}
       {showChars && <Characters storyId={storyId} onClose={() => setShowChars(false)} />}
       {showLore && <LorePanel storyId={storyId} onClose={() => setShowLore(false)} />}
+      {showChronicle && <Chronicle storyId={storyId} onClose={() => setShowChronicle(false)} />}
 
       <main className="scroll">
         <div className="scroll-inner">
