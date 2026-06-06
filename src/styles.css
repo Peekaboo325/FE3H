@@ -575,6 +575,7 @@ body::before {
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
+.bond-id { display: flex; flex-direction: column; align-items: center; }
 .bond-fname { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
 .bond-rel { font-size: 11px; color: var(--accent); line-height: 1.35; }
 .bond-desc {

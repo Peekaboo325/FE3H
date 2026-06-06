@@ -440,8 +440,10 @@ export default function Characters({
                                     src={t?.avatar || t?.thumbnail || LIST_PLACEHOLDER}
                                     alt=""
                                   />
-                                  <div className="bond-fname">{firstName(b.name)}</div>
-                                  {b.category && <div className="bond-rel">{b.category}</div>}
+                                  <div className="bond-id">
+                                    <div className="bond-fname">{firstName(b.name)}</div>
+                                    {b.category && <div className="bond-rel">{b.category}</div>}
+                                  </div>
                                 </div>
                                 {b.description && <div className="bond-desc">{b.description}</div>}
                               </li>
@@ -718,7 +720,7 @@ export default function Characters({
                   <div className="bond-edit" key={i}>
                     <div className="bond-edit-top">
                       <label className="bond-f">
-                        <span className="bond-flab">이름</span>
+                        <span className="bond-flab">성명</span>
                         <input
                           className="edit-inp"
                           value={b.name}
