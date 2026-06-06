@@ -34,6 +34,7 @@ import {
 } from '../lib/db.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
+import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 
 const PORT = process.env.PORT || 8787;
 const MODEL = 'claude-opus-4-8';
@@ -160,6 +161,9 @@ app.post('/api/story', async (req, res) => {
   const 새입력 = messages[messages.length - 1];
   if (새입력?.role === 'user') await saveTurn('user', 새입력.content, storyId);
 
+  // 컨텍스트 윈도우: 전체 대화 대신 '줄거리 요약 + 최근 N턴 원문'으로 재구성.
+  const { messages: 대화, summary: 줄거리 } = await prepareConversation(storyId, messages);
+
   // 활성 견문록(세계 설정) + 활성 인물을 박제 세계관 뒤에 붙인다(캐싱 유지).
   const [설정원천, 인물원천] = await Promise.all([
     loadLoreForInjection(storyId),
@@ -167,9 +171,11 @@ app.post('/api/story', async (req, res) => {
   ]);
   const 설정블록 = buildLoreContext(설정원천);
   const 인물블록 = buildCharacterContext(인물원천);
+  const 줄거리블록 = buildSummaryBlock(줄거리);
   const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
+  if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 바로 앞 = 최신 맥락
 
   const client = new Anthropic({ apiKey: key });
   res.status(200).type('text/plain; charset=utf-8');
@@ -182,7 +188,7 @@ app.post('/api/story', async (req, res) => {
       thinking: { type: 'adaptive' },
       output_config: { effort: 'low' },
       system,
-      messages,
+      messages: 대화,
     });
 
     stream.on('text', (delta) => {
