@@ -35,6 +35,14 @@ function ViewSection({ label, text }: { label: string; text: string }) {
   );
 }
 
+// 인물 뷰 탭 (약력=현재 프로필, 나머지는 추후 채움)
+const 인물탭 = ['약력', '보고서', '임무', '소지품', '서신'] as const;
+
+// 아직 안 만든 탭의 빈 화면.
+function EmptyTab() {
+  return <p className="empty-tab dim">아직 펼쳐지지 않은 장입니다.</p>;
+}
+
 export default function Characters({
   storyId,
   onClose,
@@ -49,8 +57,10 @@ export default function Characters({
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
   const [cropping, setCropping] = useState(false); // 초상에서 얼굴 따기
+  const [tab, setTab] = useState<string>('약력'); // 인물 뷰 탭
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
+  useEffect(() => setTab('약력'), [viewing]); // 다른 인물 열면 약력부터
 
   function set<K extends keyof Character>(k: K, v: Character[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
@@ -173,14 +183,37 @@ export default function Characters({
               </div>
             </div>
 
+            <div className="char-tabs">
+              {인물탭.map((t) => (
+                <button
+                  key={t}
+                  className={'char-tab' + (tab === t ? ' active' : '')}
+                  onClick={() => setTab(t)}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
             <div className="char-view-body">
-              {viewing.aliases && <ViewSection label="이명" text={viewing.aliases} />}
-              {viewing.personality && <ViewSection label="내면" text={viewing.personality} />}
-              {viewing.appearance && <ViewSection label="외양" text={viewing.appearance} />}
-              {viewing.combat && <ViewSection label="무기·전투" text={viewing.combat} />}
-              {viewing.notes && <ViewSection label="비고" text={viewing.notes} />}
-              {viewing.is_active === false && (
-                <p className="dim small">지금 이야기엔 잠들어 있는 인물입니다.</p>
+              {tab === '약력' ? (
+                <>
+                  {viewing.aliases && <ViewSection label="이명" text={viewing.aliases} />}
+                  {viewing.personality && <ViewSection label="내면" text={viewing.personality} />}
+                  {viewing.appearance && <ViewSection label="외양" text={viewing.appearance} />}
+                  {viewing.combat && <ViewSection label="무기·전투" text={viewing.combat} />}
+                  {viewing.notes && <ViewSection label="비고" text={viewing.notes} />}
+                  {!viewing.aliases &&
+                    !viewing.personality &&
+                    !viewing.appearance &&
+                    !viewing.combat &&
+                    !viewing.notes && <EmptyTab />}
+                  {viewing.is_active === false && (
+                    <p className="dim small">지금 이야기엔 잠들어 있는 인물입니다.</p>
+                  )}
+                </>
+              ) : (
+                <EmptyTab />
               )}
             </div>
           </div>

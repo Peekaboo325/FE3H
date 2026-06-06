@@ -695,7 +695,32 @@ body::before {
   color: #e6e4ee;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
+/* 인물 뷰 탭 바 (좁으면 가로 스크롤) */
+.char-tabs {
+  display: flex;
+  margin: 0 2px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.char-tabs::-webkit-scrollbar { display: none; }
+.char-tab {
+  flex: 1 0 auto;
+  min-width: 60px;
+  padding: 12px 12px;
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text-dim);
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.char-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
 .char-view-body { padding: 18px 2px 2px; }
+.empty-tab { text-align: center; padding: 44px 0; font-size: 13px; }
 .view-section { margin: 0 0 16px; }
 .view-label {
   font-size: 12px;
