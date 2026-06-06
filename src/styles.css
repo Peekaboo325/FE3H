@@ -52,6 +52,9 @@ body {
   /* 영문 = Hanken Grotesk, 국문 = SUIT, 그 외 시스템 국문 폴백 */
   font-family: 'Hanken Grotesk', 'SUIT', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   line-height: 1.8;
+  /* 한글은 단어(어절) 단위로 줄바꿈 — '아름다움'이 중간에서 안 끊기게 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .page {
@@ -179,12 +182,22 @@ body::before {
 .hint { color: var(--text-faint); font-size: 14px; text-align: center; margin-top: 40px; }
 
 .turn { margin: 18px 0; }
-.turn.user {
+/* 프롬프트(내 지시) = 조용한 칩 — 좌측 보더 대신 둥근 배경 + 작은 머리표 */
+.prompt-body {
+  display: inline-block;
+  max-width: 100%;
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
   color: var(--text-dim);
-  border-left: 2px solid var(--border);
-  padding-left: 12px;
   font-size: 13px;
   white-space: pre-wrap;
+}
+.prompt-body::before {
+  content: '›';
+  margin-right: 7px;
+  opacity: 0.5;
 }
 .turn.story { color: var(--text); }
 .dim { color: var(--text-faint); }
@@ -230,7 +243,9 @@ body::before {
   display: block;
   width: 100%;
   box-sizing: border-box;
-  min-height: 50vh;
+  min-height: 2.8em;
+  max-height: 70vh;
+  overflow-y: auto;
   resize: vertical;
   padding: 12px 14px;
   border: 1px solid var(--border);

@@ -29,6 +29,7 @@ export default function App() {
     () => (localStorage.getItem('fe3h.mode') === 'read' ? 'read' : 'write'),
   );
   const 끝 = useRef<HTMLDivElement>(null);
+  const editRef = useRef<HTMLTextAreaElement>(null);
 
   function 모드전환() {
     setMode((m) => {
@@ -101,6 +102,15 @@ export default function App() {
   useEffect(() => {
     끝.current?.scrollIntoView({ behavior: 'smooth' });
   }, [turns, busy]);
+
+  // 편집박스 높이를 내용 분량에 맞춰 자동 조절(짧으면 작게, 길면 커지되 70vh 상한).
+  useEffect(() => {
+    const el = editRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, window.innerHeight * 0.7) + 'px';
+    }
+  }, [editText, editingTurn]);
 
   // 이야기 전환(불러오기).
   function switchStory(id: number, title: string) {
@@ -308,9 +318,10 @@ export default function App() {
               {editing ? (
                 <div className="turn-edit">
                   <textarea
+                    ref={editRef}
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    rows={6}
+                    rows={2}
                   />
                   <div className="turn-actions">
                     <button className="turn-btn" title="저장" onClick={() => 턴저장(editingTurn!)}>
@@ -327,7 +338,7 @@ export default function App() {
                     t.role === 'assistant' ? (
                       <StoryText content={t.content} />
                     ) : (
-                      t.content
+                      <div className="prompt-body">{t.content}</div>
                     )
                   ) : busy ? (
                     <span className="dim">…집필 중…</span>
