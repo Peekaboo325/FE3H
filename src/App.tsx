@@ -6,6 +6,7 @@ import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
 import { stripMarkdown } from './podraScript';
 import { defaultStoryTitle } from './storyTitle';
+import { confirmAsk, alertAsk, DialogHost } from './dialog';
 import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon } from 'lucide-react';
 
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
@@ -215,7 +216,12 @@ export default function App() {
   }
 
   async function 턴삭제(id: number) {
-    if (!confirm('이 칸을 삭제할까요?')) return;
+    const yes = await confirmAsk({
+      message: '이 기록을 지우시겠습니까?',
+      confirmLabel: '지움',
+      danger: true,
+    });
+    if (!yes) return;
     setTurns((prev) => prev.filter((x) => x.id !== id));
     if (editingTurn === id) setEditingTurn(null);
     try {
@@ -240,7 +246,7 @@ export default function App() {
       }
     }
     if (promptIdx < 0) {
-      alert('앞에 프롬프트가 없어 새로 받을 수 없어요.');
+      await alertAsk({ message: '앞에 프롬프트가 없어 새로 받을 수 없어요.' });
       return;
     }
 
@@ -299,6 +305,7 @@ export default function App() {
 
   return (
     <div className={'page ' + mode}>
+      <DialogHost />
       <header className="head">
         <button className="hamburger" onClick={() => setMenuOpen(true)} aria-label="메뉴">
           <MenuIcon size={17} />

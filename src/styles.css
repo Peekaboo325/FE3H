@@ -397,6 +397,43 @@ body::before {
 }
 .small { font-size: 12px; }
 
+/* 앱 내부 디제틱 다이얼로그 (브라우저 alert/confirm 대체) — 모달 위에도 뜨도록 z-index 높임 */
+.dialog-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.66);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  z-index: 80;
+}
+.dialog {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+.dialog-msg { margin: 0; font-size: 15px; line-height: 1.6; color: var(--text); }
+.dialog-detail { margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-dim); }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.dialog-btn {
+  padding: 7px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+}
+.dialog-btn:hover { color: var(--text); border-color: var(--accent); }
+.dialog-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.dialog-btn.primary:hover { color: var(--accent-ink); }
+.dialog-btn.primary.danger { background: var(--danger); border-color: var(--danger); }
+
 .new {
   width: 100%;
   padding: 10px;

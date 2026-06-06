@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLore, type Lore } from './useLore';
+import { confirmAsk, alertAsk } from './dialog';
 import ImportDialog from './ImportDialog';
 
 const 빈설정 = (): Lore => ({ title: '', category: '', body: '', is_active: true });
@@ -23,7 +24,7 @@ export default function LorePanel({
   async function save() {
     if (!editing) return;
     if (!editing.title.trim()) {
-      alert('제목은 꼭 필요해요.');
+      await alertAsk({ message: '제목은 꼭 필요해요.' });
       return;
     }
     setSaving(true);
@@ -35,7 +36,7 @@ export default function LorePanel({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        alert('저장 실패: ' + (data.error || '알 수 없는 오류'));
+        await alertAsk({ message: '저장하지 못했어요.', detail: data.error || '알 수 없는 오류' });
         return;
       }
       await refresh();
@@ -51,11 +52,16 @@ export default function LorePanel({
       setEditing(null);
       return;
     }
-    if (!confirm(`'${editing.title}' 설정을 삭제할까요?`)) return;
+    const yes = await confirmAsk({
+      message: `「${editing.title}」 이 기록을 지우시겠습니까?`,
+      confirmLabel: '지움',
+      danger: true,
+    });
+    if (!yes) return;
     const res = await fetch(`/api/lore?id=${editing.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok || data.error) {
-      alert('삭제 실패: ' + (data.error || ''));
+      await alertAsk({ message: '지우지 못했어요.', detail: data.error || undefined });
       return;
     }
     await refresh();

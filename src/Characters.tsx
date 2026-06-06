@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
+import { confirmAsk, alertAsk } from './dialog';
 import { useCharacters, type Character } from './useCharacters';
 import ImportDialog from './ImportDialog';
 
@@ -42,14 +43,14 @@ export default function Characters({
       const thumb = await 이미지를_썸네일로(f);
       set('thumbnail', thumb);
     } catch (err) {
-      alert('이미지 변환 실패: ' + (err as Error).message);
+      await alertAsk({ message: '이미지를 옮기지 못했어요.', detail: (err as Error).message });
     }
   }
 
   async function save() {
     if (!editing) return;
     if (!editing.name.trim()) {
-      alert('이름은 꼭 필요해요.');
+      await alertAsk({ message: '이름은 꼭 필요해요.' });
       return;
     }
     setSaving(true);
@@ -61,7 +62,7 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        alert('저장 실패: ' + (data.error || '알 수 없는 오류'));
+        await alertAsk({ message: '저장하지 못했어요.', detail: data.error || '알 수 없는 오류' });
         return;
       }
       await refresh();
@@ -77,11 +78,16 @@ export default function Characters({
       setEditing(null);
       return;
     }
-    if (!confirm(`'${editing.name}' 인물을 삭제할까요?`)) return;
+    const yes = await confirmAsk({
+      message: `「${editing.name}」 이 인물을 지우시겠습니까?`,
+      confirmLabel: '지움',
+      danger: true,
+    });
+    if (!yes) return;
     const res = await fetch(`/api/characters?id=${editing.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok || data.error) {
-      alert('삭제 실패: ' + (data.error || ''));
+      await alertAsk({ message: '지우지 못했어요.', detail: data.error || undefined });
       return;
     }
     await refresh();

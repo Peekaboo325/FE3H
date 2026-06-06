@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
+import { confirmAsk, alertAsk } from './dialog';
 
 type Story = { id: number; title: string; updated_at?: string };
 
@@ -47,7 +48,7 @@ export default function Stories({
     });
     const d = await r.json();
     if (!r.ok || d.error || !d.story) {
-      alert('새 이야기 실패: ' + (d.error || ''));
+      await alertAsk({ message: '새 이야기를 펼치지 못했어요.', detail: d.error || undefined });
       return;
     }
     onSwitch(d.story.id, d.story.title); // 새 이야기로 전환
@@ -63,7 +64,7 @@ export default function Stories({
       });
       const d = await r.json();
       if (!r.ok || d.error) {
-        alert('복사 실패: ' + (d.error || ''));
+        await alertAsk({ message: '필사하지 못했어요.', detail: d.error || undefined });
         return;
       }
       await load();
@@ -88,7 +89,7 @@ export default function Stories({
     });
     const d = await r.json();
     if (!r.ok || d.error) {
-      alert('개칭 실패: ' + (d.error || ''));
+      await alertAsk({ message: '개칭하지 못했어요.', detail: d.error || undefined });
       return;
     }
     await load();
@@ -96,11 +97,17 @@ export default function Stories({
   }
 
   async function 삭제(s: Story) {
-    if (!confirm(`'${s.title}'을(를) 삭제할까요?\n이 이야기의 본문도 함께 사라져요.`)) return;
+    const yes = await confirmAsk({
+      message: `「${s.title}」 이 기록을 소각하시겠습니까?`,
+      detail: '소각된 기록은 다시 불러올 수 없습니다.',
+      confirmLabel: '소각',
+      danger: true,
+    });
+    if (!yes) return;
     const r = await fetch(`/api/stories?id=${s.id}`, { method: 'DELETE' });
     const d = await r.json();
     if (!r.ok || d.error) {
-      alert('삭제 실패: ' + (d.error || ''));
+      await alertAsk({ message: '소각하지 못했어요.', detail: d.error || undefined });
       return;
     }
     // 목록 갱신 + 현재 이야기를 지웠으면 다른 이야기로 전환.
