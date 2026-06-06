@@ -141,6 +141,46 @@ function SortableCharRow({
   );
 }
 
+// 드래그로 정렬 가능한 인연(뷰) 행.
+function SortableBond({
+  id,
+  avatar,
+  fname,
+  category,
+  status,
+  description,
+}: {
+  id: string;
+  avatar: string;
+  fname: string;
+  category?: string;
+  status?: 'alive' | 'deceased' | 'unknown';
+  description?: string;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+    zIndex: isDragging ? 2 : undefined,
+  };
+  return (
+    <li ref={setNodeRef} style={style} className="bond-row" {...attributes} {...listeners}>
+      <div className="bond-left">
+        <img className="bond-av" src={avatar} alt="" />
+        <div className="bond-id">
+          <div className="bond-fname">{fname}</div>
+          {category && <div className="bond-rel">{category}</div>}
+          {status && status !== 'alive' && (
+            <div className={'bond-status ' + status}>{상태label[status]}</div>
+          )}
+        </div>
+      </div>
+      {description && <div className="bond-desc">{description}</div>}
+    </li>
+  );
+}
+
 export default function Characters({
   storyId,
   onClose,
@@ -183,10 +223,12 @@ export default function Characters({
     }
     setSaving(true);
     try {
+      const payload = { ...editing, story_id: storyId };
+      if (payload.bonds) payload.bonds = payload.bonds.filter((b) => b.name?.trim());
       const res = await fetch('/api/characters', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ character: { ...editing, story_id: storyId } }),
+        body: JSON.stringify({ character: payload }),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
@@ -275,6 +317,25 @@ export default function Characters({
         }),
       ),
     );
+    await refresh();
+  }
+
+  // 뷰에서 인연 순서 드래그 변경 — 즉시 저장
+  async function onBondDragEnd(e: DragEndEvent) {
+    const { active, over } = e;
+    if (!over || active.id === over.id || !viewing) return;
+    const list = (viewing.bonds || []).filter((b) => b.name?.trim());
+    const oldIndex = list.findIndex((b) => b.name === active.id);
+    const newIndex = list.findIndex((b) => b.name === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(list, oldIndex, newIndex);
+    const updated = { ...viewing, bonds: next };
+    setViewing(updated);
+    await fetch('/api/characters', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ character: { ...updated, story_id: storyId } }),
+    });
     await refresh();
   }
 
@@ -427,29 +488,37 @@ export default function Characters({
                   {(viewing.bonds || []).some((b) => b.name?.trim()) && (
                     <div className="view-section">
                       <div className="view-label">인연</div>
-                      <ul className="bond-list">
-                        {(viewing.bonds || [])
-                          .filter((b) => b.name?.trim())
-                          .map((b, i) => {
-                            const t = charByName.get(b.name);
-                            return (
-                              <li key={i} className="bond-row">
-                                <div className="bond-left">
-                                  <img
-                                    className="bond-av"
-                                    src={t?.avatar || t?.thumbnail || LIST_PLACEHOLDER}
-                                    alt=""
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={onBondDragEnd}
+                      >
+                        <SortableContext
+                          items={(viewing.bonds || [])
+                            .filter((b) => b.name?.trim())
+                            .map((b) => b.name)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <ul className="bond-list">
+                            {(viewing.bonds || [])
+                              .filter((b) => b.name?.trim())
+                              .map((b) => {
+                                const t = charByName.get(b.name);
+                                return (
+                                  <SortableBond
+                                    key={b.name}
+                                    id={b.name}
+                                    avatar={t?.avatar || t?.thumbnail || LIST_PLACEHOLDER}
+                                    fname={firstName(b.name)}
+                                    category={b.category}
+                                    status={b.status}
+                                    description={b.description}
                                   />
-                                  <div className="bond-id">
-                                    <div className="bond-fname">{firstName(b.name)}</div>
-                                    {b.category && <div className="bond-rel">{b.category}</div>}
-                                  </div>
-                                </div>
-                                {b.description && <div className="bond-desc">{b.description}</div>}
-                              </li>
-                            );
-                          })}
-                      </ul>
+                                );
+                              })}
+                          </ul>
+                        </SortableContext>
+                      </DndContext>
                     </div>
                   )}
                   {viewing.is_active === false && (
@@ -727,6 +796,11 @@ export default function Characters({
                           onChange={(e) => updateBond(i, { name: e.target.value })}
                         />
                       </label>
+                      <button className="bond-del" onClick={() => removeBond(i)} aria-label="삭제">
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <div className="bond-edit-row2">
                       <label className="bond-f">
                         <span className="bond-flab">관계</span>
                         <input
@@ -735,9 +809,18 @@ export default function Characters({
                           onChange={(e) => updateBond(i, { category: e.target.value })}
                         />
                       </label>
-                      <button className="bond-del" onClick={() => removeBond(i)} aria-label="삭제">
-                        <X size={16} />
-                      </button>
+                      <label className="bond-f">
+                        <span className="bond-flab">상태</span>
+                        <Dropdown
+                          value={b.status || 'alive'}
+                          options={[
+                            { value: 'alive', label: '생존' },
+                            { value: 'deceased', label: '사망' },
+                            { value: 'unknown', label: '불명' },
+                          ]}
+                          onChange={(v) => updateBond(i, { status: v as Bond['status'] })}
+                        />
+                      </label>
                     </div>
                     <label className="bond-f">
                       <span className="bond-flab">설명</span>

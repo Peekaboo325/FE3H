@@ -1,7 +1,12 @@
 import { useCachedList } from './useCachedList';
 
 // 인연(관계) 한 줄.
-export type Bond = { name: string; category?: string; description?: string };
+export type Bond = {
+  name: string;
+  category?: string;
+  description?: string;
+  status?: 'alive' | 'deceased' | 'unknown';
+};
 
 export type Character = {
   id?: number;

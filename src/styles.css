@@ -578,6 +578,9 @@ body::before {
 .bond-id { display: flex; flex-direction: column; align-items: center; }
 .bond-fname { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
 .bond-rel { font-size: 11px; color: var(--accent); line-height: 1.35; }
+.bond-status { font-size: 10px; line-height: 1.4; }
+.bond-status.deceased { color: #d98a8a; }
+.bond-status.unknown { color: var(--text-faint); }
 .bond-desc {
   flex: 1;
   min-width: 0;
@@ -598,6 +601,7 @@ body::before {
   gap: 10px;
 }
 .bond-edit-top { display: flex; gap: 10px; align-items: flex-end; }
+.bond-edit-row2 { display: flex; gap: 10px; }
 .bond-f { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
 .bond-flab { font-size: 11px; color: var(--text-dim); }
 .bond-del {
