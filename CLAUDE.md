@@ -116,7 +116,7 @@
 
 ### 운영 치트시트 (자주 안 바뀌는 핵심)
 - v2.0 = 루트. Vite + React 19 + TS. 서버 한 겹: 로컬 `server/index.mjs`(Express), 배포 `api/*.mjs`(Vercel 함수).
-- 명령: `npm run dev`(로컬), `npm run build`(=bake+vite), `npm run lint`(tsc), `npm run bake`(md→`lib/worldview.mjs`).
+- 명령: `npm run dev`(로컬), `npm run build`(=bake+vite), `npm run lint`(tsc), `npm run bake`(worldview/→`lib/worldview.mjs`).
 - **배포 = `main`에 push** → Vercel 자동 배포. 작업 브랜치 `claude/wizardly-dirac-WjCg3` → `main` fast-forward 머지 → 양쪽 push. 배포 전 lint+build 통과 확인.
 - 저장소 = Supabase(표: `turns` / `characters` / `lore`, RLS on·정책 없음). 브라우저는 직접 접근 안 함, 서버가 **service_role** 키로만.
 - 환경변수: `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`(필수), `GEMINI_API_KEY`(미사용). **비밀 키에 `VITE_` 금지.**
