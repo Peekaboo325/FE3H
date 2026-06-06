@@ -1,0 +1,14 @@
+{
+  "name": "Fire Emblem: Three Houses",
+  "short_name": "풍화설월",
+  "description": "당신의 선택으로 이어지는 포드라의 이야기.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2d2d3a",
+  "theme_color": "#2d2d3a",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
