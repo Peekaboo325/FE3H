@@ -196,13 +196,13 @@ export default function Characters({
   const [importing, setImporting] = useState(false);
   const [cropping, setCropping] = useState(false); // 초상에서 얼굴 따기
   const [tab, setTab] = useState<string>('약력'); // 인물 뷰 탭
-  const [bondsOpen, setBondsOpen] = useState(true); // 인연 카드 펼침/접힘
+  const [bondsOpen, setBondsOpen] = useState(false); // 인연 카드 펼침/접힘(기본 접힘)
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
   useEffect(() => {
     setTab('약력');
-    setBondsOpen(true);
-  }, [viewing]); // 다른 인물 열면 약력부터·인연 펼침
+    setBondsOpen(false);
+  }, [viewing]); // 다른 인물 열면 약력부터·인연 접힘
 
   function set<K extends keyof Character>(k: K, v: Character[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
