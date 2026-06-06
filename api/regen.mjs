@@ -60,7 +60,7 @@ export default async function handler(req, res) {
       res.write(delta);
     });
     await stream.finalMessage();
-    if (본문.trim()) await updateTurn(turnId, 본문); // 그 칸만 갱신
+    if (본문.trim()) await updateTurn(turnId, 본문, true); // 그 칸만 갱신 + 요약 무효화(재생성)
     res.end();
   } catch (err) {
     const 사유 = err?.message || String(err);

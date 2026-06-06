@@ -294,7 +294,7 @@ app.post('/api/regen', async (req, res) => {
       res.write(delta);
     });
     await stream.finalMessage();
-    if (본문.trim()) await updateTurn(turnId, 본문);
+    if (본문.trim()) await updateTurn(turnId, 본문, true); // 요약 무효화(재생성)
     res.end();
   } catch (err) {
     const 사유 = err?.message || String(err);
