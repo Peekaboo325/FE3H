@@ -105,10 +105,11 @@ export default function LorePanel({
               <p className="dim">아직 기록된 견문록이 없어요.</p>
             ) : (
               <ul className="char-list">
-                {entries.map((e) => (
+                {entries.map((e, i) => (
                   <li key={e.id} className="char-row" onClick={() => setEditing(e)}>
                     <div className="char-meta">
                       <div className="char-name">
+                        <span className="ep-no jang">제{i + 1}장</span>
                         {e.title}
                         {e.category && <span className="tag">{e.category}</span>}
                         {e.is_active === false && <span className="tag dimtag">잠듦</span>}
