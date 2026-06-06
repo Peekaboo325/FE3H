@@ -5,13 +5,13 @@ import { useCharacters, type Character } from './useCharacters';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
+import { splitAliases } from './nameUtils';
 
 const 빈인물 = (): Character => ({
   name: '',
   english_name: '',
   aliases: '',
   faction: '',
-  title: '',
   appearance: '',
   personality: '',
   combat: '',
@@ -175,10 +175,13 @@ export default function Characters({
                   {viewing.life_status === 'unknown' && <span className="tag">불명</span>}
                 </div>
                 {viewing.english_name && <div className="char-hero-en">{viewing.english_name}</div>}
-                {(viewing.faction || viewing.title) && (
+                {splitAliases(viewing.aliases).length > 0 && (
                   <div className="char-hero-chips">
-                    {viewing.faction && <span className="vchip">{viewing.faction}</span>}
-                    {viewing.title && <span className="vchip">{viewing.title}</span>}
+                    {splitAliases(viewing.aliases).map((a, i) => (
+                      <span key={i} className="vchip">
+                        {a}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
@@ -199,14 +202,14 @@ export default function Characters({
             <div className="char-view-body">
               {tab === '약력' ? (
                 <>
-                  {viewing.aliases && <ViewSection label="이명" text={viewing.aliases} />}
-                  {viewing.personality && <ViewSection label="내면" text={viewing.personality} />}
-                  {viewing.appearance && <ViewSection label="외양" text={viewing.appearance} />}
-                  {viewing.combat && <ViewSection label="무기·전투" text={viewing.combat} />}
+                  {viewing.faction && <ViewSection label="신원" text={viewing.faction} />}
+                  {viewing.appearance && <ViewSection label="용모" text={viewing.appearance} />}
+                  {viewing.personality && <ViewSection label="성향" text={viewing.personality} />}
+                  {viewing.combat && <ViewSection label="전법" text={viewing.combat} />}
                   {viewing.notes && <ViewSection label="비고" text={viewing.notes} />}
-                  {!viewing.aliases &&
-                    !viewing.personality &&
+                  {!viewing.faction &&
                     !viewing.appearance &&
+                    !viewing.personality &&
                     !viewing.combat &&
                     !viewing.notes && <EmptyTab />}
                   {viewing.is_active === false && (
@@ -246,7 +249,7 @@ export default function Characters({
                         {c.life_status === 'deceased' && <span className="tag">故</span>}
                         {c.is_active === false && <span className="tag dimtag">잠듦</span>}
                       </div>
-                      <div className="char-sub">{c.title || c.faction || ''}</div>
+                      <div className="char-sub">{splitAliases(c.aliases)[0] || ''}</div>
                     </div>
                   </li>
                 ))}
@@ -308,31 +311,21 @@ export default function Characters({
             </div>
 
             <label>
-              이명 (여럿이면 쉼표로)
+              이명 (쉼표로 구분 — 예: 사자왕, 폭풍의 왕)
               <input value={editing.aliases || ''} onChange={(e) => set('aliases', e.target.value)} />
             </label>
 
-            <div className="row2">
-              <label>
-                소속
-                <input
-                  value={editing.faction || ''}
-                  onChange={(e) => set('faction', e.target.value)}
-                  placeholder="예: 퍼거스 신성 왕국"
-                />
-              </label>
-              <label>
-                한 줄 정의
-                <input
-                  value={editing.title || ''}
-                  onChange={(e) => set('title', e.target.value)}
-                  placeholder="예: 신성 왕국의 왕세자"
-                />
-              </label>
-            </div>
+            <label>
+              신원
+              <input
+                value={editing.faction || ''}
+                onChange={(e) => set('faction', e.target.value)}
+                placeholder="예: 퍼거스 신성 왕국의 왕세자"
+              />
+            </label>
 
             <label>
-              외양
+              용모
               <textarea
                 rows={2}
                 value={editing.appearance || ''}
@@ -341,7 +334,7 @@ export default function Characters({
               />
             </label>
             <label>
-              성격·내면
+              성향
               <textarea
                 rows={3}
                 value={editing.personality || ''}
@@ -350,7 +343,7 @@ export default function Characters({
               />
             </label>
             <label>
-              무기·전투
+              전법
               <textarea
                 rows={2}
                 value={editing.combat || ''}

@@ -8,3 +8,13 @@
 export function firstName(fullName: string): string {
   return (fullName ?? '').trim().split(/\s+/)[0] ?? '';
 }
+
+// 이명 문자열을 쉼표로 나눠 배열로 (앞뒤 공백 제거, 빈 항목 버림).
+//   "사자왕, 폭풍의 왕" → ["사자왕", "폭풍의 왕"]
+//   ""                  → []
+export function splitAliases(aliases?: string): string[] {
+  return (aliases ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
