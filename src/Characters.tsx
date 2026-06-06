@@ -529,7 +529,7 @@ export default function Characters({
                     onChange={(e) => set('aliases', e.target.value)}
                   />
                 </label>
-                <label className="hero-field base-field">
+                <label className="hero-field">
                   <span className="hero-lab">거점</span>
                   <input
                     className="hero-inp"

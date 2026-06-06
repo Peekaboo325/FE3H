@@ -867,7 +867,6 @@ body::before {
 /* 편집(뷰모드 동일 레이아웃) — 히어로 입력 */
 .hero-edit-info { gap: 10px; }
 .hero-field { display: flex; flex-direction: column; gap: 3px; }
-.base-field { margin-top: 15px; } /* 거점은 위 항목들과 한 칸 띄움(≈25px) */
 .hero-lab { font-size: 11px; color: rgba(255, 255, 255, 0.6); }
 /* 데스크탑(풀스크린 브레이크포인트 위): 라벨·입력 한 줄로 */
 @media (min-width: 601px) {
@@ -892,7 +891,7 @@ body::before {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 8px;
+  margin-top: 25px;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.85);
 }
