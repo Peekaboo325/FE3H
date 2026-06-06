@@ -80,7 +80,7 @@ export default function Characters({
   async function save() {
     if (!editing) return;
     if (!editing.name.trim()) {
-      await alertAsk({ message: '이름은 꼭 필요해요.' });
+      await alertAsk({ message: '성명은 꼭 필요해요.' });
       return;
     }
     setSaving(true);
@@ -286,7 +286,7 @@ export default function Characters({
 
             <div className="row2">
               <label>
-                이름 *
+                성명 *
                 <input value={editing.name} onChange={(e) => set('name', e.target.value)} />
               </label>
               <label>
