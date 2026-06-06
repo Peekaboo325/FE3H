@@ -151,7 +151,6 @@ body {
   color: var(--user);
   border-left: 3px solid var(--border);
   padding-left: 12px;
-  font-style: italic;
   white-space: pre-wrap;
 }
 .turn.story { color: var(--text); }
@@ -195,15 +194,18 @@ body {
 
 /* 메시지 인라인 편집 */
 .turn-edit textarea {
+  display: block;
   width: 100%;
+  box-sizing: border-box;
+  min-height: 50vh;
   resize: vertical;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface-2);
   color: var(--text);
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 /* 메시지 액션(아이콘) — 평소 흐리게, 올리면 또렷. 넉넉한 간격. */
