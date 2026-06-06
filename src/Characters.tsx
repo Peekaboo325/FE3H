@@ -19,8 +19,8 @@ const 빈인물 = (): Character => ({
   thumbnail: '',
 });
 
-// 초상이 없을 때 쓰는 기본 아바타 (public/avatar-placeholder.png).
-const PLACEHOLDER = '/avatar-placeholder.png';
+// 초상이 없을 때 쓰는 기본 아바타 (public/avatar-placeholder.webp).
+const PLACEHOLDER = '/avatar-placeholder.webp';
 
 // 뷰 모드의 한 섹션(내용 있을 때만 호출).
 function ViewSection({ label, text }: { label: string; text: string }) {
