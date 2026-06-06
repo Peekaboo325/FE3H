@@ -557,25 +557,25 @@ body::before {
 .char-row.inactive .row-bm { opacity: 1; }
 
 /* 인연(관계도) — 뷰 */
-.bond-list { display: flex; flex-direction: column; gap: 16px; }
-.bond-row { display: flex; gap: 12px; }
+.bond-list { margin: 0; padding: 0; list-style: none; }
+.bond-row { display: flex; gap: 16px; padding: 16px 0; }
+.bond-row + .bond-row { border-top: 1px solid var(--border); }
+.bond-left {
+  flex: 0 0 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
 .bond-av {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
-.bond-body { flex: 1; min-width: 0; }
-.bond-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
+.bond-fname { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
 .bond-cat {
   font-size: 11px;
   font-weight: 400;
@@ -585,7 +585,15 @@ body::before {
   padding: 2px 8px;
   border-radius: 999px;
 }
-.bond-desc { font-size: 13px; color: var(--text-dim); line-height: 1.65; margin-top: 4px; white-space: pre-wrap; }
+.bond-desc {
+  flex: 1;
+  min-width: 0;
+  align-self: center;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
 /* 인연 — 편집 */
 .bond-edit {
   border: 1px solid var(--border);

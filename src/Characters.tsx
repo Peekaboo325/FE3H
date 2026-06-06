@@ -5,7 +5,7 @@ import { useCharacters, type Character, type Bond } from './useCharacters';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
-import { splitAliases } from './nameUtils';
+import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
 import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin } from 'lucide-react';
@@ -434,18 +434,16 @@ export default function Characters({
                             const t = charByName.get(b.name);
                             return (
                               <li key={i} className="bond-row">
-                                <img
-                                  className="bond-av"
-                                  src={t?.avatar || t?.thumbnail || LIST_PLACEHOLDER}
-                                  alt=""
-                                />
-                                <div className="bond-body">
-                                  <div className="bond-name">
-                                    {b.name}
-                                    {b.category && <span className="bond-cat">{b.category}</span>}
-                                  </div>
-                                  {b.description && <div className="bond-desc">{b.description}</div>}
+                                <div className="bond-left">
+                                  <img
+                                    className="bond-av"
+                                    src={t?.avatar || t?.thumbnail || LIST_PLACEHOLDER}
+                                    alt=""
+                                  />
+                                  <div className="bond-fname">{firstName(b.name)}</div>
+                                  {b.category && <span className="bond-cat">{b.category}</span>}
                                 </div>
+                                {b.description && <div className="bond-desc">{b.description}</div>}
                               </li>
                             );
                           })}
