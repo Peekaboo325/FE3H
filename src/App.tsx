@@ -52,8 +52,8 @@ export default function App() {
   // 드로어 메뉴 항목 — 늘릴 땐 여기 한 줄만 추가하면 됨.
   // '천각의 박동'(이야기/세이브)은 가장 아래에 둔다.
   const menuItems: MenuItem[] = [
-    { label: '인물', onClick: () => setShowChars(true) },
-    { label: '견문록', onClick: () => setShowLore(true) },
+    { label: '인물 명부', onClick: () => setShowChars(true) },
+    { label: '대륙 문헌', onClick: () => setShowLore(true) },
     { label: '천각의 박동', onClick: () => setShowStories(true) },
   ];
 

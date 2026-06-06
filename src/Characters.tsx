@@ -94,7 +94,7 @@ export default function Characters({
     <div className="modal-bg" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>{editing ? (editing.id ? '인물 편집' : '새 인물') : '인물'}</h2>
+          <h2>{editing ? (editing.id ? '인물 편집' : '새 인물') : '인물 명부'}</h2>
           <button className="x" onClick={onClose}>
             ✕
           </button>

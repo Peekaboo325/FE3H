@@ -68,7 +68,7 @@ export default function LorePanel({
     <div className="modal-bg" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>{editing ? (editing.id ? '견문록 편집' : '새 견문록') : '견문록'}</h2>
+          <h2>{editing ? (editing.id ? '견문록 편집' : '새 견문록') : '대륙 문헌'}</h2>
           <button className="x" onClick={onClose}>
             ✕
           </button>
