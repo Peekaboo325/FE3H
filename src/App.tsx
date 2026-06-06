@@ -299,6 +299,10 @@ export default function App() {
   // 보이는 창 = 최근 visibleCount칸. start 위쪽은 '말아둔 두루마리'로 접어둔다.
   const start = Math.max(0, turns.length - visibleCount);
 
+  // 화 번호 — 한 번 '전개' = 한 화. N번째 본문(서술자)이 N화. (앵커링 "N화 참고"의 기준)
+  let _ac = 0;
+  const epNo = turns.map((t) => (t.role === 'assistant' ? ++_ac : 0));
+
   return (
     <div className={'page ' + mode}>
       <DialogHost />
@@ -370,7 +374,10 @@ export default function App() {
                 <>
                   {t.content ? (
                     t.role === 'assistant' ? (
-                      <StoryText content={t.content} />
+                      <>
+                        {epNo[i] > 0 && <div className="ep-no">{epNo[i]}화</div>}
+                        <StoryText content={t.content} />
+                      </>
                     ) : (
                       <div className="prompt-body">{t.content}</div>
                     )

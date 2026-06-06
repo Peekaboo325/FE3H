@@ -233,6 +233,8 @@ body::before {
 .turn.story h1,
 .turn.story h2 { text-align: center; font-size: 19px; letter-spacing: 0.1em; margin: 8px 0 2px; }
 .turn.story h3 { text-align: center; font-size: 13px; font-weight: 400; color: var(--text-dim); letter-spacing: 0.05em; margin: 0 0 14px; }
+/* 화 번호 표식 — '3화 참고' 앵커링의 기준점(은은하게) */
+.ep-no { font-size: 11px; color: var(--text-faint); letter-spacing: 0.1em; margin-bottom: 6px; }
 .scene-break { text-align: center; color: var(--text-dim); font-size: 15px; letter-spacing: 0.4em; margin: 22px 0; }
 .turn.story blockquote {
   margin: 0 0 12px;

@@ -15,6 +15,7 @@ import { saveTurn, touchStory, loadCharactersForInjection, loadLoreForInjection 
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
+import { parseAnchors, buildAnchorContext } from '../lib/anchor.mjs';
 
 const MODEL = 'claude-opus-4-8'; // 메인 본문 = Opus 4.8 (CLAUDE.md)
 
@@ -50,7 +51,12 @@ export default async function handler(req, res) {
   if (새입력?.role === 'user') await saveTurn('user', 새입력.content, storyId);
 
   // 컨텍스트 윈도우: 전체 대화 대신 '줄거리 요약 + 최근 N턴 원문'으로 재구성.
-  const { messages: 대화, summary: 줄거리 } = await prepareConversation(storyId, messages);
+  // + 앵커링: 유저가 "N화 참고"라 지목했으면 그 회차를 목적에 맞춰 추려 따로 주입.
+  const 지목 = parseAnchors(새입력?.role === 'user' ? 새입력.content : '');
+  const [{ messages: 대화, summary: 줄거리 }, 참고블록] = await Promise.all([
+    prepareConversation(storyId, messages),
+    지목.length ? buildAnchorContext(storyId, 새입력.content, 지목) : Promise.resolve(null),
+  ]);
 
   // 활성 견문록(세계 설정) + 활성 인물을 박제 세계관 뒤에 붙인다(캐싱 유지).
   const [설정원천, 인물원천] = await Promise.all([
@@ -63,7 +69,8 @@ export default async function handler(req, res) {
   const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
-  if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 바로 앞 = 최신 맥락
+  if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락
+  if (참고블록) system.push({ type: 'text', text: 참고블록 }); // 지목 회차 = 가장 가까이
 
   const client = new Anthropic({ apiKey: key });
   res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');
