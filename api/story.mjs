@@ -56,7 +56,7 @@ export default async function handler(req, res) {
   if (새입력?.role === 'user') await saveTurn('user', 새입력.content, storyId);
 
   // 컨텍스트 윈도우: 전체 대화 대신 '줄거리 요약 + 최근 N턴 원문'으로 재구성.
-  // + 앵커링: "N화 참고"(회차) / "제N장·(제목) 참조"(견문록)를 지목했으면 골라 주입.
+  // + 앵커링: "N화 참고"(회차) / "제N권·(제목) 참조"(문헌)를 지목했으면 골라 주입.
   const 입력문 = 새입력?.role === 'user' ? 새입력.content : '';
   const 지목 = parseAnchors(입력문);
   const 견문록지목 = parseLoreAnchors(입력문);

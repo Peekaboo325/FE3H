@@ -68,18 +68,18 @@ export default function LorePanel({
     <div className="modal-bg" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>{editing ? (editing.id ? '견문록 편집' : '새 견문록') : '대륙 문헌'}</h2>
+          <h2>{editing ? (editing.id ? '문헌 편집' : '새 문헌') : '대륙 문헌'}</h2>
           <button className="x" onClick={onClose}>
             ✕
           </button>
         </div>
 
         {!dbReady && (
-          <p className="warn">아직 기록의 샘이 닿지 않아 견문록을 기록할 수 없어요.</p>
+          <p className="warn">아직 기록의 샘이 닿지 않아 문헌을 기록할 수 없어요.</p>
         )}
         {dbReady && err && (
           <p className="warn">
-            견문록 표가 아직 없는 것 같아요. 안내된 SQL을 Supabase에서 한 번 실행해 주세요.
+            문헌 표가 아직 없는 것 같아요. 안내된 SQL을 Supabase에서 한 번 실행해 주세요.
             <br />
             <span className="dim">({err})</span>
           </p>
@@ -89,10 +89,10 @@ export default function LorePanel({
         {!editing && (
           <div className="modal-body">
             <p className="dim small">
-              원작에서 바꾸거나 새로 정한 세계의 결을 적어두세요. 깨어 있는 견문록만 이야기에 깃듭니다.
+              원작에서 바꾸거나 새로 정한 세계의 결을 적어두세요. 깨어 있는 문헌만 이야기에 깃듭니다.
             </p>
             <button className="new" onClick={() => setEditing(빈설정())}>
-              ＋ 새 견문록
+              ＋ 새 문헌
             </button>
             {storyId != null && (
               <button className="new" onClick={() => setImporting(true)}>
@@ -102,14 +102,14 @@ export default function LorePanel({
             {loading ? (
               <p className="dim">펼치는 중…</p>
             ) : entries.length === 0 ? (
-              <p className="dim">아직 기록된 견문록이 없어요.</p>
+              <p className="dim">아직 기록된 문헌이 없어요.</p>
             ) : (
               <ul className="char-list">
                 {entries.map((e, i) => (
                   <li key={e.id} className="char-row" onClick={() => setEditing(e)}>
                     <div className="char-meta">
                       <div className="char-name">
-                        <span className="ep-no jang">제{i + 1}장</span>
+                        <span className="ep-no jang">제{i + 1}권</span>
                         {e.title}
                         {e.category && <span className="tag">{e.category}</span>}
                         {e.is_active === false && <span className="tag dimtag">잠듦</span>}
@@ -182,7 +182,7 @@ export default function LorePanel({
 
         {importing && storyId != null && (
           <ImportDialog<Lore>
-            title="견문록 반입"
+            title="문헌 반입"
             endpoint="/api/lore"
             itemsKey="lore"
             payloadKey="entry"

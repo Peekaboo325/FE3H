@@ -235,7 +235,7 @@ body::before {
 .turn.story h3 { text-align: center; font-size: 13px; font-weight: 400; color: var(--text-dim); letter-spacing: 0.05em; margin: 0 0 14px; }
 /* 화 번호 표식 — '3화 참고' 앵커링의 기준점(은은하게) */
 .ep-no { font-size: 11px; color: var(--text-faint); letter-spacing: 0.1em; margin-bottom: 6px; }
-/* 견문록 장 번호 — '제N장 참조'의 기준점(제목 앞 인라인) */
+/* 문헌 권 번호 — '제N권 참조'의 기준점(제목 앞 인라인) */
 .ep-no.jang { display: inline; margin: 0 6px 0 0; }
 .scene-break { text-align: center; color: var(--text-dim); font-size: 15px; letter-spacing: 0.4em; margin: 22px 0; }
 .turn.story blockquote {

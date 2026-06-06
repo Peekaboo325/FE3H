@@ -154,7 +154,7 @@ export default function Stories({
         <div className="modal-body">
           <p className="dim small">
             여러 운명의 장을 두고 오갈 수 있어요. 기록은 절로 남고, 지금 펼친 장에 쌓입니다.
-            (인물·견문록은 장마다 따로 둡니다.)
+            (인물·문헌은 장마다 따로 둡니다.)
           </p>
           <button className="new" onClick={새이야기}>
             ＋ 새로운 운명의 장
