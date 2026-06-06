@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
 import { alertAsk } from './dialog';
-import { useCharacters, type Character } from './useCharacters';
+import { useCharacters, type Character, type Bond } from './useCharacters';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
@@ -278,6 +278,26 @@ export default function Characters({
     await refresh();
   }
 
+  // 인연 편집: 추가/수정/삭제
+  function addBond() {
+    set('bonds', [...(editing?.bonds || []), { name: '', category: '', description: '' }]);
+  }
+  function updateBond(i: number, patch: Partial<Bond>) {
+    set(
+      'bonds',
+      (editing?.bonds || []).map((b, j) => (j === i ? { ...b, ...patch } : b)),
+    );
+  }
+  function removeBond(i: number) {
+    set(
+      'bonds',
+      (editing?.bonds || []).filter((_, j) => j !== i),
+    );
+  }
+
+  // 인연 대상 이름 → 명부 인물(아바타 자동 연동용)
+  const charByName = new Map(chars.map((c) => [c.name, c]));
+
   const viewMode = viewing && !editing; // 순수 읽기 모드
 
   return (
@@ -404,6 +424,34 @@ export default function Characters({
                   {viewing.personality && <ViewSection label="성향" text={viewing.personality} />}
                   {viewing.combat && <ViewSection label="전법" text={viewing.combat} />}
                   {viewing.notes && <ViewSection label="비고" text={viewing.notes} />}
+                  {(viewing.bonds || []).some((b) => b.name?.trim()) && (
+                    <div className="view-section">
+                      <div className="view-label">인연</div>
+                      <ul className="bond-list">
+                        {(viewing.bonds || [])
+                          .filter((b) => b.name?.trim())
+                          .map((b, i) => {
+                            const t = charByName.get(b.name);
+                            return (
+                              <li key={i} className="bond-row">
+                                <img
+                                  className="bond-av"
+                                  src={t?.avatar || t?.thumbnail || LIST_PLACEHOLDER}
+                                  alt=""
+                                />
+                                <div className="bond-body">
+                                  <div className="bond-name">
+                                    {b.name}
+                                    {b.category && <span className="bond-cat">{b.category}</span>}
+                                  </div>
+                                  {b.description && <div className="bond-desc">{b.description}</div>}
+                                </div>
+                              </li>
+                            );
+                          })}
+                      </ul>
+                    </div>
+                  )}
                   {viewing.is_active === false && (
                     <p className="dim small">지금 이야기엔 잠들어 있는 인물입니다.</p>
                   )}
@@ -664,6 +712,47 @@ export default function Characters({
                   value={editing.notes || ''}
                   onChange={(e) => set('notes', e.target.value)}
                 />
+              </div>
+
+              <div className="view-section">
+                <div className="view-label">인연</div>
+                {(editing.bonds || []).map((b, i) => (
+                  <div className="bond-edit" key={i}>
+                    <div className="bond-edit-top">
+                      <label className="bond-f">
+                        <span className="bond-flab">이름</span>
+                        <input
+                          className="edit-inp"
+                          value={b.name}
+                          onChange={(e) => updateBond(i, { name: e.target.value })}
+                        />
+                      </label>
+                      <label className="bond-f">
+                        <span className="bond-flab">관계</span>
+                        <input
+                          className="edit-inp"
+                          value={b.category || ''}
+                          onChange={(e) => updateBond(i, { category: e.target.value })}
+                        />
+                      </label>
+                      <button className="bond-del" onClick={() => removeBond(i)} aria-label="삭제">
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <label className="bond-f">
+                      <span className="bond-flab">설명</span>
+                      <textarea
+                        className="edit-area"
+                        rows={2}
+                        value={b.description || ''}
+                        onChange={(e) => updateBond(i, { description: e.target.value })}
+                      />
+                    </label>
+                  </div>
+                ))}
+                <button className="list-btn bond-add" onClick={addBond}>
+                  ＋ 인연 추가
+                </button>
               </div>
 
               <div className="editor-actions">

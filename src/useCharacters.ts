@@ -1,5 +1,8 @@
 import { useCachedList } from './useCachedList';
 
+// 인연(관계) 한 줄.
+export type Bond = { name: string; category?: string; description?: string };
+
 export type Character = {
   id?: number;
   story_id?: number;
@@ -21,6 +24,7 @@ export type Character = {
   personality?: string;
   combat?: string;
   notes?: string;
+  bonds?: Bond[]; // 인연(관계) — 명부 인물과 이름으로 자동 연동
   life_status?: 'alive' | 'deceased' | 'unknown';
   is_active?: boolean;
   sort_order?: number; // 목록 정렬 순서(드래그로 변경)
