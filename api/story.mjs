@@ -60,12 +60,12 @@ export default async function handler(req, res) {
   const 입력문 = 새입력?.role === 'user' ? 새입력.content : '';
   const 지목 = parseAnchors(입력문);
   const 견문록지목 = parseLoreAnchors(입력문);
-  const [{ messages: 대화, summary: 줄거리 }, 참고블록, 견문록참고블록] = await Promise.all([
+  const [{ messages: 대화, summary: 줄거리 }, 참고, 견문록참고] = await Promise.all([
     prepareConversation(storyId, messages),
-    지목.length ? buildAnchorContext(storyId, 입력문, 지목) : Promise.resolve(null),
+    지목.length ? buildAnchorContext(storyId, 입력문, 지목) : Promise.resolve({ block: null, episodes: [] }),
     견문록지목.numbers.length || 견문록지목.titles.length
       ? buildLoreAnchorContext(storyId, 견문록지목)
-      : Promise.resolve(null),
+      : Promise.resolve({ block: null, items: [] }),
   ]);
 
   // 활성 견문록(세계 설정) + 활성 인물을 박제 세계관 뒤에 붙인다(캐싱 유지).
@@ -80,11 +80,19 @@ export default async function handler(req, res) {
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
   if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락
-  if (견문록참고블록) system.push({ type: 'text', text: 견문록참고블록 }); // 지목 견문록
-  if (참고블록) system.push({ type: 'text', text: 참고블록 }); // 지목 회차 = 가장 가까이
+  if (견문록참고.block) system.push({ type: 'text', text: 견문록참고.block }); // 지목 문헌
+  if (참고.block) system.push({ type: 'text', text: 참고.block }); // 지목 회차 = 가장 가까이
 
   const client = new Anthropic({ apiKey: key });
   res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');
+
+  // 실제로 되짚은 회차·문헌을 헤더로 — 클라가 그 화에 '확인 자취'를 남긴다(본문 전에 전송).
+  const 자취 = {};
+  if (참고.episodes.length) 자취.ep = 참고.episodes;
+  if (견문록참고.items.length) 자취.lore = 견문록참고.items;
+  if (자취.ep || 자취.lore) {
+    res.setHeader('x-recall', encodeURIComponent(JSON.stringify(자취)));
+  }
 
   let 본문 = '';
   try {

@@ -4,6 +4,8 @@ import LorePanel from './Lore';
 import Stories from './Stories';
 import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
+import LoadingIndicator from './Loading';
+import { hasAnchor } from './anchorDetect';
 import { stripMarkdown } from './podraScript';
 import { defaultStoryTitle } from './storyTitle';
 import { alertAsk, DialogHost } from './dialog';
@@ -11,6 +13,16 @@ import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as M
 
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
 type Story = { id: number; title: string };
+// 되짚은 자취 — 서버가 실제로 주입한 회차·문헌(확인 자취용).
+type Recall = { ep?: number[]; lore?: { n: number; t: string }[] };
+
+// 되짚은 자취를 디제틱 한 줄로: "제3화 · 제2권 퍼거스 신성 왕국"
+function recallTraceText(r: Recall): string {
+  const parts: string[] = [];
+  if (r.ep?.length) parts.push(...r.ep.map((n) => `제${n}화`));
+  if (r.lore?.length) parts.push(...r.lore.map((l) => `제${l.n}권${l.t ? ' ' + l.t : ''}`));
+  return parts.join(' · ');
+}
 
 const LS_STORY = 'fe3h.currentStoryId';
 
@@ -33,6 +45,8 @@ export default function App() {
   const [editingTurn, setEditingTurn] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
   const [armedTurn, setArmedTurn] = useState<number | null>(null); // 삭제 두 번 누르기 대상
+  const [pendingRecall, setPendingRecall] = useState(false); // 이번 생성이 '회상'(앵커)인가 → 로딩 톤
+  const [recallMap, setRecallMap] = useState<Record<number, Recall>>({}); // 턴 id → 되짚은 자취
   const [visibleCount, setVisibleCount] = useState(WINDOW); // 지금 펼쳐 둔 칸 수
   const [mode, setMode] = useState<'read' | 'write'>(
     () => (localStorage.getItem('fe3h.mode') === 'read' ? 'read' : 'write'),
@@ -57,16 +71,19 @@ export default function App() {
     { label: '천각의 박동', onClick: () => setShowStories(true) },
   ];
 
-  // 특정 이야기의 본문을 불러온다.
-  async function loadTurnsFor(id: number | null) {
+  // 특정 이야기의 본문을 불러온다. (불러온 배열을 돌려줘 새 턴 id를 잡을 수 있게)
+  async function loadTurnsFor(id: number | null): Promise<Turn[]> {
     try {
       const url = id ? `/api/turns?story_id=${id}` : '/api/turns';
       const r = await fetch(url);
       const d = await r.json();
-      setTurns(Array.isArray(d?.turns) ? (d.turns as Turn[]) : []);
+      const fresh = Array.isArray(d?.turns) ? (d.turns as Turn[]) : [];
+      setTurns(fresh);
       setVisibleCount(WINDOW); // 새로 불러오면 최근 창으로 접어둔다.
+      return fresh;
     } catch {
       setTurns([]);
+      return [];
     }
   }
 
@@ -151,6 +168,7 @@ export default function App() {
     setTurns(다음);
     setInput('');
     setBusy(true);
+    setPendingRecall(hasAnchor(입력)); // 앵커가 있으면 로딩을 '회상' 톤으로
 
     const messages = 다음.slice(0, -1).map((t) => ({ role: t.role, content: t.content }));
 
@@ -167,6 +185,9 @@ export default function App() {
         return;
       }
 
+      // 서버가 실제로 되짚은 자취(헤더)를 읽어 둔다(본문 전에 도착).
+      const 자취 = parseRecallHeader(res.headers.get('x-recall'));
+
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       for (;;) {
@@ -175,11 +196,29 @@ export default function App() {
         붙이기(decoder.decode(value, { stream: true }));
       }
       // 새 턴의 DB id를 받아오기 위해 다시 불러온다(수정·삭제 대상이 되도록).
-      if (storyId) await loadTurnsFor(storyId);
+      if (storyId) {
+        const fresh = await loadTurnsFor(storyId);
+        // 방금 생성된 본문(마지막 assistant 턴)에 되짚은 자취를 붙인다.
+        if (자취) {
+          const last = [...fresh].reverse().find((t) => t.role === 'assistant');
+          if (last?.id != null) setRecallMap((m) => ({ ...m, [last.id as number]: 자취 }));
+        }
+      }
     } catch (e) {
       붙이기(`\n\n[연결 오류] ${(e as Error).message}`);
     } finally {
       setBusy(false);
+    }
+  }
+
+  // 응답 헤더(x-recall)를 안전하게 푼다.
+  function parseRecallHeader(raw: string | null): Recall | null {
+    if (!raw) return null;
+    try {
+      const r = JSON.parse(decodeURIComponent(raw)) as Recall;
+      return (r.ep?.length || r.lore?.length) ? r : null;
+    } catch {
+      return null;
     }
   }
 
@@ -251,6 +290,7 @@ export default function App() {
     const messages = turns.slice(0, promptIdx + 1).map((t) => ({ role: t.role, content: t.content }));
 
     setBusy(true);
+    setPendingRecall(false); // 다시 받기는 아직 앵커 미적용 → 일반 로딩
     setEditingTurn(null);
     setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: '' } : x)));
 
@@ -376,13 +416,16 @@ export default function App() {
                     t.role === 'assistant' ? (
                       <>
                         {epNo[i] > 0 && <div className="ep-no">{epNo[i]}화</div>}
+                        {t.id != null && recallMap[t.id] && (
+                          <div className="recall-trace">❧ {recallTraceText(recallMap[t.id])}</div>
+                        )}
                         <StoryText content={t.content} />
                       </>
                     ) : (
                       <div className="prompt-body">{t.content}</div>
                     )
                   ) : busy ? (
-                    <span className="dim">…집필 중…</span>
+                    <LoadingIndicator recall={pendingRecall} />
                   ) : null}
                   {t.content && !busy && mode === 'write' && (
                     <div className="turn-actions">

@@ -215,6 +215,40 @@ body::before {
 .unfurl:hover { color: var(--text); border-color: var(--accent); }
 .unfurl-rest { color: var(--text-faint); font-size: 12px; }
 
+/* ── 로딩(답변 준비 중) — 점 3개 통통 + 문구 페이드 ─────────── */
+.loading { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 22px 0; }
+.loading-dots { display: flex; gap: 6px; }
+.loading-dots i {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); opacity: 0.55;
+  animation: dotBounce 1s infinite;
+}
+.loading-dots i:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots i:nth-child(3) { animation-delay: 0.4s; }
+.loading-text {
+  font-size: 12px; letter-spacing: 0.08em; text-align: center;
+  color: var(--text-dim);
+  animation: phraseFade 0.6s ease;
+}
+/* 회상(앵커) 톤 — 천각의 박동의 보랏빛 */
+.loading.recall .loading-dots i { background: var(--warn-text); }
+.loading.recall .loading-text { color: var(--warn-text); }
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
+  40% { transform: translateY(-5px); opacity: 1; }
+}
+@keyframes phraseFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* 되짚은 자취 — 그 화 위에 남기는 조용한 여백의 메모(시스템 칩 아님) */
+.recall-trace {
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+  font-style: italic;
+  margin: 0 0 12px;
+  opacity: 0.85;
+}
+
 .turn { margin: 18px 0; }
 /* 프롬프트(내 지시) = 조용한 칩. 칩은 우측에 두되, 안의 글자는 좌측 정렬. */
 .turn.user { text-align: right; }
