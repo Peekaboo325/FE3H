@@ -409,7 +409,7 @@ export default function App() {
               disabled={busy}
             />
             <button onClick={보내기} disabled={busy || !input.trim()}>
-              {busy ? '집필 중…' : '잇기'}
+              {busy ? '집필 중…' : '전개'}
             </button>
           </div>
         </footer>
