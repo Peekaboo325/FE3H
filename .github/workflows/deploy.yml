@@ -1,24 +1,36 @@
-name: Vercel 배포 깨우기
+name: Vercel 프로덕션 배포
 
-# main에 새 코드가 올라오면 GitHub이 직접 Vercel Deploy Hook을 호출해 배포를 깨운다.
-# (Vercel 자동 웹훅이 가끔 누락돼서, GitHub Actions로 확실하게 트리거)
-# 수동 실행도 가능: Actions 탭 → 이 워크플로 → "Run workflow".
+# main에 코드가 올라오면 GitHub 러너가 '직접' 빌드해서 Vercel에 업로드(프로덕션).
+# Vercel의 git 연동/Deploy Hook을 거치지 않으므로 그쪽 불안정과 무관하게 확실히 배포된다.
+# 필요한 비밀값(레포 Settings → Secrets and variables → Actions):
+#   - VERCEL_TOKEN   : Vercel 계정 토큰 (Settings → Tokens)
+#   - VERCEL_ORG_ID  : Vercel 팀/계정 ID (Settings → General)
+# (Project ID는 비밀이 아니라 아래 env에 직접 박아둠)
 
 on:
   push:
     branches: [main]
   workflow_dispatch: {}
 
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: prj_pO0MqjnDbLnnOH7coic2GnjiU7FT
+
 jobs:
-  trigger:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy Hook 호출
-        run: |
-          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
-            echo "❌ VERCEL_DEPLOY_HOOK 시크릿이 없습니다." >&2
-            echo "   GitHub → Settings → Secrets and variables → Actions 에 등록하세요." >&2
-            exit 1
-          fi
-          curl -sS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}" \
-            -o /dev/null -w "Vercel 응답: %{http_code}\n"
+      - name: 코드 가져오기
+        uses: actions/checkout@v4
+      - name: Node 준비
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Vercel CLI 설치
+        run: npm install -g vercel@latest
+      - name: 프로젝트 설정·환경변수 가져오기
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: 빌드
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: 프로덕션 배포
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
