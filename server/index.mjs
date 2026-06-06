@@ -203,6 +203,60 @@ app.post('/api/story', async (req, res) => {
   }
 });
 
+// 한 답변 다시 받기 — 새 유저턴 저장 없이 turn_id 칸만 갱신.
+app.post('/api/regen', async (req, res) => {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) {
+    res.status(400).type('text/plain; charset=utf-8').end('[서고] 클로드 API 열쇠가 없습니다.');
+    return;
+  }
+  const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
+  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
+  const turnId = req.body?.turn_id ? Number(req.body.turn_id) : null;
+  if (messages.length === 0 || !turnId) {
+    res.status(400).type('text/plain; charset=utf-8').end('[서고] 잘못된 재생성 요청입니다.');
+    return;
+  }
+
+  const [설정원천, 인물원천] = await Promise.all([
+    loadLoreForInjection(storyId),
+    loadCharactersForInjection(storyId),
+  ]);
+  const 설정블록 = buildLoreContext(설정원천);
+  const 인물블록 = buildCharacterContext(인물원천);
+  const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  if (설정블록) system.push({ type: 'text', text: 설정블록 });
+  if (인물블록) system.push({ type: 'text', text: 인물블록 });
+
+  const client = new Anthropic({ apiKey: key });
+  res.status(200).type('text/plain; charset=utf-8');
+
+  let 본문 = '';
+  try {
+    const stream = client.messages.stream({
+      model: MODEL,
+      max_tokens: 8000,
+      thinking: { type: 'adaptive' },
+      output_config: { effort: 'low' },
+      system,
+      messages,
+    });
+    stream.on('text', (delta) => {
+      본문 += delta;
+      res.write(delta);
+    });
+    await stream.finalMessage();
+    if (본문.trim()) await updateTurn(turnId, 본문);
+    res.end();
+  } catch (err) {
+    const 사유 = err?.message || String(err);
+    console.error('[서고] 재생성 오류:', 사유);
+    if (!res.headersSent) res.status(500).type('text/plain; charset=utf-8');
+    res.write(`\n\n[서고 오류] 재생성에 실패했습니다: ${사유}`);
+    res.end();
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`[서고] 포트 ${PORT}에서 깨어남. 클로드와의 통로 열림.`);
   if (!process.env.ANTHROPIC_API_KEY) {

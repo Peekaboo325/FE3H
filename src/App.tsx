@@ -184,6 +184,64 @@ export default function App() {
     }
   }
 
+  // 한 답변 '새로 받기' — 앞 대화 + 그 프롬프트만 반영해 그 칸만 다시 씀(뒤는 그대로).
+  async function 새로받기(turnIndex: number) {
+    if (busy) return;
+    const target = turns[turnIndex];
+    if (!target || target.id == null || target.role !== 'assistant') return;
+
+    // 매칭된 프롬프트 = 이 답변 앞쪽에서 가장 가까운 유저 턴.
+    let promptIdx = -1;
+    for (let k = turnIndex - 1; k >= 0; k--) {
+      if (turns[k].role === 'user') {
+        promptIdx = k;
+        break;
+      }
+    }
+    if (promptIdx < 0) {
+      alert('앞에 프롬프트가 없어 새로 받을 수 없어요.');
+      return;
+    }
+
+    const targetId = target.id;
+    const old = target.content;
+    const messages = turns.slice(0, promptIdx + 1).map((t) => ({ role: t.role, content: t.content }));
+
+    setBusy(true);
+    setEditingTurn(null);
+    setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: '' } : x)));
+
+    let 본문 = '';
+    try {
+      const res = await fetch('/api/regen', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ messages, story_id: storyId, turn_id: targetId }),
+      });
+      if (!res.ok || !res.body) {
+        const e = await res.text();
+        setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: e || old } : x)));
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        본문 += decoder.decode(value, { stream: true });
+        setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: 본문 } : x)));
+      }
+      if (!본문.trim()) {
+        setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: old } : x)));
+      }
+    } catch (e) {
+      console.error(e);
+      setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: old } : x)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function 붙이기(조각: string) {
     setTurns((prev) => {
       const copy = [...prev];
@@ -251,7 +309,7 @@ export default function App() {
                     ) : (
                       t.content
                     )
-                  ) : busy && i === turns.length - 1 ? (
+                  ) : busy ? (
                     <span className="dim">…집필 중…</span>
                   ) : null}
                   {t.content && !busy && (
@@ -263,6 +321,11 @@ export default function App() {
                       )}
                       {t.id != null && (
                         <>
+                          {t.role === 'assistant' && (
+                            <button className="turn-btn" onClick={() => 새로받기(i)}>
+                              새로 받기
+                            </button>
+                          )}
                           <button className="turn-btn" onClick={() => 턴수정시작(t)}>
                             수정
                           </button>
