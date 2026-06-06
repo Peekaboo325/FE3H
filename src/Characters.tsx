@@ -363,6 +363,8 @@ export default function Characters({
   return (
     <div className="modal-bg" onClick={onClose}>
       <div className="modal has-hero" onClick={(e) => e.stopPropagation()}>
+        {/* 모바일 풀스크린: 노치/상태바 아래(안전영역) 차폐 — 스티키 탭 위로 콘텐츠 새는 것 방지 */}
+        <div className="top-shield" />
         {/* 헤더·안내 — 뷰/편집 모드에선 히어로가 대신하므로 숨김(목록 모드 전용) */}
         {!viewMode && !editing && (
           <>
