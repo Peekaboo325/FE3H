@@ -779,7 +779,25 @@ body::before {
   font-weight: 700;
   margin-bottom: 10px;
 }
-.view-text { font-size: 14px; color: var(--text); line-height: 1.75; white-space: pre-wrap; }
+.view-text { font-size: 14px; color: var(--text); line-height: 1.75; }
+
+/* 마크다운(성향·전법·비고) */
+.md-p { margin: 0 0 10px; }
+.md-p:last-child { margin-bottom: 0; }
+.md-list { list-style: none; margin: 0 0 10px; padding: 0; }
+.md-list:last-child { margin-bottom: 0; }
+.md-list li { position: relative; padding-left: 18px; }
+.md-list li::before {
+  /* "- " → 작은 회색 박스 불릿 */
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 7px;
+  height: 7px;
+  background: var(--text-faint, #6b6b78);
+  border-radius: 2px;
+}
 
 /* 신원·용모 2분할 (데스크탑 2열 / 모바일 1열로 자동) */
 .info-grid {

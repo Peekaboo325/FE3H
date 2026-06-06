@@ -6,6 +6,7 @@ import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
 import { splitAliases } from './nameUtils';
+import Markdown from './Markdown';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -38,7 +39,9 @@ function ViewSection({ label, text }: { label: string; text: string }) {
   return (
     <div className="view-section">
       <div className="view-label">{label}</div>
-      <div className="view-text">{text}</div>
+      <div className="view-text">
+        <Markdown text={text} />
+      </div>
     </div>
   );
 }
@@ -147,7 +150,7 @@ export default function Characters({
         {!viewMode && (
           <>
             <div className="modal-head">
-              <h2>{editing ? (editing.id ? '인물 편집' : '새 인물') : '인물 명부'}</h2>
+              <h2>{editing ? (editing.id ? '명부 편집' : '새 인물') : '인물 명부'}</h2>
               <button className="x" onClick={onClose}>
                 ✕
               </button>
@@ -193,7 +196,7 @@ export default function Characters({
               <div className="char-hero-info">
                 <div className="char-hero-name">
                   {viewing.name}
-                  {viewing.life_status === 'deceased' && <span className="tag">故</span>}
+                  {viewing.life_status === 'deceased' && <span className="tag">사망</span>}
                   {viewing.life_status === 'unknown' && <span className="tag">불명</span>}
                 </div>
                 {viewing.english_name && <div className="char-hero-en">{viewing.english_name}</div>}
@@ -292,7 +295,7 @@ export default function Characters({
                     <div className="char-meta">
                       <div className="char-name">
                         {c.name}
-                        {c.life_status === 'deceased' && <span className="tag">故</span>}
+                        {c.life_status === 'deceased' && <span className="tag">사망</span>}
                         {c.is_active === false && <span className="tag dimtag">잠듦</span>}
                       </div>
                       <div className="char-sub">{splitAliases(c.aliases)[0] || ''}</div>
@@ -359,7 +362,7 @@ export default function Characters({
             </div>
 
             <label>
-              이명 (쉼표로 구분 — 예: 사자왕, 폭풍의 왕)
+              이명
               <input value={editing.aliases || ''} onChange={(e) => set('aliases', e.target.value)} />
             </label>
 
@@ -373,27 +376,15 @@ export default function Characters({
             </label>
             <label>
               소속
-              <input
-                value={editing.faction || ''}
-                onChange={(e) => set('faction', e.target.value)}
-                placeholder="예: 퍼거스 신성 왕국"
-              />
+              <input value={editing.faction || ''} onChange={(e) => set('faction', e.target.value)} />
             </label>
             <label>
               신분
-              <input
-                value={editing.rank || ''}
-                onChange={(e) => set('rank', e.target.value)}
-                placeholder="예: 왕자 / 국왕"
-              />
+              <input value={editing.rank || ''} onChange={(e) => set('rank', e.target.value)} />
             </label>
             <label>
               문장
-              <input
-                value={editing.crest || ''}
-                onChange={(e) => set('crest', e.target.value)}
-                placeholder="예: 블레다드의 소문장"
-              />
+              <input value={editing.crest || ''} onChange={(e) => set('crest', e.target.value)} />
             </label>
             <label>
               상태
@@ -411,37 +402,21 @@ export default function Characters({
             <div className="row2">
               <label>
                 신장
-                <input
-                  value={editing.height || ''}
-                  onChange={(e) => set('height', e.target.value)}
-                  placeholder="예: 185cm"
-                />
+                <input value={editing.height || ''} onChange={(e) => set('height', e.target.value)} />
               </label>
               <label>
                 체격
-                <input
-                  value={editing.build || ''}
-                  onChange={(e) => set('build', e.target.value)}
-                  placeholder="예: 다부진 장신"
-                />
+                <input value={editing.build || ''} onChange={(e) => set('build', e.target.value)} />
               </label>
             </div>
             <div className="row2">
               <label>
                 모발
-                <input
-                  value={editing.hair || ''}
-                  onChange={(e) => set('hair', e.target.value)}
-                  placeholder="예: 금발"
-                />
+                <input value={editing.hair || ''} onChange={(e) => set('hair', e.target.value)} />
               </label>
               <label>
                 홍채
-                <input
-                  value={editing.iris || ''}
-                  onChange={(e) => set('iris', e.target.value)}
-                  placeholder="예: 청색"
-                />
+                <input value={editing.iris || ''} onChange={(e) => set('iris', e.target.value)} />
               </label>
             </div>
             <label>
@@ -449,7 +424,6 @@ export default function Characters({
               <input
                 value={editing.impression || ''}
                 onChange={(e) => set('impression', e.target.value)}
-                placeholder="예: 서늘하고 형형한 눈빛"
               />
             </label>
             <label>
@@ -458,7 +432,6 @@ export default function Characters({
                 rows={3}
                 value={editing.personality || ''}
                 onChange={(e) => set('personality', e.target.value)}
-                placeholder="외면 성격, 내면, 특징…"
               />
             </label>
             <label>
@@ -467,7 +440,6 @@ export default function Characters({
                 rows={2}
                 value={editing.combat || ''}
                 onChange={(e) => set('combat', e.target.value)}
-                placeholder="주무기, 병종, 영웅의 유산·문장…"
               />
             </label>
             <label>
