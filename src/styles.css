@@ -867,7 +867,14 @@ body::before {
 /* 편집(뷰모드 동일 레이아웃) — 히어로 입력 */
 .hero-edit-info { gap: 10px; }
 .hero-field { display: flex; flex-direction: column; gap: 3px; }
+.base-field { margin-top: 15px; } /* 거점은 위 항목들과 한 칸 띄움(≈25px) */
 .hero-lab { font-size: 11px; color: rgba(255, 255, 255, 0.6); }
+/* 데스크탑(풀스크린 브레이크포인트 위): 라벨·입력 한 줄로 */
+@media (min-width: 601px) {
+  .hero-field { flex-direction: row; align-items: center; gap: 12px; }
+  .hero-field .hero-lab { flex: 0 0 56px; }
+  .hero-field .hero-inp { flex: 1; min-width: 0; }
+}
 /* 히어로 입력칸 — 박스 대신 밑줄형(선 위에 타이핑) */
 .hero-inp {
   width: 100%;
@@ -886,7 +893,7 @@ body::before {
   align-items: center;
   gap: 4px;
   margin-top: 8px;
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.85);
 }
 .hero-base .hero-pin { color: #eac54f; flex-shrink: 0; }

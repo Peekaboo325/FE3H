@@ -355,7 +355,7 @@ export default function Characters({
                 )}
                 {viewing.base && (
                   <div className="hero-base">
-                    <MapPin className="hero-pin" size={11} />
+                    <MapPin className="hero-pin" size={13} />
                     {viewing.base}
                   </div>
                 )}
@@ -522,14 +522,14 @@ export default function Characters({
                   />
                 </label>
                 <label className="hero-field">
-                  <span className="hero-lab">이명 (쉼표로 구분)</span>
+                  <span className="hero-lab">이명</span>
                   <input
                     className="hero-inp"
                     value={editing.aliases || ''}
                     onChange={(e) => set('aliases', e.target.value)}
                   />
                 </label>
-                <label className="hero-field">
+                <label className="hero-field base-field">
                   <span className="hero-lab">거점</span>
                   <input
                     className="hero-inp"
