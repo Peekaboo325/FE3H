@@ -155,7 +155,8 @@ body::before {
   transform: translateX(-100%);
   transition: transform 0.2s ease;
   z-index: 61;
-  padding: 20px 14px;
+  /* 전체화면 웹앱: 상태바/홈 인디케이터와 겹치지 않게 위·아래 안전영역을 더한다 */
+  padding: calc(20px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
