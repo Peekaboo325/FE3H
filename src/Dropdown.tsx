@@ -39,7 +39,7 @@ export default function Dropdown({
             <li
               key={o.value}
               className={'dd-opt' + (o.value === value ? ' on' : '')}
-              onClick={() => {
+              onPointerDown={() => {
                 onChange(o.value);
                 setOpen(false);
               }}

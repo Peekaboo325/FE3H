@@ -569,7 +569,12 @@ body::before {
   cursor: pointer;
 }
 .bonds-head .view-label { margin: 0; }
-.bonds-chev { color: var(--text-dim); flex-shrink: 0; }
+.bonds-chev { color: var(--text-dim); flex-shrink: 0; transition: transform 0.25s ease; }
+.bonds-chev.open { transform: rotate(180deg); }
+/* 접힘 애니메이션 (grid-rows 0fr↔1fr) */
+.bonds-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.25s ease; }
+.bonds-wrap.open { grid-template-rows: 1fr; }
+.bonds-inner { overflow: hidden; }
 .bond-list { margin: 12px 0 0; padding: 0; list-style: none; }
 .bond-row { display: flex; align-items: flex-start; gap: 16px; padding: 16px 0; }
 .bond-row + .bond-row { border-top: 1px solid var(--border); }

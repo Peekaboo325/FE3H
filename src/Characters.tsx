@@ -8,7 +8,7 @@ import { nameDict } from './nameDict.generated';
 import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
-import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -147,14 +147,12 @@ function SortableBond({
   avatar,
   fname,
   category,
-  status,
   description,
 }: {
   id: string;
   avatar: string;
   fname: string;
   category?: string;
-  status?: 'alive' | 'deceased' | 'unknown';
   description?: string;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -171,9 +169,6 @@ function SortableBond({
         <div className="bond-id">
           <div className="bond-fname">{fname}</div>
           {category && <div className="bond-rel">{category}</div>}
-          {status && status !== 'alive' && (
-            <div className={'bond-status ' + status}>{상태label[status]}</div>
-          )}
         </div>
       </div>
       {description && <div className="bond-desc">{description}</div>}
@@ -493,13 +488,10 @@ export default function Characters({
                     <div className="view-section">
                       <button className="bonds-head" onClick={() => setBondsOpen((o) => !o)}>
                         <span className="view-label">인연</span>
-                        {bondsOpen ? (
-                          <ChevronUp size={18} className="bonds-chev" />
-                        ) : (
-                          <ChevronDown size={18} className="bonds-chev" />
-                        )}
+                        <ChevronDown size={18} className={'bonds-chev' + (bondsOpen ? ' open' : '')} />
                       </button>
-                      {bondsOpen && (
+                      <div className={'bonds-wrap' + (bondsOpen ? ' open' : '')}>
+                        <div className="bonds-inner">
                         <DndContext
                           sensors={sensors}
                           collisionDetection={closestCenter}
@@ -523,7 +515,6 @@ export default function Characters({
                                     avatar={t?.avatar || t?.thumbnail || LIST_PLACEHOLDER}
                                     fname={firstName(b.name)}
                                     category={b.category}
-                                    status={b.status}
                                     description={b.description}
                                   />
                                 );
@@ -531,7 +522,8 @@ export default function Characters({
                           </ul>
                         </SortableContext>
                       </DndContext>
-                      )}
+                        </div>
+                        </div>
                     </div>
                   )}
                   {viewing.is_active === false && (
