@@ -6,7 +6,7 @@ import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
 import { stripMarkdown } from './podraScript';
 
-type Turn = { role: 'user' | 'assistant'; content: string };
+type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
 type Story = { id: number; title: string };
 
 const LS_STORY = 'fe3h.currentStoryId';
@@ -22,6 +22,8 @@ export default function App() {
   const [showStories, setShowStories] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState<number | null>(null);
+  const [editingTurn, setEditingTurn] = useState<number | null>(null);
+  const [editText, setEditText] = useState('');
   const 끝 = useRef<HTMLDivElement>(null);
 
   // 드로어 메뉴 항목 — 늘릴 땐 여기 한 줄만 추가하면 됨.
@@ -129,6 +131,8 @@ export default function App() {
         if (done) break;
         붙이기(decoder.decode(value, { stream: true }));
       }
+      // 새 턴의 DB id를 받아오기 위해 다시 불러온다(수정·삭제 대상이 되도록).
+      if (storyId) await loadTurnsFor(storyId);
     } catch (e) {
       붙이기(`\n\n[연결 오류] ${(e as Error).message}`);
     } finally {
@@ -144,6 +148,39 @@ export default function App() {
       setTimeout(() => setCopied((c) => (c === i ? null : c)), 1500);
     } catch {
       /* 클립보드 거부 — 무시 */
+    }
+  }
+
+  // 턴(프롬프트/결과) 개별 수정·삭제 — 낙관적 업데이트 + 서버 반영.
+  function 턴수정시작(t: Turn) {
+    if (t.id == null) return;
+    setEditingTurn(t.id);
+    setEditText(t.content);
+  }
+
+  async function 턴저장(id: number) {
+    const content = editText;
+    setTurns((prev) => prev.map((x) => (x.id === id ? { ...x, content } : x)));
+    setEditingTurn(null);
+    try {
+      await fetch('/api/turns', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id, content }),
+      });
+    } catch {
+      /* 무시 */
+    }
+  }
+
+  async function 턴삭제(id: number) {
+    if (!confirm('이 칸을 삭제할까요?')) return;
+    setTurns((prev) => prev.filter((x) => x.id !== id));
+    if (editingTurn === id) setEditingTurn(null);
+    try {
+      await fetch(`/api/turns?id=${id}`, { method: 'DELETE' });
+    } catch {
+      /* 무시 */
     }
   }
 
@@ -186,26 +223,61 @@ export default function App() {
             첫 장면을 적어 이야기를 펼치세요. (예: “사관학교 새벽, 텅 빈 훈련장에 선 디미트리.”)
           </p>
         )}
-        {turns.map((t, i) => (
-          <div key={i} className={t.role === 'user' ? 'turn user' : 'turn story'}>
-            {t.content ? (
-              t.role === 'assistant' ? (
-                <StoryText content={t.content} />
+        {turns.map((t, i) => {
+          const editing = editingTurn != null && t.id === editingTurn;
+          return (
+            <div key={t.id ?? 'tmp-' + i} className={t.role === 'user' ? 'turn user' : 'turn story'}>
+              {editing ? (
+                <div className="turn-edit">
+                  <textarea
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    rows={6}
+                  />
+                  <div className="turn-actions">
+                    <button className="turn-btn" onClick={() => 턴저장(editingTurn!)}>
+                      저장
+                    </button>
+                    <button className="turn-btn" onClick={() => setEditingTurn(null)}>
+                      취소
+                    </button>
+                  </div>
+                </div>
               ) : (
-                t.content
-              )
-            ) : busy && i === turns.length - 1 ? (
-              <span className="dim">…집필 중…</span>
-            ) : null}
-            {t.role === 'assistant' && t.content && (
-              <div className="turn-actions">
-                <button className="turn-btn" onClick={() => 복사하기(i, t.content)}>
-                  {copied === i ? '복사됨' : '복사'}
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+                <>
+                  {t.content ? (
+                    t.role === 'assistant' ? (
+                      <StoryText content={t.content} />
+                    ) : (
+                      t.content
+                    )
+                  ) : busy && i === turns.length - 1 ? (
+                    <span className="dim">…집필 중…</span>
+                  ) : null}
+                  {t.content && !busy && (
+                    <div className="turn-actions">
+                      {t.role === 'assistant' && (
+                        <button className="turn-btn" onClick={() => 복사하기(i, t.content)}>
+                          {copied === i ? '복사됨' : '복사'}
+                        </button>
+                      )}
+                      {t.id != null && (
+                        <>
+                          <button className="turn-btn" onClick={() => 턴수정시작(t)}>
+                            수정
+                          </button>
+                          <button className="turn-btn" onClick={() => 턴삭제(t.id!)}>
+                            삭제
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })}
         <div ref={끝} />
       </main>
 

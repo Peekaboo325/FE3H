@@ -1,21 +1,37 @@
-// /api/turns?story_id=123 — 그 이야기의 본문을 불러온다 (화면 복원용).
-//   dbReady : Supabase 열쇠가 서버에 잡혔는지
-//   error   : 막혔을 때 사유 (표 없음 / 권한 등)
+// /api/turns
+//   GET ?story_id=123  → 그 이야기의 본문(턴) 목록 (+ dbReady/error)
+//   POST {id, content} → 한 턴 내용 수정
+//   DELETE ?id=123     → 한 턴 삭제
 
-import { loadTurns, dbReady } from '../lib/db.mjs';
+import { loadTurns, updateTurn, deleteTurn, dbReady } from '../lib/db.mjs';
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    res.status(405).end('GET만 받습니다.');
-    return;
-  }
-  const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
-  let result = { turns: [], error: null };
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
   try {
-    result = await loadTurns(storyId);
+    if (req.method === 'GET') {
+      const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
+      const { turns, error } = await loadTurns(storyId);
+      res.status(200).end(JSON.stringify({ dbReady: dbReady(), turns, error }));
+      return;
+    }
+    if (req.method === 'POST') {
+      const { id, content } = req.body || {};
+      if (!id) {
+        res.status(400).end(JSON.stringify({ error: 'id가 필요합니다.' }));
+        return;
+      }
+      const r = await updateTurn(Number(id), String(content ?? ''));
+      res.status(r.error ? 500 : 200).end(JSON.stringify(r));
+      return;
+    }
+    if (req.method === 'DELETE') {
+      const id = req.query?.id ?? req.body?.id;
+      const r = await deleteTurn(Number(id));
+      res.status(r.error ? 500 : 200).end(JSON.stringify(r));
+      return;
+    }
+    res.status(405).end(JSON.stringify({ error: '지원하지 않는 방식입니다.' }));
   } catch (e) {
-    result = { turns: [], error: e?.message || String(e) };
+    res.status(500).end(JSON.stringify({ error: e?.message || String(e) }));
   }
-  res.status(200).setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.end(JSON.stringify({ dbReady: dbReady(), turns: result.turns, error: result.error }));
 }

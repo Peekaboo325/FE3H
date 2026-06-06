@@ -14,6 +14,8 @@ import { SYSTEM } from '../lib/worldview.mjs';
 import {
   loadTurns,
   saveTurn,
+  updateTurn,
+  deleteTurn,
   dbReady,
   listStories,
   createStory,
@@ -50,6 +52,23 @@ app.get('/api/turns', async (req, res) => {
     result = { turns: [], error: e?.message || String(e) };
   }
   res.json({ dbReady: dbReady(), turns: result.turns, error: result.error });
+});
+
+// 한 턴 수정 / 삭제
+app.post('/api/turns', async (req, res) => {
+  const { id, content } = req.body || {};
+  if (!id) {
+    res.status(400).json({ error: 'id가 필요합니다.' });
+    return;
+  }
+  const r = await updateTurn(Number(id), String(content ?? ''));
+  res.status(r.error ? 500 : 200).json(r);
+});
+
+app.delete('/api/turns', async (req, res) => {
+  const id = req.query?.id ?? req.body?.id;
+  const r = await deleteTurn(Number(id));
+  res.status(r.error ? 500 : 200).json(r);
 });
 
 // ── 이야기(세이브 슬롯) 관리 ──────────────────────────────────────────────

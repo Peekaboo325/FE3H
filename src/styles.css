@@ -193,7 +193,20 @@ body {
 .turn.story th,
 .turn.story td { border: 1px solid var(--border); padding: 4px 8px; }
 
-/* 메시지 액션(복사 등) — 평소 흐리게, 올리면 또렷 */
+/* 메시지 인라인 편집 */
+.turn-edit textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* 메시지 액션(복사·수정·삭제) — 평소 흐리게, 올리면 또렷 */
 .turn-actions { margin-top: 6px; opacity: 0.35; transition: opacity 0.15s; }
 .turn:hover .turn-actions { opacity: 1; }
 .turn-btn {
