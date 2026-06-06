@@ -1,0 +1,24 @@
+name: Vercel 배포 깨우기
+
+# main에 새 코드가 올라오면 GitHub이 직접 Vercel Deploy Hook을 호출해 배포를 깨운다.
+# (Vercel 자동 웹훅이 가끔 누락돼서, GitHub Actions로 확실하게 트리거)
+# 수동 실행도 가능: Actions 탭 → 이 워크플로 → "Run workflow".
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Hook 호출
+        run: |
+          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+            echo "❌ VERCEL_DEPLOY_HOOK 시크릿이 없습니다." >&2
+            echo "   GitHub → Settings → Secrets and variables → Actions 에 등록하세요." >&2
+            exit 1
+          fi
+          curl -sS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}" \
+            -o /dev/null -w "Vercel 응답: %{http_code}\n"
