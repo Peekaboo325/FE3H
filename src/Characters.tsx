@@ -45,7 +45,7 @@ export default function Characters({
       const thumb = await 이미지를_썸네일로(f);
       set('thumbnail', thumb);
     } catch (err) {
-      await alertAsk({ message: '이미지를 옮기지 못했어요.', detail: (err as Error).message });
+      await alertAsk({ message: '초상을 들이지 못했어요.', detail: (err as Error).message });
     }
   }
 
@@ -64,7 +64,7 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        await alertAsk({ message: '저장하지 못했어요.', detail: data.error || '알 수 없는 오류' });
+        await alertAsk({ message: '새기지 못했어요.', detail: data.error || '알 수 없는 까닭' });
         return;
       }
       await refresh();
@@ -102,7 +102,7 @@ export default function Characters({
 
         {/* 안내: Supabase/표 상태 */}
         {!dbReady && (
-          <p className="warn">아직 Supabase가 연결되지 않아 인물을 저장할 수 없어요.</p>
+          <p className="warn">아직 기록의 샘이 닿지 않아 인물을 새길 수 없어요.</p>
         )}
         {dbReady && err && (
           <p className="warn">
@@ -122,13 +122,13 @@ export default function Characters({
             </button>
             {storyId != null && (
               <button className="new" onClick={() => setImporting(true)}>
-                ↧ 다른 이야기에서 불러오기
+                ↧ 다른 장에서 들이기
               </button>
             )}
             {loading ? (
-              <p className="dim">불러오는 중…</p>
+              <p className="dim">펼치는 중…</p>
             ) : chars.length === 0 ? (
-              <p className="dim">아직 등록된 인물이 없어요.</p>
+              <p className="dim">아직 새겨진 인물이 없어요.</p>
             ) : (
               <ul className="char-list">
                 {chars.map((c) => (
@@ -163,7 +163,7 @@ export default function Characters({
                 <div className="thumb big empty">초상화</div>
               )}
               <label className="filebtn">
-                이미지 올리기
+                초상 올리기
                 <input type="file" accept="image/*" onChange={onPickImage} hidden />
               </label>
               {editing.thumbnail && (
@@ -272,15 +272,15 @@ export default function Characters({
 
             <div className="editor-actions">
               <button className="primary" onClick={save} disabled={saving}>
-                {saving ? '저장 중…' : '저장'}
+                {saving ? '새기는 중…' : '새김'}
               </button>
-              <button onClick={() => setEditing(null)}>취소</button>
+              <button onClick={() => setEditing(null)}>철회</button>
               {editing.id && (
                 <button
                   className={'danger' + (armed ? ' armed' : '')}
                   onClick={() => (armed ? remove() : setArmed(true))}
                 >
-                  {armed ? '한 번 더' : '삭제'}
+                  소각
                 </button>
               )}
             </div>
@@ -289,7 +289,7 @@ export default function Characters({
 
         {importing && storyId != null && (
           <ImportDialog<Character>
-            title="인물 불러오기"
+            title="인물 들이기"
             endpoint="/api/characters"
             itemsKey="characters"
             payloadKey="character"

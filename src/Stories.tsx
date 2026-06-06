@@ -141,7 +141,7 @@ export default function Stories({
         </div>
 
         {!dbReady && (
-          <p className="warn">Supabase가 연결되지 않아 이야기를 저장·관리할 수 없어요.</p>
+          <p className="warn">기록의 샘이 닿지 않아 운명의 장을 새기거나 갈무리할 수 없어요.</p>
         )}
         {dbReady && err && (
           <p className="warn">
@@ -153,16 +153,16 @@ export default function Stories({
 
         <div className="modal-body">
           <p className="dim small">
-            세이브처럼 이야기를 여러 개 두고 오갈 수 있어요. 저장은 자동이고, 현재 이야기에 쌓입니다.
-            (인물·견문록은 모든 이야기가 공유해요.)
+            여러 운명의 장을 두고 오갈 수 있어요. 기록은 절로 새겨지고, 지금 펼친 장에 쌓입니다.
+            (인물·견문록은 장마다 따로 둡니다.)
           </p>
           <button className="new" onClick={새이야기}>
             ＋ 새로운 운명의 장
           </button>
           {loading ? (
-            <p className="dim">불러오는 중…</p>
+            <p className="dim">펼치는 중…</p>
           ) : list.length === 0 ? (
-            <p className="dim">아직 이야기가 없어요.</p>
+            <p className="dim">아직 펼친 장이 없어요.</p>
           ) : (
             <ul className="char-list">
               {list.map((s) =>

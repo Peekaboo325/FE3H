@@ -95,11 +95,11 @@ export default function ImportDialog<T extends { id?: number }>({
 
         <div className="modal-body">
           <p className="dim small">
-            다른 이야기에서 골라 <b>복사</b>해 옵니다. 가져온 뒤 고쳐도 원본 이야기 것은 그대로예요.
+            다른 장에서 골라 <b>필사</b>해 들입니다. 들인 뒤 고쳐도 본래의 장은 그대로예요.
           </p>
 
           <label>
-            <span className="dim small">어느 이야기에서?</span>
+            <span className="dim small">어느 장에서?</span>
             <select
               value={sourceId ?? ''}
               onChange={(e) => pickStory(Number(e.target.value))}
@@ -114,7 +114,7 @@ export default function ImportDialog<T extends { id?: number }>({
               }}
             >
               <option value="" disabled>
-                이야기 선택…
+                장 고르기…
               </option>
               {stories.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -127,9 +127,9 @@ export default function ImportDialog<T extends { id?: number }>({
           {sourceId != null && (
             <>
               {loading ? (
-                <p className="dim">불러오는 중…</p>
+                <p className="dim">펼치는 중…</p>
               ) : items.length === 0 ? (
-                <p className="dim">그 이야기엔 항목이 없어요.</p>
+                <p className="dim">그 장엔 들일 것이 없어요.</p>
               ) : (
                 <ul className="char-list" style={{ marginTop: 10 }}>
                   {items.map((it) => (
@@ -150,9 +150,9 @@ export default function ImportDialog<T extends { id?: number }>({
 
               <div className="editor-actions">
                 <button className="primary" onClick={가져오기} disabled={busy || picked.size === 0}>
-                  {busy ? '가져오는 중…' : `${picked.size}개 가져오기`}
+                  {busy ? '들이는 중…' : `${picked.size}개 들이기`}
                 </button>
-                <button onClick={onClose}>취소</button>
+                <button onClick={onClose}>철회</button>
               </div>
             </>
           )}

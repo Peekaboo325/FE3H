@@ -38,7 +38,7 @@ export default function LorePanel({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        await alertAsk({ message: '저장하지 못했어요.', detail: data.error || '알 수 없는 오류' });
+        await alertAsk({ message: '새기지 못했어요.', detail: data.error || '알 수 없는 까닭' });
         return;
       }
       await refresh();
@@ -68,14 +68,14 @@ export default function LorePanel({
     <div className="modal-bg" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>{editing ? (editing.id ? '설정 고치기' : '새 설정') : '견문록'}</h2>
+          <h2>{editing ? (editing.id ? '견문록 고치기' : '새 견문록') : '견문록'}</h2>
           <button className="x" onClick={onClose}>
             ✕
           </button>
         </div>
 
         {!dbReady && (
-          <p className="warn">아직 Supabase가 연결되지 않아 설정을 저장할 수 없어요.</p>
+          <p className="warn">아직 기록의 샘이 닿지 않아 견문록을 새길 수 없어요.</p>
         )}
         {dbReady && err && (
           <p className="warn">
@@ -84,25 +84,25 @@ export default function LorePanel({
             <span className="dim">({err})</span>
           </p>
         )}
-        {storyId == null && <p className="warn">이야기를 먼저 만들어 주세요.</p>}
+        {storyId == null && <p className="warn">운명의 장을 먼저 펼쳐 주세요.</p>}
 
         {!editing && (
           <div className="modal-body">
             <p className="dim small">
-              원작에서 바꾸거나 새로 정한 세계 설정을 적어두세요. 활성인 설정만 이야기에 반영됩니다.
+              원작에서 바꾸거나 새로 정한 세계의 결을 적어두세요. 깨어 있는 견문록만 이야기에 깃듭니다.
             </p>
             <button className="new" onClick={() => setEditing(빈설정())}>
-              ＋ 새 설정
+              ＋ 새 견문록
             </button>
             {storyId != null && (
               <button className="new" onClick={() => setImporting(true)}>
-                ↧ 다른 이야기에서 불러오기
+                ↧ 다른 장에서 들이기
               </button>
             )}
             {loading ? (
-              <p className="dim">불러오는 중…</p>
+              <p className="dim">펼치는 중…</p>
             ) : entries.length === 0 ? (
-              <p className="dim">아직 등록된 설정이 없어요.</p>
+              <p className="dim">아직 새겨진 견문록이 없어요.</p>
             ) : (
               <ul className="char-list">
                 {entries.map((e) => (
@@ -149,7 +149,7 @@ export default function LorePanel({
                 rows={8}
                 value={editing.body || ''}
                 onChange={(e) => set('body', e.target.value)}
-                placeholder="원작과 달라진 점, 새로 정한 설정을 적으세요…"
+                placeholder="원작과 달라진 결, 새로 정한 이치를 적으세요…"
               />
             </label>
 
@@ -164,15 +164,15 @@ export default function LorePanel({
 
             <div className="editor-actions">
               <button className="primary" onClick={save} disabled={saving}>
-                {saving ? '저장 중…' : '저장'}
+                {saving ? '새기는 중…' : '새김'}
               </button>
-              <button onClick={() => setEditing(null)}>취소</button>
+              <button onClick={() => setEditing(null)}>철회</button>
               {editing.id && (
                 <button
                   className={'danger' + (armed ? ' armed' : '')}
                   onClick={() => (armed ? remove() : setArmed(true))}
                 >
-                  {armed ? '한 번 더' : '삭제'}
+                  소각
                 </button>
               )}
             </div>
@@ -181,7 +181,7 @@ export default function LorePanel({
 
         {importing && storyId != null && (
           <ImportDialog<Lore>
-            title="견문록 불러오기"
+            title="견문록 들이기"
             endpoint="/api/lore"
             itemsKey="lore"
             payloadKey="entry"

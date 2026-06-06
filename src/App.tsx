@@ -358,10 +358,10 @@ export default function App() {
                     rows={2}
                   />
                   <div className="turn-actions">
-                    <button className="turn-btn" title="저장" onClick={() => 턴저장(editingTurn!)}>
+                    <button className="turn-btn" title="새김" onClick={() => 턴저장(editingTurn!)}>
                       <Check size={16} />
                     </button>
-                    <button className="turn-btn" title="취소" onClick={() => setEditingTurn(null)}>
+                    <button className="turn-btn" title="철회" onClick={() => setEditingTurn(null)}>
                       <X size={16} />
                     </button>
                   </div>
@@ -382,7 +382,7 @@ export default function App() {
                       {t.role === 'assistant' && (
                         <button
                           className="turn-btn"
-                          title={copied === i ? '복사됨' : '복사'}
+                          title={copied === i ? '필사됨' : '필사'}
                           onClick={() => 복사하기(i, t.content)}
                         >
                           {copied === i ? <Check size={16} /> : <Copy size={16} />}
@@ -391,16 +391,16 @@ export default function App() {
                       {t.id != null && (
                         <>
                           {t.role === 'assistant' && (
-                            <button className="turn-btn" title="새로 받기" onClick={() => 새로받기(i)}>
+                            <button className="turn-btn" title="다시 받기" onClick={() => 새로받기(i)}>
                               <RotateCcw size={16} />
                             </button>
                           )}
-                          <button className="turn-btn" title="수정" onClick={() => 턴수정시작(t)}>
+                          <button className="turn-btn" title="고침" onClick={() => 턴수정시작(t)}>
                             <Pencil size={16} />
                           </button>
                           <button
                             className={'turn-btn' + (armedTurn === t.id ? ' armed' : '')}
-                            title={armedTurn === t.id ? '한 번 더 누르면 삭제' : '삭제'}
+                            title="소각"
                             onClick={() => (armedTurn === t.id ? 턴삭제(t.id!) : setArmedTurn(t.id!))}
                           >
                             <Trash2 size={16} />
