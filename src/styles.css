@@ -70,7 +70,8 @@ body {
 .page {
   width: 100%;
   height: 100vh;
-  height: 100dvh; /* 모바일 동적 뷰포트 */
+  height: 100dvh; /* 모바일 동적 뷰포트 (폴백) */
+  height: var(--app-height, 100dvh); /* VisualViewport 실측 — iOS 키보드 흔들림 회피 */
   display: flex;
   flex-direction: column;
   position: relative;
