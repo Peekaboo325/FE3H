@@ -8,7 +8,7 @@ import { nameDict } from './nameDict.generated';
 import { splitAliases } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
-import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X } from 'lucide-react';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -353,6 +353,12 @@ export default function Characters({
                     ))}
                   </div>
                 )}
+                {viewing.base && (
+                  <div className="hero-base">
+                    <MapPin className="hero-pin" size={11} />
+                    {viewing.base}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -498,7 +504,7 @@ export default function Characters({
                 <label className="hero-field">
                   <span className="hero-lab">성명</span>
                   <input
-                    className="hero-inp name"
+                    className="hero-inp"
                     value={editing.name}
                     onChange={(e) => set('name', e.target.value)}
                     onBlur={() => {
@@ -510,7 +516,7 @@ export default function Characters({
                 <label className="hero-field">
                   <span className="hero-lab">영문명</span>
                   <input
-                    className="hero-inp en"
+                    className="hero-inp"
                     value={editing.english_name || ''}
                     onChange={(e) => set('english_name', e.target.value)}
                   />
@@ -521,6 +527,14 @@ export default function Characters({
                     className="hero-inp"
                     value={editing.aliases || ''}
                     onChange={(e) => set('aliases', e.target.value)}
+                  />
+                </label>
+                <label className="hero-field">
+                  <span className="hero-lab">거점</span>
+                  <input
+                    className="hero-inp"
+                    value={editing.base || ''}
+                    onChange={(e) => set('base', e.target.value)}
                   />
                 </label>
               </div>

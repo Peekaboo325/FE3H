@@ -770,7 +770,7 @@ body::before {
   margin: 0 2px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
-  overflow-x: hidden;
+  overflow: hidden; /* 양축 모두 — 가로/세로 스크롤·바운스 방지 */
 }
 .char-tab {
   flex: 1 1 0;
@@ -880,8 +880,16 @@ body::before {
   font-size: 14px;
 }
 .hero-inp:focus { outline: none; border-bottom-color: var(--accent); }
-.hero-inp.name { font-size: 20px; font-weight: 600; }
-.hero-inp.en { font-size: 13px; color: #d6d4e2; }
+/* 거점(뷰) — 노란 지도 마커 + 10px */
+.hero-base {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.hero-base .hero-pin { color: #eac54f; flex-shrink: 0; }
 
 /* 초상 위 아이콘 툴바 (하단 중앙, hover 시 툴팁) */
 .portrait-tools {
