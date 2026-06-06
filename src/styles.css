@@ -590,6 +590,8 @@ body::before {
    디자이너 미세조정 포인트:
      --hero-h(높이) · --hero-portrait-w(초상 폭 비율) · 그라데이션 · 초상 object-fit/position */
 .char-view { --hero-h: 280px; --hero-portrait-w: 46%; }
+/* 인물 뷰 한정으로 모달을 살짝 넓혀 가로 히어로에 여유를 준다(긴 이름 한 줄 + 큰 글씨) */
+.modal.has-hero { max-width: 600px; }
 .char-hero {
   position: relative;
   display: flex;
@@ -647,13 +649,18 @@ body::before {
   flex: 1;
   min-width: 0;
   z-index: 1;
+  /* 이름 폰트가 이 영역(초상·모달 폭에 따라 달라지는 실제 가용폭)에 비례하도록 */
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 16px 22px 18px 4px;
 }
 .char-hero-name {
-  font-size: 25px;
+  /* 가장 긴 정발명("디미트리 알렉산드르 블레다드")도 항상 한 줄.
+     7cqi = 정보영역 폭의 7% → 폭이 좁아지면 글씨가 비례해 줄어 줄바꿈을 막는다. */
+  white-space: nowrap;
+  font-size: clamp(12px, 7cqi, 23px);
   font-weight: 600;
   color: #fff;
   letter-spacing: 0.01em;
@@ -671,10 +678,9 @@ body::before {
   margin-top: 5px;
 }
 .char-hero-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-/* 좁은 화면: 초상 폭·이름 크기 한 단계 줄여 가독성 유지 */
+/* 좁은 화면: 히어로 높이↓, 초상 폭↓ → 이름이 쓸 가용폭 확보(폰트는 폭 비례로 자동) */
 @media (max-width: 480px) {
-  .char-view { --hero-h: 230px; --hero-portrait-w: 42%; }
-  .char-hero-name { font-size: 21px; }
+  .char-view { --hero-h: 230px; --hero-portrait-w: 40%; }
 }
 .vchip {
   font-size: 12px;
