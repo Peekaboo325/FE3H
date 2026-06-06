@@ -239,14 +239,33 @@ body::before {
 }
 @keyframes phraseFade { from { opacity: 0; } to { opacity: 1; } }
 
-/* 되짚은 자취 — 그 화 위에 남기는 조용한 여백의 메모(시스템 칩 아님) */
-.recall-trace {
-  font-size: 11px;
-  color: var(--text-faint);
-  letter-spacing: 0.04em;
+/* 되짚었음을 잠깐 알리는 토스트 — 위에서 떴다가 스르륵 사라진다(본문/DB 무관) */
+.recall-toast {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 56px);
+  left: 50%;
+  max-width: calc(100% - 32px);
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 12px;
   font-style: italic;
-  margin: 0 0 12px;
-  opacity: 0.85;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 70;
+  pointer-events: none;
+  animation: toastInOut 3.2s ease forwards;
+}
+@keyframes toastInOut {
+  0% { opacity: 0; transform: translate(-50%, -8px); }
+  12% { opacity: 1; transform: translate(-50%, 0); }
+  82% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -8px); }
 }
 
 .turn { margin: 18px 0; }

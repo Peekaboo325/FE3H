@@ -46,7 +46,14 @@ export default function App() {
   const [editText, setEditText] = useState('');
   const [armedTurn, setArmedTurn] = useState<number | null>(null); // 삭제 두 번 누르기 대상
   const [pendingRecall, setPendingRecall] = useState(false); // 이번 생성이 '회상'(앵커)인가 → 로딩 톤
-  const [recallMap, setRecallMap] = useState<Record<number, Recall>>({}); // 턴 id → 되짚은 자취
+  const [recallToast, setRecallToast] = useState<{ text: string; id: number } | null>(null);
+
+  // 되짚었음을 잠깐 알리는 토스트(떴다 사라짐). 본문/DB와 무관, 화면 표시뿐.
+  function showRecallToast(r: Recall) {
+    const id = Date.now();
+    setRecallToast({ text: `❧ 되짚은 기록 — ${recallTraceText(r)}`, id });
+    window.setTimeout(() => setRecallToast((cur) => (cur?.id === id ? null : cur)), 3200);
+  }
   const [visibleCount, setVisibleCount] = useState(WINDOW); // 지금 펼쳐 둔 칸 수
   const [mode, setMode] = useState<'read' | 'write'>(
     () => (localStorage.getItem('fe3h.mode') === 'read' ? 'read' : 'write'),
@@ -185,8 +192,9 @@ export default function App() {
         return;
       }
 
-      // 서버가 실제로 되짚은 자취(헤더)를 읽어 둔다(본문 전에 도착).
+      // 서버가 실제로 되짚은 자취(헤더, 본문 전 도착)를 읽어 토스트로 잠깐 띄운다.
       const 자취 = parseRecallHeader(res.headers.get('x-recall'));
+      if (자취) showRecallToast(자취);
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -196,14 +204,7 @@ export default function App() {
         붙이기(decoder.decode(value, { stream: true }));
       }
       // 새 턴의 DB id를 받아오기 위해 다시 불러온다(수정·삭제 대상이 되도록).
-      if (storyId) {
-        const fresh = await loadTurnsFor(storyId);
-        // 방금 생성된 본문(마지막 assistant 턴)에 되짚은 자취를 붙인다.
-        if (자취) {
-          const last = [...fresh].reverse().find((t) => t.role === 'assistant');
-          if (last?.id != null) setRecallMap((m) => ({ ...m, [last.id as number]: 자취 }));
-        }
-      }
+      if (storyId) await loadTurnsFor(storyId);
     } catch (e) {
       붙이기(`\n\n[연결 오류] ${(e as Error).message}`);
     } finally {
@@ -346,6 +347,11 @@ export default function App() {
   return (
     <div className={'page ' + mode}>
       <DialogHost />
+      {recallToast && (
+        <div className="recall-toast" key={recallToast.id}>
+          {recallToast.text}
+        </div>
+      )}
       <header className="head">
         <button className="hamburger" onClick={() => setMenuOpen(true)} aria-label="메뉴">
           <MenuIcon size={17} />
@@ -416,9 +422,6 @@ export default function App() {
                     t.role === 'assistant' ? (
                       <>
                         {epNo[i] > 0 && <div className="ep-no">{epNo[i]}화</div>}
-                        {t.id != null && recallMap[t.id] && (
-                          <div className="recall-trace">❧ {recallTraceText(recallMap[t.id])}</div>
-                        )}
                         <StoryText content={t.content} />
                       </>
                     ) : (
