@@ -12,6 +12,11 @@ type Story = { id: number; title: string };
 
 const LS_STORY = 'fe3h.currentStoryId';
 
+// 두루마리 펼침 분량 — 평소엔 최근 WINDOW칸만 그리고, 옛 칸은 STEP씩 펼친다.
+// (화수가 쌓여도 화면에 살아있는 DOM을 가볍게 유지: legacy의 100화+ 공방 대비)
+const WINDOW = 30;
+const STEP = 30;
+
 export default function App() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
@@ -25,6 +30,7 @@ export default function App() {
   const [copied, setCopied] = useState<number | null>(null);
   const [editingTurn, setEditingTurn] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
+  const [visibleCount, setVisibleCount] = useState(WINDOW); // 지금 펼쳐 둔 칸 수
   const [mode, setMode] = useState<'read' | 'write'>(
     () => (localStorage.getItem('fe3h.mode') === 'read' ? 'read' : 'write'),
   );
@@ -54,6 +60,7 @@ export default function App() {
       const r = await fetch(url);
       const d = await r.json();
       setTurns(Array.isArray(d?.turns) ? (d.turns as Turn[]) : []);
+      setVisibleCount(WINDOW); // 새로 불러오면 최근 창으로 접어둔다.
     } catch {
       setTurns([]);
     }
@@ -285,6 +292,9 @@ export default function App() {
     });
   }
 
+  // 보이는 창 = 최근 visibleCount칸. start 위쪽은 '말아둔 두루마리'로 접어둔다.
+  const start = Math.max(0, turns.length - visibleCount);
+
   return (
     <div className={'page ' + mode}>
       <header className="head">
@@ -321,7 +331,17 @@ export default function App() {
             첫 장면을 적어 이야기를 펼치세요. (예: “사관학교 새벽, 텅 빈 훈련장에 선 디미트리.”)
           </p>
         )}
-        {turns.map((t, i) => {
+        {start > 0 && (
+          <button
+            className="unfurl"
+            onClick={() => setVisibleCount((c) => c + STEP)}
+            title="앞선 장면을 더 펼칩니다"
+          >
+            ❧ 이전 두루마리 펼치기 <span className="unfurl-rest">· 묵은 장 {start}</span>
+          </button>
+        )}
+        {turns.slice(start).map((t, vi) => {
+          const i = start + vi; // turns 원본 기준 실제 번호
           if (mode === 'read' && t.role === 'user') return null; // 읽기 모드: 프롬프트 숨김
           const editing = editingTurn != null && t.id === editingTurn;
           return (
