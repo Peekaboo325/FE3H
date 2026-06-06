@@ -754,11 +754,11 @@ body::before {
   margin-bottom: 16px;
 }
 .info-card-title {
-  font-size: 12px;
+  font-size: 16px;
   color: var(--accent);
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  margin-bottom: 12px;
 }
 .info-row { display: flex; gap: 14px; padding: 6px 0; font-size: 14px; }
 .info-row-label { flex: 0 0 56px; color: var(--text-dim); }
@@ -766,10 +766,10 @@ body::before {
 
 /* 편집 폼 섹션 제목 */
 .editor-section {
-  font-size: 12px;
+  font-size: 15px;
   color: var(--accent);
-  letter-spacing: 0.08em;
-  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-weight: 700;
   margin: 8px 0 -2px;
 }
 

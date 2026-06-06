@@ -26,6 +26,9 @@ const 빈인물 = (): Character => ({
 const HERO_PLACEHOLDER = '/avatar-placeholder.webp'; // 히어로(인물 카드)용
 const LIST_PLACEHOLDER = '/portrait-placeholder.webp'; // 명부 목록 둥근 썸네일용
 
+// 생사 상태 → 표시 라벨
+const 상태label: Record<string, string> = { alive: '생존', deceased: '사망', unknown: '불명' };
+
 // 뷰 모드의 한 섹션(내용 있을 때만 호출).
 function ViewSection({ label, text }: { label: string; text: string }) {
   return (
@@ -212,25 +215,17 @@ export default function Characters({
             <div className="char-view-body">
               {tab === '약력' ? (
                 <>
-                  {(viewing.faction || viewing.rank || viewing.crest) && (
-                    <div className="info-card">
-                      <div className="info-card-title">신원</div>
-                      {viewing.faction && <InfoRow label="소속" value={viewing.faction} />}
-                      {viewing.rank && <InfoRow label="신분" value={viewing.rank} />}
-                      {viewing.crest && <InfoRow label="문장" value={viewing.crest} />}
-                    </div>
-                  )}
+                  <div className="info-card">
+                    <div className="info-card-title">신원</div>
+                    {viewing.faction && <InfoRow label="소속" value={viewing.faction} />}
+                    {viewing.rank && <InfoRow label="신분" value={viewing.rank} />}
+                    {viewing.crest && <InfoRow label="문장" value={viewing.crest} />}
+                    <InfoRow label="상태" value={상태label[viewing.life_status || 'alive']} />
+                  </div>
                   {viewing.appearance && <ViewSection label="용모" text={viewing.appearance} />}
                   {viewing.personality && <ViewSection label="성향" text={viewing.personality} />}
                   {viewing.combat && <ViewSection label="전법" text={viewing.combat} />}
                   {viewing.notes && <ViewSection label="비고" text={viewing.notes} />}
-                  {!viewing.faction &&
-                    !viewing.rank &&
-                    !viewing.crest &&
-                    !viewing.appearance &&
-                    !viewing.personality &&
-                    !viewing.combat &&
-                    !viewing.notes && <EmptyTab />}
                   {viewing.is_active === false && (
                     <p className="dim small">지금 이야기엔 잠들어 있는 인물입니다.</p>
                   )}
@@ -360,6 +355,17 @@ export default function Characters({
                 placeholder="예: 블레다드의 소문장"
               />
             </label>
+            <label>
+              상태
+              <select
+                value={editing.life_status || 'alive'}
+                onChange={(e) => set('life_status', e.target.value as Character['life_status'])}
+              >
+                <option value="alive">생존</option>
+                <option value="deceased">사망</option>
+                <option value="unknown">불명</option>
+              </select>
+            </label>
 
             <label>
               용모
@@ -397,27 +403,14 @@ export default function Characters({
               />
             </label>
 
-            <div className="row2">
-              <label>
-                생사
-                <select
-                  value={editing.life_status || 'alive'}
-                  onChange={(e) => set('life_status', e.target.value as Character['life_status'])}
-                >
-                  <option value="alive">생존</option>
-                  <option value="deceased">사망</option>
-                  <option value="unknown">불명</option>
-                </select>
-              </label>
-              <label className="check">
-                <input
-                  type="checkbox"
-                  checked={editing.is_active !== false}
-                  onChange={(e) => set('is_active', e.target.checked)}
-                />
-                활성 (지금 이야기에 등장)
-              </label>
-            </div>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={editing.is_active !== false}
+                onChange={(e) => set('is_active', e.target.checked)}
+              />
+              활성 (지금 이야기에 등장)
+            </label>
 
             <div className="editor-actions">
               <button className="primary" onClick={save} disabled={saving}>
