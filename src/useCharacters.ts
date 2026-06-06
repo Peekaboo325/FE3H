@@ -22,6 +22,7 @@ export type Character = {
   notes?: string;
   life_status?: 'alive' | 'deceased' | 'unknown';
   is_active?: boolean;
+  sort_order?: number; // 목록 정렬 순서(드래그로 변경)
   thumbnail?: string; // 초상 — 인물 카드(뷰) 히어로용(전신·상반신)
   avatar?: string; // 얼굴 — 명부 목록용 둥근 썸네일(얼굴 클로즈업). 없으면 thumbnail로 대체.
 };

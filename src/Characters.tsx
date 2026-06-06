@@ -9,6 +9,22 @@ import { splitAliases } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
 import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -63,6 +79,65 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <span className="info-row-label">{label}</span>
       <span className="info-row-value">{value}</span>
     </div>
+  );
+}
+
+// 드래그로 정렬 가능한 목록 행.
+function SortableCharRow({
+  c,
+  onOpen,
+  onToggle,
+}: {
+  c: Character;
+  onOpen: () => void;
+  onToggle: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: c.id!,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+    zIndex: isDragging ? 2 : undefined,
+  };
+  const active = c.is_active !== false;
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={'char-row' + (active ? '' : ' inactive')}
+      onClick={onOpen}
+      {...attributes}
+      {...listeners}
+    >
+      <span className="thumb-wrap">
+        <img
+          className={'thumb round ' + statusFx(c.life_status)}
+          src={c.avatar || c.thumbnail || LIST_PLACEHOLDER}
+          alt=""
+        />
+        {c.life_status === 'unknown' && <span className="thumb-q">?</span>}
+      </span>
+      <div className="char-meta">
+        <div className="char-name">
+          {c.name}
+          {c.life_status === 'deceased' && <span className="tag">사망</span>}
+        </div>
+        <div className="char-sub">{splitAliases(c.aliases)[0] || ''}</div>
+      </div>
+      <button
+        className={'row-bm' + (active ? ' on' : '')}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle();
+        }}
+        onPointerDown={(e) => e.stopPropagation()}
+        aria-label={active ? '등장 끄기' : '등장 켜기'}
+      >
+        <Bookmark size={16} fill={active ? 'currentColor' : 'none'} />
+      </button>
+    </li>
   );
 }
 
@@ -168,6 +243,38 @@ export default function Characters({
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ character: { ...c, is_active: c.is_active === false, story_id: storyId } }),
     });
+    await refresh();
+  }
+
+  // 드래그 정렬용 로컬 순서(서버 목록과 동기화) + 마우스·터치 센서
+  const [items, setItems] = useState<Character[]>([]);
+  useEffect(() => setItems(chars), [chars]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
+
+  async function onDragEnd(e: DragEndEvent) {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const oldIndex = items.findIndex((c) => c.id === active.id);
+    const newIndex = items.findIndex((c) => c.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(items, oldIndex, newIndex);
+    setItems(next); // 낙관적 즉시 반영
+    // 순서(sort_order)가 바뀐 항목만 저장
+    const changed = next
+      .map((c, i) => ({ c, i }))
+      .filter(({ c, i }) => c.sort_order !== i);
+    await Promise.all(
+      changed.map(({ c, i }) =>
+        fetch('/api/characters', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ character: { ...c, sort_order: i, story_id: storyId } }),
+        }),
+      ),
+    );
     await refresh();
   }
 
@@ -320,41 +427,23 @@ export default function Characters({
             ) : chars.length === 0 ? (
               <p className="dim">아직 기록된 인물이 없어요.</p>
             ) : (
-              <ul className="char-list">
-                {chars.map((c) => (
-                  <li
-                    key={c.id}
-                    className={'char-row' + (c.is_active === false ? ' inactive' : '')}
-                    onClick={() => setViewing(c)}
-                  >
-                    <span className="thumb-wrap">
-                      <img
-                        className={'thumb round ' + statusFx(c.life_status)}
-                        src={c.avatar || c.thumbnail || LIST_PLACEHOLDER}
-                        alt=""
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                <SortableContext
+                  items={items.map((c) => c.id!)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <ul className="char-list">
+                    {items.map((c) => (
+                      <SortableCharRow
+                        key={c.id}
+                        c={c}
+                        onOpen={() => setViewing(c)}
+                        onToggle={() => toggleActiveOf(c)}
                       />
-                      {c.life_status === 'unknown' && <span className="thumb-q">?</span>}
-                    </span>
-                    <div className="char-meta">
-                      <div className="char-name">
-                        {c.name}
-                        {c.life_status === 'deceased' && <span className="tag">사망</span>}
-                      </div>
-                      <div className="char-sub">{splitAliases(c.aliases)[0] || ''}</div>
-                    </div>
-                    <button
-                      className={'row-bm' + (c.is_active !== false ? ' on' : '')}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleActiveOf(c);
-                      }}
-                      aria-label={c.is_active !== false ? '등장 끄기' : '등장 켜기'}
-                    >
-                      <Bookmark size={16} fill={c.is_active !== false ? 'currentColor' : 'none'} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                    ))}
+                  </ul>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         )}
