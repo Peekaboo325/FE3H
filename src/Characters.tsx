@@ -161,11 +161,21 @@ export default function Characters({
     }
   }
 
+  // 목록에서 활성(등장) 토글 — 즉시 저장 후 새로고침
+  async function toggleActiveOf(c: Character) {
+    await fetch('/api/characters', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ character: { ...c, is_active: c.is_active === false, story_id: storyId } }),
+    });
+    await refresh();
+  }
+
   const viewMode = viewing && !editing; // 순수 읽기 모드
 
   return (
     <div className="modal-bg" onClick={onClose}>
-      <div className={'modal' + (viewMode || editing ? ' has-hero' : '')} onClick={(e) => e.stopPropagation()}>
+      <div className="modal has-hero" onClick={(e) => e.stopPropagation()}>
         {/* 헤더·안내 — 뷰/편집 모드에선 히어로가 대신하므로 숨김(목록 모드 전용) */}
         {!viewMode && !editing && (
           <>
@@ -295,14 +305,16 @@ export default function Characters({
         {/* 목록 화면 */}
         {!editing && !viewing && (
           <div className="modal-body">
-            <button className="new" onClick={() => setEditing(빈인물())}>
-              ＋ 새 인물
-            </button>
-            {storyId != null && (
-              <button className="new" onClick={() => setImporting(true)}>
-                ↧ 다른 장에서 반입
+            <div className="list-actions">
+              <button className="list-btn" onClick={() => setEditing(빈인물())}>
+                ＋ 명부 추가
               </button>
-            )}
+              {storyId != null && (
+                <button className="list-btn" onClick={() => setImporting(true)}>
+                  ↧ 명부 반입
+                </button>
+              )}
+            </div>
             {loading ? (
               <p className="dim">펼치는 중…</p>
             ) : chars.length === 0 ? (
@@ -310,7 +322,11 @@ export default function Characters({
             ) : (
               <ul className="char-list">
                 {chars.map((c) => (
-                  <li key={c.id} className="char-row" onClick={() => setViewing(c)}>
+                  <li
+                    key={c.id}
+                    className={'char-row' + (c.is_active === false ? ' inactive' : '')}
+                    onClick={() => setViewing(c)}
+                  >
                     <span className="thumb-wrap">
                       <img
                         className={'thumb round ' + statusFx(c.life_status)}
@@ -323,10 +339,19 @@ export default function Characters({
                       <div className="char-name">
                         {c.name}
                         {c.life_status === 'deceased' && <span className="tag">사망</span>}
-                        {c.is_active === false && <span className="tag dimtag">잠듦</span>}
                       </div>
                       <div className="char-sub">{splitAliases(c.aliases)[0] || ''}</div>
                     </div>
+                    <button
+                      className={'row-bm' + (c.is_active !== false ? ' on' : '')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleActiveOf(c);
+                      }}
+                      aria-label={c.is_active !== false ? '등장 끄기' : '등장 켜기'}
+                    >
+                      <Bookmark size={16} fill={c.is_active !== false ? 'currentColor' : 'none'} />
+                    </button>
                   </li>
                 ))}
               </ul>

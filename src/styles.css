@@ -524,6 +524,37 @@ body::before {
   font-size: 15px;
   cursor: pointer;
 }
+/* 목록 상단 액션(추가/반입) — 작게, 나란히 */
+.list-actions { display: flex; gap: 8px; margin: 6px 0 12px; }
+.list-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+}
+.list-btn:hover { background: var(--surface-2); }
+/* 목록 행 활성(등장) 북마크 */
+.row-bm {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--text-faint);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.row-bm.on { color: var(--accent); }
+.row-bm:hover { background: var(--surface-2); }
+.char-row.inactive { opacity: 0.5; }
+.char-row.inactive .row-bm { opacity: 1; }
 
 .char-list { list-style: none; margin: 0; padding: 0; }
 .char-row {

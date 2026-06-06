@@ -83,12 +83,11 @@ export default function FaceCrop({
     <div className="modal-bg" onClick={onCancel}>
       <div className="modal crop-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>얼굴 따기</h2>
+          <h2>초점 지정</h2>
           <button className="x" onClick={onCancel}>
             ✕
           </button>
         </div>
-        <p className="dim small">동그라미를 끌어 얼굴에 맞추고, 아래 막대로 크기를 조절하세요.</p>
         <div className="crop-stage" ref={wrapRef}>
           {disp.w > 0 && (
             <div className="crop-canvas" style={{ width: disp.w, height: disp.h }}>
@@ -117,7 +116,7 @@ export default function FaceCrop({
         )}
         <div className="editor-actions">
           <button className="primary" onClick={confirm} disabled={sel.s <= 0}>
-            이 얼굴로
+            지정
           </button>
           <button onClick={onCancel}>취소</button>
         </div>
