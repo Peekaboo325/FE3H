@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Check, X } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
 
 type Story = { id: number; title: string; updated_at?: string };
@@ -17,6 +18,8 @@ export default function Stories({
   const [dbReady, setDbReady] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [copyingId, setCopyingId] = useState<number | null>(null);
+  const [renamingId, setRenamingId] = useState<number | null>(null); // 개칭 중인 장
+  const [renameText, setRenameText] = useState('');
 
   async function load() {
     setLoading(true);
@@ -69,9 +72,15 @@ export default function Stories({
     }
   }
 
-  async function 이름바꾸기(s: Story) {
-    const t = prompt('이야기 제목', s.title);
-    if (t == null) return;
+  function 개칭시작(s: Story) {
+    setRenamingId(s.id);
+    setRenameText(s.title);
+  }
+
+  async function 개칭저장(s: Story) {
+    const t = renameText.trim();
+    setRenamingId(null);
+    if (!t || t === s.title) return; // 빈 이름·무변경이면 그대로 둔다
     const r = await fetch('/api/stories', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -79,7 +88,7 @@ export default function Stories({
     });
     const d = await r.json();
     if (!r.ok || d.error) {
-      alert('이름 변경 실패: ' + (d.error || ''));
+      alert('개칭 실패: ' + (d.error || ''));
       return;
     }
     await load();
@@ -149,29 +158,51 @@ export default function Stories({
             <p className="dim">아직 이야기가 없어요.</p>
           ) : (
             <ul className="char-list">
-              {list.map((s) => (
-                <li key={s.id} className={'char-row' + (s.id === currentStoryId ? ' current' : '')}>
-                  <div className="char-meta clickable" onClick={() => onSwitch(s.id, s.title)}>
-                    <div className="char-name">
-                      {s.title}
-                      {s.id === currentStoryId && <span className="tag">현재</span>}
+              {list.map((s) =>
+                renamingId === s.id ? (
+                  <li key={s.id} className={'char-row' + (s.id === currentStoryId ? ' current' : '')}>
+                    <input
+                      className="rename-input"
+                      value={renameText}
+                      autoFocus
+                      onChange={(e) => setRenameText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.nativeEvent.isComposing) return; // 한글 조합 중 무시
+                        if (e.key === 'Enter') 개칭저장(s);
+                        if (e.key === 'Escape') setRenamingId(null);
+                      }}
+                    />
+                    <button className="rowbtn" title="새김" onClick={() => 개칭저장(s)}>
+                      <Check size={15} />
+                    </button>
+                    <button className="rowbtn" title="물림" onClick={() => setRenamingId(null)}>
+                      <X size={15} />
+                    </button>
+                  </li>
+                ) : (
+                  <li key={s.id} className={'char-row' + (s.id === currentStoryId ? ' current' : '')}>
+                    <div className="char-meta clickable" onClick={() => onSwitch(s.id, s.title)}>
+                      <div className="char-name">
+                        {s.title}
+                        {s.id === currentStoryId && <span className="tag">현재</span>}
+                      </div>
                     </div>
-                  </div>
-                  <button
-                    className="rowbtn"
-                    onClick={() => 복사(s)}
-                    disabled={copyingId === s.id}
-                  >
-                    {copyingId === s.id ? '복사 중…' : '복사'}
-                  </button>
-                  <button className="rowbtn" onClick={() => 이름바꾸기(s)}>
-                    이름
-                  </button>
-                  <button className="rowbtn danger" onClick={() => 삭제(s)}>
-                    삭제
-                  </button>
-                </li>
-              ))}
+                    <button className="rowbtn" onClick={() => 개칭시작(s)}>
+                      개칭
+                    </button>
+                    <button
+                      className="rowbtn"
+                      onClick={() => 복사(s)}
+                      disabled={copyingId === s.id}
+                    >
+                      {copyingId === s.id ? '필사 중…' : '필사'}
+                    </button>
+                    <button className="rowbtn danger" onClick={() => 삭제(s)}>
+                      소각
+                    </button>
+                  </li>
+                ),
+              )}
             </ul>
           )}
         </div>

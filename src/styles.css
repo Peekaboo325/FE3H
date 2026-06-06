@@ -448,6 +448,17 @@ body::before {
   font-size: 18px;
 }
 .char-name { font-size: 16px; }
+/* 개칭 인라인 입력칸 — 행 안에서 바로 고침(브라우저 팝업 대신) */
+.rename-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 16px;
+}
 .char-sub { font-size: 13px; color: var(--text-dim); }
 .tag {
   font-size: 11px;

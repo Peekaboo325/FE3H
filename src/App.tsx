@@ -329,9 +329,7 @@ export default function App() {
       <main className="scroll">
         <div className="scroll-inner">
         {turns.length === 0 && (
-          <p className="hint">
-            첫 장면을 적어 이야기를 펼치세요. (예: “사관학교 새벽, 텅 빈 훈련장에 선 디미트리.”)
-          </p>
+          <p className="hint">여신의 시선이 머문 첫 순간을 기록하십시오.</p>
         )}
         {start > 0 && (
           <button
