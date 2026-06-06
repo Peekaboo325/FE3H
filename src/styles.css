@@ -97,8 +97,6 @@ body::before {
   position: relative;
   text-align: center;
   width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
   padding: 14px 16px 10px;
   min-height: 30px;
 }
