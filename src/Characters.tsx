@@ -21,8 +21,9 @@ const 빈인물 = (): Character => ({
   avatar: '',
 });
 
-// 초상이 없을 때 쓰는 기본 아바타 (public/avatar-placeholder.webp).
-const PLACEHOLDER = '/avatar-placeholder.webp';
+// 이미지가 없을 때 쓰는 기본 그림.
+const PORTRAIT_PLACEHOLDER = '/portrait-placeholder.webp'; // 히어로(전신·인물 카드)용
+const AVATAR_PLACEHOLDER = '/avatar-placeholder.webp'; // 명부 목록 둥근 얼굴용
 
 // 뷰 모드의 한 섹션(내용 있을 때만 호출).
 function ViewSection({ label, text }: { label: string; text: string }) {
@@ -63,17 +64,6 @@ export default function Characters({
       set('thumbnail', thumb);
     } catch (err) {
       await alertAsk({ message: '초상을 올리지 못했어요.', detail: (err as Error).message });
-    }
-  }
-
-  async function onPickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f || !editing) return;
-    try {
-      const face = await 이미지를_썸네일로(f, 512, 0.85); // 얼굴: 목록 둥근 썸네일용(작게)
-      set('avatar', face);
-    } catch (err) {
-      await alertAsk({ message: '얼굴을 올리지 못했어요.', detail: (err as Error).message });
     }
   }
 
@@ -165,7 +155,7 @@ export default function Characters({
                 </div>
               </div>
               <div className="char-hero-portrait">
-                <img src={viewing.thumbnail || viewing.avatar || PLACEHOLDER} alt="" />
+                <img src={viewing.thumbnail || viewing.avatar || PORTRAIT_PLACEHOLDER} alt="" />
               </div>
               <div className="char-hero-info">
                 <div className="char-hero-name">
@@ -215,7 +205,7 @@ export default function Characters({
               <ul className="char-list">
                 {chars.map((c) => (
                   <li key={c.id} className="char-row" onClick={() => setViewing(c)}>
-                    <img className="thumb round" src={c.avatar || c.thumbnail || PLACEHOLDER} alt="" />
+                    <img className="thumb round" src={c.avatar || c.thumbnail || AVATAR_PLACEHOLDER} alt="" />
                     <div className="char-meta">
                       <div className="char-name">
                         {c.name}
@@ -237,7 +227,7 @@ export default function Characters({
             <div className="thumb-edit-row">
               <div className="thumb-edit">
                 <div className="thumb-cap">초상 · 인물 카드용</div>
-                <img className="thumb big" src={editing.thumbnail || PLACEHOLDER} alt="" />
+                <img className="thumb big" src={editing.thumbnail || PORTRAIT_PLACEHOLDER} alt="" />
                 <label className="filebtn">
                   초상 올리기
                   <input type="file" accept="image/*" onChange={onPickImage} hidden />
@@ -255,11 +245,7 @@ export default function Characters({
               </div>
               <div className="thumb-edit">
                 <div className="thumb-cap">얼굴 · 명부 목록용</div>
-                <img className="thumb big round" src={editing.avatar || PLACEHOLDER} alt="" />
-                <label className="filebtn">
-                  얼굴 올리기
-                  <input type="file" accept="image/*" onChange={onPickAvatar} hidden />
-                </label>
+                <img className="thumb big round" src={editing.avatar || AVATAR_PLACEHOLDER} alt="" />
                 {editing.avatar && (
                   <button className="link" onClick={() => set('avatar', '')}>
                     지우기
@@ -268,8 +254,8 @@ export default function Characters({
               </div>
             </div>
             <p className="dim small">
-              WebP로 자동 변환됩니다(투명 배경 유지·고화질). 초상을 올리면 <b>‘여기서 얼굴 따기’</b>로
-              둥근 명부 썸네일을 바로 만들 수 있어요. 안 만들면 목록엔 초상이 그대로 쓰입니다.
+              WebP로 자동 변환됩니다(투명 배경 유지·고화질). 초상을 올린 뒤 <b>‘여기서 얼굴 따기’</b>로
+              둥근 명부 얼굴을 만드세요. 안 만들면 목록엔 초상이 그대로 쓰입니다.
             </p>
 
             <div className="row2">
