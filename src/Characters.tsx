@@ -514,7 +514,7 @@ export default function Characters({
                   />
                 </label>
                 <label className="hero-field">
-                  <span className="hero-lab">영문명</span>
+                  <span className="hero-lab">영문</span>
                   <input
                     className="hero-inp"
                     value={editing.english_name || ''}

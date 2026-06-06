@@ -871,7 +871,7 @@ body::before {
 /* 데스크탑(풀스크린 브레이크포인트 위): 라벨·입력 한 줄로 */
 @media (min-width: 601px) {
   .hero-field { flex-direction: row; align-items: center; gap: 12px; }
-  .hero-field .hero-lab { flex: 0 0 56px; }
+  .hero-field .hero-lab { flex: 0 0 56px; font-size: 14px; }
   .hero-field .hero-inp { flex: 1; min-width: 0; }
 }
 /* 히어로 입력칸 — 박스 대신 밑줄형(선 위에 타이핑) */
