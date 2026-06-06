@@ -48,6 +48,31 @@ export function rehypePodraScript() {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
+// 구분선(---) 안전망: 줄 단위 hr이 항상 thematicBreak가 되도록 앞뒤에 빈 줄을 보장.
+// (날짜가 일반 텍스트로 나와도 '제목 밑줄(Setext)'로 먹히지 않게.) 코드블록 안은 건드리지 않음.
+const HR_LINE = /^\s{0,3}([-*_])(\s*\1){2,}\s*$/;
+export function normalizeMarkdown(md: string): string {
+  const lines = md.split('\n');
+  const out: string[] = [];
+  let inFence = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\s*```/.test(line)) {
+      inFence = !inFence;
+      out.push(line);
+      continue;
+    }
+    if (!inFence && HR_LINE.test(line)) {
+      if (out.length && out[out.length - 1].trim() !== '') out.push('');
+      out.push(line.trim());
+      if (i + 1 < lines.length && lines[i + 1].trim() !== '') out.push('');
+    } else {
+      out.push(line);
+    }
+  }
+  return out.join('\n');
+}
+
 // 마크다운 기호를 떼어 평문으로 (복사용).
 export function stripMarkdown(md: string): string {
   return md
