@@ -336,8 +336,9 @@ body::before {
   width: 100%;
   border-top: 1px solid var(--border);
   background: var(--bg);
-  /* 홈 인디케이터/둥근 모서리 위로 들어 올리게 아래 안전영역만큼 더한다 */
-  padding: 12px 0 calc(22px + env(safe-area-inset-bottom));
+  /* 홈 인디케이터만 살짝 비키게 — 안전영역이 기본 여백을 '대체'(더하지 않음).
+     키보드 올라오면 안전영역=0이라 12px로 바짝 붙는다. */
+  padding: 12px 0 max(12px, env(safe-area-inset-bottom));
 }
 .compose-inner {
   display: flex;
