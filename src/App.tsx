@@ -5,6 +5,7 @@ import Stories from './Stories';
 import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
 import { stripMarkdown } from './podraScript';
+import { Copy, Check, RotateCcw, Pencil, Trash2, X } from 'lucide-react';
 
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
 type Story = { id: number; title: string };
@@ -293,11 +294,11 @@ export default function App() {
                     rows={6}
                   />
                   <div className="turn-actions">
-                    <button className="turn-btn" onClick={() => 턴저장(editingTurn!)}>
-                      저장
+                    <button className="turn-btn" title="저장" onClick={() => 턴저장(editingTurn!)}>
+                      <Check size={16} />
                     </button>
-                    <button className="turn-btn" onClick={() => setEditingTurn(null)}>
-                      취소
+                    <button className="turn-btn" title="취소" onClick={() => setEditingTurn(null)}>
+                      <X size={16} />
                     </button>
                   </div>
                 </div>
@@ -315,22 +316,26 @@ export default function App() {
                   {t.content && !busy && (
                     <div className="turn-actions">
                       {t.role === 'assistant' && (
-                        <button className="turn-btn" onClick={() => 복사하기(i, t.content)}>
-                          {copied === i ? '복사됨' : '복사'}
+                        <button
+                          className="turn-btn"
+                          title={copied === i ? '복사됨' : '복사'}
+                          onClick={() => 복사하기(i, t.content)}
+                        >
+                          {copied === i ? <Check size={16} /> : <Copy size={16} />}
                         </button>
                       )}
                       {t.id != null && (
                         <>
                           {t.role === 'assistant' && (
-                            <button className="turn-btn" onClick={() => 새로받기(i)}>
-                              새로 받기
+                            <button className="turn-btn" title="새로 받기" onClick={() => 새로받기(i)}>
+                              <RotateCcw size={16} />
                             </button>
                           )}
-                          <button className="turn-btn" onClick={() => 턴수정시작(t)}>
-                            수정
+                          <button className="turn-btn" title="수정" onClick={() => 턴수정시작(t)}>
+                            <Pencil size={16} />
                           </button>
-                          <button className="turn-btn" onClick={() => 턴삭제(t.id!)}>
-                            삭제
+                          <button className="turn-btn" title="삭제" onClick={() => 턴삭제(t.id!)}>
+                            <Trash2 size={16} />
                           </button>
                         </>
                       )}

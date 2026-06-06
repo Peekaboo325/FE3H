@@ -206,19 +206,31 @@ body {
   line-height: 1.6;
 }
 
-/* 메시지 액션(복사·수정·삭제) — 평소 흐리게, 올리면 또렷 */
-.turn-actions { margin-top: 6px; opacity: 0.35; transition: opacity 0.15s; }
+/* 메시지 액션(아이콘) — 평소 흐리게, 올리면 또렷. 넉넉한 간격. */
+.turn-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+}
 .turn:hover .turn-actions { opacity: 1; }
 .turn-btn {
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   color: var(--text-faint);
   background: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 2px 9px;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
+  transition: color 0.12s, background 0.12s;
 }
-.turn-btn:hover { color: var(--text); border-color: var(--accent); }
+.turn-btn:hover { color: var(--text); background: var(--hover); }
+.turn-btn svg { display: block; }
 
 /* 포드라 문자(라틴) = 서명·명문체 (Pinyon Script). 서명란 등에도 재사용. */
 .script {
