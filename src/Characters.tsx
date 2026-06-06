@@ -137,7 +137,6 @@ export default function Characters({
         {viewMode && viewing && (
           <div className="char-view">
             <div className="char-hero">
-              <img src={viewing.thumbnail || PLACEHOLDER} alt="" />
               <div className="char-hero-top">
                 <button className="hero-btn" onClick={() => setViewing(null)} aria-label="목록으로">
                   ←
@@ -150,6 +149,9 @@ export default function Characters({
                     ✕
                   </button>
                 </div>
+              </div>
+              <div className="char-hero-portrait">
+                <img src={viewing.thumbnail || PLACEHOLDER} alt="" />
               </div>
               <div className="char-hero-info">
                 <div className="char-hero-name">
