@@ -882,6 +882,8 @@ body::before {
     padding: env(safe-area-inset-top) 16px max(20px, env(safe-area-inset-bottom));
   }
   .modal.has-hero .char-hero { margin: 0 -16px 0; border-radius: 0; }
+  /* 히어로 우측 정보를 아래로 살짝(상단 버튼과 여백 확보, 거점 밑 빈 공간 활용) */
+  .char-hero-info { padding-top: 56px; }
   /* 목록 모드(히어로 없음)는 상단에 숨통 — 상태바 바로 밑에 붙지 않게 */
   .modal.has-hero:not(:has(.char-hero)) {
     padding-top: calc(env(safe-area-inset-top) + 16px);
