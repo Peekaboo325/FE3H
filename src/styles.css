@@ -440,6 +440,7 @@ body::before {
   /* 다이나믹 아일랜드(위)·홈 인디케이터(아래)를 비키게 — 안전영역이 기본 여백을 대체 */
   padding: max(32px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom));
   overflow-y: auto;
+  overscroll-behavior: none; /* 스크롤 끝 바운스/뒤 페이지 들림 방지 */
   z-index: 50;
 }
 .modal {
@@ -881,6 +882,10 @@ body::before {
     padding: env(safe-area-inset-top) 16px max(20px, env(safe-area-inset-bottom));
   }
   .modal.has-hero .char-hero { margin: 0 -16px 0; border-radius: 0; }
+  /* 목록 모드(히어로 없음)는 상단에 숨통 — 상태바 바로 밑에 붙지 않게 */
+  .modal.has-hero:not(:has(.char-hero)) {
+    padding-top: calc(env(safe-area-inset-top) + 16px);
+  }
   .char-tabs { position: sticky; top: env(safe-area-inset-top); z-index: 3; }
   .char-tab { padding: 12px 4px; font-size: 13px; }
 }
