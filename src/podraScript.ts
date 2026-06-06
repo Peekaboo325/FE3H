@@ -33,6 +33,14 @@ function walk(node: any, inCode: boolean) {
   for (const child of node.children) {
     if (child.type === 'text' && !inCode) {
       next.push(...splitLatin(child.value));
+    } else if (child.type === 'element' && child.tagName === 'hr') {
+      // 구분선 → 장식 장면 구분(⁂)
+      next.push({
+        type: 'element',
+        tagName: 'div',
+        properties: { className: ['scene-break'] },
+        children: [{ type: 'text', value: '⁂' }],
+      });
     } else {
       if (child.type === 'element') {
         walk(child, inCode || child.tagName === 'code' || child.tagName === 'pre');

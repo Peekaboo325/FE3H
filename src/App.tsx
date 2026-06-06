@@ -5,7 +5,7 @@ import Stories from './Stories';
 import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
 import { stripMarkdown } from './podraScript';
-import { Copy, Check, RotateCcw, Pencil, Trash2, X } from 'lucide-react';
+import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine } from 'lucide-react';
 
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
 type Story = { id: number; title: string };
@@ -25,7 +25,18 @@ export default function App() {
   const [copied, setCopied] = useState<number | null>(null);
   const [editingTurn, setEditingTurn] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
+  const [mode, setMode] = useState<'read' | 'write'>(
+    () => (localStorage.getItem('fe3h.mode') === 'read' ? 'read' : 'write'),
+  );
   const 끝 = useRef<HTMLDivElement>(null);
+
+  function 모드전환() {
+    setMode((m) => {
+      const next = m === 'read' ? 'write' : 'read';
+      localStorage.setItem('fe3h.mode', next);
+      return next;
+    });
+  }
 
   // 드로어 메뉴 항목 — 늘릴 땐 여기 한 줄만 추가하면 됨.
   const menuItems: MenuItem[] = [
@@ -255,12 +266,19 @@ export default function App() {
   }
 
   return (
-    <div className="page">
+    <div className={'page ' + mode}>
       <header className="head">
         <button className="hamburger" onClick={() => setMenuOpen(true)} aria-label="메뉴">
           ☰
         </button>
         <p className="story-tag">{storyTitle}</p>
+        <button
+          className="mode-toggle"
+          onClick={모드전환}
+          title={mode === 'read' ? '집필 모드로' : '읽기 모드로'}
+        >
+          {mode === 'read' ? <PenLine size={18} /> : <BookOpen size={18} />}
+        </button>
       </header>
 
       <Menu
@@ -283,6 +301,7 @@ export default function App() {
           </p>
         )}
         {turns.map((t, i) => {
+          if (mode === 'read' && t.role === 'user') return null; // 읽기 모드: 프롬프트 숨김
           const editing = editingTurn != null && t.id === editingTurn;
           return (
             <div key={t.id ?? 'tmp-' + i} className={t.role === 'user' ? 'turn user' : 'turn story'}>
@@ -313,7 +332,7 @@ export default function App() {
                   ) : busy ? (
                     <span className="dim">…집필 중…</span>
                   ) : null}
-                  {t.content && !busy && (
+                  {t.content && !busy && mode === 'write' && (
                     <div className="turn-actions">
                       {t.role === 'assistant' && (
                         <button
@@ -349,7 +368,8 @@ export default function App() {
         <div ref={끝} />
       </main>
 
-      <footer className="compose">
+      {mode === 'write' && (
+        <footer className="compose">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -363,7 +383,8 @@ export default function App() {
         <button onClick={보내기} disabled={busy || !input.trim()}>
           {busy ? '집필 중…' : '잇기'}
         </button>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }

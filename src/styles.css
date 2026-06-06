@@ -60,6 +60,23 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+/* 읽기 모드 — 본문을 소설처럼 (더 크게·여유롭게) */
+.read .scroll { padding: 24px 24px 64px; }
+.read .turn { margin: 22px 0; }
+.read .turn.story { font-size: 16px; line-height: 1.95; }
+
+/* 은은한 화면 결(비네팅) — 가독성 해치지 않게 아주 옅게 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(130% 100% at 50% 0%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.28) 100%);
 }
 
 /* ── 헤더 ─────────────────────────────────────────────── */
@@ -89,6 +106,21 @@ body {
   cursor: pointer;
 }
 .hamburger:hover { color: var(--text); border-color: var(--accent); }
+.mode-toggle {
+  position: absolute;
+  right: 16px;
+  top: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.mode-toggle:hover { color: var(--text); border-color: var(--accent); }
 
 /* ── 드로어 메뉴 ───────────────────────────────────────── */
 .drawer-bg {
@@ -148,9 +180,10 @@ body {
 
 .turn { margin: 18px 0; }
 .turn.user {
-  color: var(--user);
-  border-left: 3px solid var(--border);
+  color: var(--text-dim);
+  border-left: 2px solid var(--border);
   padding-left: 12px;
+  font-size: 13px;
   white-space: pre-wrap;
 }
 .turn.story { color: var(--text); }
@@ -161,9 +194,9 @@ body {
 .turn.story > :last-child { margin-bottom: 0; }
 .turn.story p { margin: 0 0 12px; }
 .turn.story h1,
-.turn.story h2 { font-size: 18px; letter-spacing: 0.04em; margin: 0 0 2px; }
-.turn.story h3 { font-size: 13px; font-weight: 400; color: var(--text-dim); margin: 0 0 10px; }
-.turn.story hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 14px; }
+.turn.story h2 { text-align: center; font-size: 19px; letter-spacing: 0.1em; margin: 8px 0 2px; }
+.turn.story h3 { text-align: center; font-size: 13px; font-weight: 400; color: var(--text-dim); letter-spacing: 0.05em; margin: 0 0 14px; }
+.scene-break { text-align: center; color: var(--text-dim); font-size: 15px; letter-spacing: 0.4em; margin: 22px 0; }
 .turn.story blockquote {
   margin: 0 0 12px;
   padding-left: 12px;
