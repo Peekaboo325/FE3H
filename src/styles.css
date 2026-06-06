@@ -728,6 +728,22 @@ body::before {
 .thumb.big { width: 120px; height: 120px; border-radius: 12px; }
 .thumb.big.round { border-radius: 50%; }
 .thumb.big.empty { font-size: 13px; }
+.thumb-edit-links { display: flex; gap: 12px; align-items: center; }
+
+/* 얼굴 따기(크롭) 도구 */
+.crop-modal { max-width: 420px; }
+.crop-stage { display: flex; justify-content: center; margin: 12px 0 6px; }
+.crop-canvas { position: relative; touch-action: none; background: #15151c; border-radius: 8px; overflow: hidden; }
+.crop-canvas img { display: block; user-select: none; -webkit-user-drag: none; }
+.crop-box {
+  position: absolute;
+  border: 2px solid #fff;
+  border-radius: 50%; /* 둥근 미리보기 = 실제 목록 표시와 동일 */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6); /* 바깥을 어둡게 */
+  cursor: move;
+  touch-action: none;
+}
+.crop-range { width: 100%; margin: 6px 0 4px; accent-color: var(--accent); }
 .filebtn {
   padding: 6px 14px;
   border: 1px solid var(--border);

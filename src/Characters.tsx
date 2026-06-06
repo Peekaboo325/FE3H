@@ -3,6 +3,7 @@ import { 이미지를_썸네일로 } from './imageUtils';
 import { alertAsk } from './dialog';
 import { useCharacters, type Character } from './useCharacters';
 import ImportDialog from './ImportDialog';
+import FaceCrop from './FaceCrop';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -46,6 +47,7 @@ export default function Characters({
   const [editing, setEditing] = useState<Character | null>(null); // 편집 모드
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [cropping, setCropping] = useState(false); // 초상에서 얼굴 따기
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
 
@@ -241,9 +243,14 @@ export default function Characters({
                   <input type="file" accept="image/*" onChange={onPickImage} hidden />
                 </label>
                 {editing.thumbnail && (
-                  <button className="link" onClick={() => set('thumbnail', '')}>
-                    지우기
-                  </button>
+                  <div className="thumb-edit-links">
+                    <button className="link" onClick={() => setCropping(true)}>
+                      여기서 얼굴 따기 ▸
+                    </button>
+                    <button className="link" onClick={() => set('thumbnail', '')}>
+                      지우기
+                    </button>
+                  </div>
                 )}
               </div>
               <div className="thumb-edit">
@@ -261,7 +268,8 @@ export default function Characters({
               </div>
             </div>
             <p className="dim small">
-              WebP로 자동 변환됩니다(투명 배경 유지·고화질). 얼굴을 안 올리면 명부 목록엔 초상이 쓰여요.
+              WebP로 자동 변환됩니다(투명 배경 유지·고화질). 초상을 올리면 <b>‘여기서 얼굴 따기’</b>로
+              둥근 명부 썸네일을 바로 만들 수 있어요. 안 만들면 목록엔 초상이 그대로 쓰입니다.
             </p>
 
             <div className="row2">
@@ -375,6 +383,17 @@ export default function Characters({
               )}
             </div>
           </div>
+        )}
+
+        {cropping && editing?.thumbnail && (
+          <FaceCrop
+            src={editing.thumbnail}
+            onDone={(url) => {
+              set('avatar', url);
+              setCropping(false);
+            }}
+            onCancel={() => setCropping(false)}
+          />
         )}
 
         {importing && storyId != null && (
