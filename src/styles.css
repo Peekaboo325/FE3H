@@ -304,6 +304,8 @@ body::before {
   transition: color 0.12s, background 0.12s;
 }
 .turn-btn:hover { color: var(--text); background: var(--hover); }
+/* 삭제 두 번 누르기: 첫 클릭으로 활성화되면 붉게 채워 둘째 클릭을 기다린다 */
+.turn-btn.armed { color: var(--accent-ink); background: var(--danger); border-color: var(--danger); }
 .turn-btn svg { display: block; }
 
 /* 포드라 문자(라틴) = 서명·명문체 (Pinyon Script). 서명란 등에도 재사용. */
@@ -551,3 +553,5 @@ body::before {
 }
 .editor-actions .primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .editor-actions .danger { margin-left: auto; color: var(--danger); border-color: #6a4a44; }
+/* 활성화(첫 클릭): 붉게 채워 둘째 클릭을 기다린다 */
+.editor-actions .danger.armed { background: var(--danger); color: var(--accent-ink); border-color: var(--danger); }

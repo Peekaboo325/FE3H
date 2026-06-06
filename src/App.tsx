@@ -6,7 +6,7 @@ import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
 import { stripMarkdown } from './podraScript';
 import { defaultStoryTitle } from './storyTitle';
-import { confirmAsk, alertAsk, DialogHost } from './dialog';
+import { alertAsk, DialogHost } from './dialog';
 import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon } from 'lucide-react';
 
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
@@ -32,6 +32,7 @@ export default function App() {
   const [copied, setCopied] = useState<number | null>(null);
   const [editingTurn, setEditingTurn] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
+  const [armedTurn, setArmedTurn] = useState<number | null>(null); // 삭제 두 번 누르기 대상
   const [visibleCount, setVisibleCount] = useState(WINDOW); // 지금 펼쳐 둔 칸 수
   const [mode, setMode] = useState<'read' | 'write'>(
     () => (localStorage.getItem('fe3h.mode') === 'read' ? 'read' : 'write'),
@@ -216,12 +217,7 @@ export default function App() {
   }
 
   async function 턴삭제(id: number) {
-    const yes = await confirmAsk({
-      message: '이 기록을 지우시겠습니까?',
-      confirmLabel: '지움',
-      danger: true,
-    });
-    if (!yes) return;
+    setArmedTurn(null);
     setTurns((prev) => prev.filter((x) => x.id !== id));
     if (editingTurn === id) setEditingTurn(null);
     try {
@@ -402,7 +398,11 @@ export default function App() {
                           <button className="turn-btn" title="수정" onClick={() => 턴수정시작(t)}>
                             <Pencil size={16} />
                           </button>
-                          <button className="turn-btn" title="삭제" onClick={() => 턴삭제(t.id!)}>
+                          <button
+                            className={'turn-btn' + (armedTurn === t.id ? ' armed' : '')}
+                            title={armedTurn === t.id ? '한 번 더 누르면 삭제' : '삭제'}
+                            onClick={() => (armedTurn === t.id ? 턴삭제(t.id!) : setArmedTurn(t.id!))}
+                          >
                             <Trash2 size={16} />
                           </button>
                         </>

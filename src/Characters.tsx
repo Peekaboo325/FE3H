@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
-import { confirmAsk, alertAsk } from './dialog';
+import { alertAsk } from './dialog';
 import { useCharacters, type Character } from './useCharacters';
 import ImportDialog from './ImportDialog';
 
@@ -31,6 +31,8 @@ export default function Characters({
   const [editing, setEditing] = useState<Character | null>(null);
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
+  useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
 
   function set<K extends keyof Character>(k: K, v: Character[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
@@ -78,12 +80,6 @@ export default function Characters({
       setEditing(null);
       return;
     }
-    const yes = await confirmAsk({
-      message: `「${editing.name}」 이 인물을 지우시겠습니까?`,
-      confirmLabel: '지움',
-      danger: true,
-    });
-    if (!yes) return;
     const res = await fetch(`/api/characters?id=${editing.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok || data.error) {
@@ -280,8 +276,11 @@ export default function Characters({
               </button>
               <button onClick={() => setEditing(null)}>취소</button>
               {editing.id && (
-                <button className="danger" onClick={remove}>
-                  삭제
+                <button
+                  className={'danger' + (armed ? ' armed' : '')}
+                  onClick={() => (armed ? remove() : setArmed(true))}
+                >
+                  {armed ? '한 번 더' : '삭제'}
                 </button>
               )}
             </div>

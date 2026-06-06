@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLore, type Lore } from './useLore';
-import { confirmAsk, alertAsk } from './dialog';
+import { alertAsk } from './dialog';
 import ImportDialog from './ImportDialog';
 
 const 빈설정 = (): Lore => ({ title: '', category: '', body: '', is_active: true });
@@ -16,6 +16,8 @@ export default function LorePanel({
   const [editing, setEditing] = useState<Lore | null>(null);
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
+  useEffect(() => setArmed(false), [editing]); // 다른 기록으로 옮기거나 닫으면 해제
 
   function set<K extends keyof Lore>(k: K, v: Lore[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
@@ -52,12 +54,6 @@ export default function LorePanel({
       setEditing(null);
       return;
     }
-    const yes = await confirmAsk({
-      message: `「${editing.title}」 이 기록을 지우시겠습니까?`,
-      confirmLabel: '지움',
-      danger: true,
-    });
-    if (!yes) return;
     const res = await fetch(`/api/lore?id=${editing.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok || data.error) {
@@ -172,8 +168,11 @@ export default function LorePanel({
               </button>
               <button onClick={() => setEditing(null)}>취소</button>
               {editing.id && (
-                <button className="danger" onClick={remove}>
-                  삭제
+                <button
+                  className={'danger' + (armed ? ' armed' : '')}
+                  onClick={() => (armed ? remove() : setArmed(true))}
+                >
+                  {armed ? '한 번 더' : '삭제'}
                 </button>
               )}
             </div>
