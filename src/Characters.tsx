@@ -19,6 +19,9 @@ const 빈인물 = (): Character => ({
   thumbnail: '',
 });
 
+// 초상이 없을 때 쓰는 기본 아바타 (public/avatar-placeholder.png).
+const PLACEHOLDER = '/avatar-placeholder.png';
+
 // 뷰 모드의 한 섹션(내용 있을 때만 호출).
 function ViewSection({ label, text }: { label: string; text: string }) {
   return (
@@ -134,11 +137,7 @@ export default function Characters({
         {viewMode && viewing && (
           <div className="char-view">
             <div className="char-hero">
-              {viewing.thumbnail ? (
-                <img src={viewing.thumbnail} alt="" />
-              ) : (
-                <div className="char-hero-mono">{viewing.name.slice(0, 1)}</div>
-              )}
+              <img src={viewing.thumbnail || PLACEHOLDER} alt="" />
               <div className="char-hero-top">
                 <button className="hero-btn" onClick={() => setViewing(null)} aria-label="목록으로">
                   ←
@@ -200,11 +199,7 @@ export default function Characters({
               <ul className="char-list">
                 {chars.map((c) => (
                   <li key={c.id} className="char-row" onClick={() => setViewing(c)}>
-                    {c.thumbnail ? (
-                      <img className="thumb" src={c.thumbnail} alt="" />
-                    ) : (
-                      <div className="thumb empty">{c.name.slice(0, 1)}</div>
-                    )}
+                    <img className="thumb" src={c.thumbnail || PLACEHOLDER} alt="" />
                     <div className="char-meta">
                       <div className="char-name">
                         {c.name}
@@ -224,11 +219,7 @@ export default function Characters({
         {editing && (
           <div className="modal-body editor">
             <div className="thumb-edit">
-              {editing.thumbnail ? (
-                <img className="thumb big" src={editing.thumbnail} alt="" />
-              ) : (
-                <div className="thumb big empty">초상화</div>
-              )}
+              <img className="thumb big" src={editing.thumbnail || PLACEHOLDER} alt="" />
               <label className="filebtn">
                 초상 올리기
                 <input type="file" accept="image/*" onChange={onPickImage} hidden />
