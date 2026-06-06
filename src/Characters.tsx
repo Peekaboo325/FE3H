@@ -146,11 +146,11 @@ export default function Characters({
   return (
     <div className="modal-bg" onClick={onClose}>
       <div className={'modal' + (viewMode || editing ? ' has-hero' : '')} onClick={(e) => e.stopPropagation()}>
-        {/* 헤더·안내 — 뷰 모드에선 히어로가 대신하므로 숨김 */}
-        {!viewMode && (
+        {/* 헤더·안내 — 뷰/편집 모드에선 히어로가 대신하므로 숨김(목록 모드 전용) */}
+        {!viewMode && !editing && (
           <>
             <div className="modal-head">
-              <h2>{editing ? (editing.id ? '명부 편집' : '새 인물') : '인물 명부'}</h2>
+              <h2>인물 명부</h2>
               <button className="x" onClick={onClose}>
                 ✕
               </button>
@@ -307,172 +307,234 @@ export default function Characters({
           </div>
         )}
 
-        {/* 편집 화면 */}
+        {/* 편집 화면 — 뷰모드와 동일한 히어로+카드 레이아웃(입력형) */}
         {editing && (
-          <div className="modal-body editor">
-            <div className="thumb-edit">
-              <img className="thumb big" src={editing.thumbnail || HERO_PLACEHOLDER} alt="" />
+          <div className="char-view char-edit">
+            <div className="char-hero">
+              <div className="char-hero-top">
+                <button className="hero-btn" onClick={() => setEditing(null)} aria-label="취소">
+                  ←
+                </button>
+                <div className="hero-top-right">
+                  <button className="hero-btn" onClick={save} disabled={saving}>
+                    {saving ? '기록 중…' : '기록'}
+                  </button>
+                  <button className="hero-btn" onClick={onClose} aria-label="닫기">
+                    ✕
+                  </button>
+                </div>
+              </div>
+              <div className="char-hero-portrait">
+                <img
+                  className={statusFx(editing.life_status)}
+                  src={editing.thumbnail || HERO_PLACEHOLDER}
+                  alt=""
+                />
+              </div>
+              <div className="char-hero-info hero-edit-info">
+                <label className="hero-field">
+                  <span className="hero-lab">성명</span>
+                  <input
+                    className="hero-inp name"
+                    value={editing.name}
+                    onChange={(e) => set('name', e.target.value)}
+                    onBlur={() => {
+                      const en = nameDict[editing.name.trim()];
+                      if (en && !editing.english_name?.trim()) set('english_name', en);
+                    }}
+                  />
+                </label>
+                <label className="hero-field">
+                  <span className="hero-lab">영문명</span>
+                  <input
+                    className="hero-inp en"
+                    value={editing.english_name || ''}
+                    onChange={(e) => set('english_name', e.target.value)}
+                  />
+                </label>
+                <label className="hero-field">
+                  <span className="hero-lab">이명 (쉼표로 구분)</span>
+                  <input
+                    className="hero-inp"
+                    value={editing.aliases || ''}
+                    onChange={(e) => set('aliases', e.target.value)}
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* 초상 도구 */}
+            <div className="edit-portrait-tools">
               <label className="filebtn">
                 초상 올리기
                 <input type="file" accept="image/*" onChange={onPickImage} hidden />
               </label>
               {editing.thumbnail && (
-                <div className="thumb-edit-links">
-                  <button className="link" onClick={() => setCropping(true)}>
-                    {editing.avatar ? '얼굴 다시 따기 ▸' : '여기서 얼굴 따기 ▸'}
-                  </button>
-                  {editing.avatar && (
-                    <button className="link" onClick={() => set('avatar', '')}>
-                      얼굴 지우기
-                    </button>
-                  )}
-                  <button className="link" onClick={() => set('thumbnail', '')}>
-                    초상 지우기
-                  </button>
-                </div>
-              )}
-            </div>
-            <p className="dim small">
-              WebP로 자동 변환됩니다(투명 배경 유지·고화질). 초상을 올린 뒤 <b>‘여기서 얼굴 따기’</b>로
-              둥근 명부 얼굴을 만드세요. 안 만들면 목록엔 초상이 그대로 쓰입니다.
-            </p>
-
-            <div className="editor-section">신원</div>
-
-            <div className="row2">
-              <label>
-                성명 *
-                <input
-                  value={editing.name}
-                  onChange={(e) => set('name', e.target.value)}
-                  onBlur={() => {
-                    // 사전에 정확히 있는 성명이고 영문명이 비어 있으면 자동 채움(원작 표기)
-                    const en = nameDict[editing.name.trim()];
-                    if (en && !editing.english_name?.trim()) set('english_name', en);
-                  }}
-                />
-              </label>
-              <label>
-                영문명
-                <input
-                  value={editing.english_name || ''}
-                  onChange={(e) => set('english_name', e.target.value)}
-                />
-              </label>
-            </div>
-
-            <label>
-              이명
-              <input value={editing.aliases || ''} onChange={(e) => set('aliases', e.target.value)} />
-            </label>
-
-            <label>
-              성별
-              <select value={editing.gender || ''} onChange={(e) => set('gender', e.target.value)}>
-                <option value="">—</option>
-                <option value="남성">남성</option>
-                <option value="여성">여성</option>
-              </select>
-            </label>
-            <label>
-              소속
-              <input value={editing.faction || ''} onChange={(e) => set('faction', e.target.value)} />
-            </label>
-            <label>
-              신분
-              <input value={editing.rank || ''} onChange={(e) => set('rank', e.target.value)} />
-            </label>
-            <label>
-              문장
-              <input value={editing.crest || ''} onChange={(e) => set('crest', e.target.value)} />
-            </label>
-            <label>
-              상태
-              <select
-                value={editing.life_status || 'alive'}
-                onChange={(e) => set('life_status', e.target.value as Character['life_status'])}
-              >
-                <option value="alive">생존</option>
-                <option value="deceased">사망</option>
-                <option value="unknown">불명</option>
-              </select>
-            </label>
-
-            <div className="editor-section">용모</div>
-            <div className="row2">
-              <label>
-                신장
-                <input value={editing.height || ''} onChange={(e) => set('height', e.target.value)} />
-              </label>
-              <label>
-                체격
-                <input value={editing.build || ''} onChange={(e) => set('build', e.target.value)} />
-              </label>
-            </div>
-            <div className="row2">
-              <label>
-                모발
-                <input value={editing.hair || ''} onChange={(e) => set('hair', e.target.value)} />
-              </label>
-              <label>
-                홍채
-                <input value={editing.iris || ''} onChange={(e) => set('iris', e.target.value)} />
-              </label>
-            </div>
-            <label>
-              인상
-              <input
-                value={editing.impression || ''}
-                onChange={(e) => set('impression', e.target.value)}
-              />
-            </label>
-            <label>
-              성향
-              <textarea
-                rows={3}
-                value={editing.personality || ''}
-                onChange={(e) => set('personality', e.target.value)}
-              />
-            </label>
-            <label>
-              전법
-              <textarea
-                rows={2}
-                value={editing.combat || ''}
-                onChange={(e) => set('combat', e.target.value)}
-              />
-            </label>
-            <label>
-              비고
-              <textarea
-                rows={2}
-                value={editing.notes || ''}
-                onChange={(e) => set('notes', e.target.value)}
-              />
-            </label>
-
-            <label className="check">
-              <input
-                type="checkbox"
-                checked={editing.is_active !== false}
-                onChange={(e) => set('is_active', e.target.checked)}
-              />
-              활성 (지금 이야기에 등장)
-            </label>
-
-            <div className="editor-actions">
-              <button className="primary" onClick={save} disabled={saving}>
-                {saving ? '기록하는 중…' : '기록'}
-              </button>
-              <button onClick={() => setEditing(null)}>취소</button>
-              {editing.id && (
-                <button
-                  className={'danger' + (armed ? ' armed' : '')}
-                  onClick={() => (armed ? remove() : setArmed(true))}
-                >
-                  소각
+                <button className="link" onClick={() => setCropping(true)}>
+                  {editing.avatar ? '얼굴 다시 따기 ▸' : '여기서 얼굴 따기 ▸'}
                 </button>
               )}
+              {editing.avatar && (
+                <button className="link" onClick={() => set('avatar', '')}>
+                  얼굴 지우기
+                </button>
+              )}
+              {editing.thumbnail && (
+                <button className="link" onClick={() => set('thumbnail', '')}>
+                  초상 지우기
+                </button>
+              )}
+            </div>
+
+            <div className="char-view-body">
+              <div className="info-grid">
+                <div className="info-card">
+                  <div className="info-card-title">신원</div>
+                  <div className="edit-row">
+                    <span className="edit-row-label">성별</span>
+                    <select
+                      className="edit-inp"
+                      value={editing.gender || ''}
+                      onChange={(e) => set('gender', e.target.value)}
+                    >
+                      <option value="">—</option>
+                      <option value="남성">남성</option>
+                      <option value="여성">여성</option>
+                    </select>
+                  </div>
+                  <div className="edit-row">
+                    <span className="edit-row-label">소속</span>
+                    <input
+                      className="edit-inp"
+                      value={editing.faction || ''}
+                      onChange={(e) => set('faction', e.target.value)}
+                    />
+                  </div>
+                  <div className="edit-row">
+                    <span className="edit-row-label">신분</span>
+                    <input
+                      className="edit-inp"
+                      value={editing.rank || ''}
+                      onChange={(e) => set('rank', e.target.value)}
+                    />
+                  </div>
+                  <div className="edit-row">
+                    <span className="edit-row-label">문장</span>
+                    <input
+                      className="edit-inp"
+                      value={editing.crest || ''}
+                      onChange={(e) => set('crest', e.target.value)}
+                    />
+                  </div>
+                  <div className="edit-row">
+                    <span className="edit-row-label">상태</span>
+                    <select
+                      className="edit-inp"
+                      value={editing.life_status || 'alive'}
+                      onChange={(e) => set('life_status', e.target.value as Character['life_status'])}
+                    >
+                      <option value="alive">생존</option>
+                      <option value="deceased">사망</option>
+                      <option value="unknown">불명</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="info-card">
+                  <div className="info-card-title">용모</div>
+                  <div className="edit-row">
+                    <span className="edit-row-label">신장</span>
+                    <input
+                      className="edit-inp"
+                      value={editing.height || ''}
+                      onChange={(e) => set('height', e.target.value)}
+                    />
+                  </div>
+                  <div className="edit-row">
+                    <span className="edit-row-label">체격</span>
+                    <input
+                      className="edit-inp"
+                      value={editing.build || ''}
+                      onChange={(e) => set('build', e.target.value)}
+                    />
+                  </div>
+                  <div className="edit-row">
+                    <span className="edit-row-label">모발</span>
+                    <input
+                      className="edit-inp"
+                      value={editing.hair || ''}
+                      onChange={(e) => set('hair', e.target.value)}
+                    />
+                  </div>
+                  <div className="edit-row">
+                    <span className="edit-row-label">홍채</span>
+                    <input
+                      className="edit-inp"
+                      value={editing.iris || ''}
+                      onChange={(e) => set('iris', e.target.value)}
+                    />
+                  </div>
+                  <div className="edit-row">
+                    <span className="edit-row-label">인상</span>
+                    <input
+                      className="edit-inp"
+                      value={editing.impression || ''}
+                      onChange={(e) => set('impression', e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="view-section">
+                <div className="view-label">성향</div>
+                <textarea
+                  className="edit-area"
+                  rows={4}
+                  value={editing.personality || ''}
+                  onChange={(e) => set('personality', e.target.value)}
+                />
+              </div>
+              <div className="view-section">
+                <div className="view-label">전법</div>
+                <textarea
+                  className="edit-area"
+                  rows={3}
+                  value={editing.combat || ''}
+                  onChange={(e) => set('combat', e.target.value)}
+                />
+              </div>
+              <div className="view-section">
+                <div className="view-label">비고</div>
+                <textarea
+                  className="edit-area"
+                  rows={3}
+                  value={editing.notes || ''}
+                  onChange={(e) => set('notes', e.target.value)}
+                />
+              </div>
+
+              <label className="check edit-active">
+                <input
+                  type="checkbox"
+                  checked={editing.is_active !== false}
+                  onChange={(e) => set('is_active', e.target.checked)}
+                />
+                활성 (지금 이야기에 등장)
+              </label>
+
+              <div className="editor-actions">
+                <button className="primary" onClick={save} disabled={saving}>
+                  {saving ? '기록하는 중…' : '기록'}
+                </button>
+                <button onClick={() => setEditing(null)}>취소</button>
+                {editing.id && (
+                  <button
+                    className={'danger' + (armed ? ' armed' : '')}
+                    onClick={() => (armed ? remove() : setArmed(true))}
+                  >
+                    소각
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}

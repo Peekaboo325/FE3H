@@ -825,6 +825,56 @@ body::before {
 .info-row-label { flex: 0 0 56px; color: var(--text-dim); }
 .info-row-value { color: var(--text); white-space: pre-wrap; }
 
+/* 편집(뷰모드 동일 레이아웃) — 히어로 입력 */
+.hero-edit-info { gap: 10px; }
+.hero-field { display: flex; flex-direction: column; gap: 3px; }
+.hero-lab { font-size: 11px; color: rgba(255, 255, 255, 0.6); }
+.hero-inp {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+.hero-inp.name { font-size: 20px; font-weight: 600; }
+.hero-inp.en { font-size: 13px; color: #d6d4e2; }
+.edit-portrait-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0 4px;
+}
+/* 카드 안 입력 행 */
+.edit-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
+.edit-row-label { flex: 0 0 48px; color: var(--text-dim); font-size: 13px; }
+.edit-inp {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+.edit-area {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  margin-top: 4px;
+}
+.edit-active { margin: 4px 2px 10px; }
+
 /* 편집 폼 섹션 제목 */
 .editor-section {
   font-size: 15px;
