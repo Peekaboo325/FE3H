@@ -111,7 +111,8 @@ body::before {
 .hamburger,
 .mode-toggle {
   position: absolute;
-  top: 12px;
+  /* 절대 위치라 헤더 패딩을 안 따라간다 → top에 안전영역을 직접 더한다 */
+  top: calc(12px + env(safe-area-inset-top));
   display: inline-flex;
   align-items: center;
   justify-content: center;
