@@ -557,7 +557,20 @@ body::before {
 .char-row.inactive .row-bm { opacity: 1; }
 
 /* 인연(관계도) — 뷰 */
-.bond-list { margin: 0; padding: 0; list-style: none; }
+.bonds-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.bonds-head .view-label { margin: 0; }
+.bonds-chev { color: var(--text-dim); flex-shrink: 0; }
+.bond-list { margin: 12px 0 0; padding: 0; list-style: none; }
 .bond-row { display: flex; align-items: flex-start; gap: 16px; padding: 16px 0; }
 .bond-row + .bond-row { border-top: 1px solid var(--border); }
 .bond-left {

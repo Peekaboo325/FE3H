@@ -8,7 +8,7 @@ import { nameDict } from './nameDict.generated';
 import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
-import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin } from 'lucide-react';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -196,9 +196,13 @@ export default function Characters({
   const [importing, setImporting] = useState(false);
   const [cropping, setCropping] = useState(false); // 초상에서 얼굴 따기
   const [tab, setTab] = useState<string>('약력'); // 인물 뷰 탭
+  const [bondsOpen, setBondsOpen] = useState(true); // 인연 카드 펼침/접힘
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
-  useEffect(() => setTab('약력'), [viewing]); // 다른 인물 열면 약력부터
+  useEffect(() => {
+    setTab('약력');
+    setBondsOpen(true);
+  }, [viewing]); // 다른 인물 열면 약력부터·인연 펼침
 
   function set<K extends keyof Character>(k: K, v: Character[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
@@ -487,12 +491,20 @@ export default function Characters({
                   {viewing.notes && <ViewSection label="비고" text={viewing.notes} />}
                   {(viewing.bonds || []).some((b) => b.name?.trim()) && (
                     <div className="view-section">
-                      <div className="view-label">인연</div>
-                      <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={onBondDragEnd}
-                      >
+                      <button className="bonds-head" onClick={() => setBondsOpen((o) => !o)}>
+                        <span className="view-label">인연</span>
+                        {bondsOpen ? (
+                          <ChevronUp size={18} className="bonds-chev" />
+                        ) : (
+                          <ChevronDown size={18} className="bonds-chev" />
+                        )}
+                      </button>
+                      {bondsOpen && (
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragEnd={onBondDragEnd}
+                        >
                         <SortableContext
                           items={(viewing.bonds || [])
                             .filter((b) => b.name?.trim())
@@ -519,6 +531,7 @@ export default function Characters({
                           </ul>
                         </SortableContext>
                       </DndContext>
+                      )}
                     </div>
                   )}
                   {viewing.is_active === false && (
@@ -591,6 +604,7 @@ export default function Characters({
                   src={editing.thumbnail || HERO_PLACEHOLDER}
                   alt=""
                 />
+                {editing.life_status === 'unknown' && <span className="hero-q">?</span>}
                 <div className="portrait-tools">
                   <label className="ptool" data-tip="초상 등록">
                     <ImagePlus size={18} />
