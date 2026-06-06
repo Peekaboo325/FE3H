@@ -19,6 +19,16 @@ const 빈인물 = (): Character => ({
   thumbnail: '',
 });
 
+// 뷰 모드의 한 섹션(내용 있을 때만 호출).
+function ViewSection({ label, text }: { label: string; text: string }) {
+  return (
+    <div className="view-section">
+      <div className="view-label">{label}</div>
+      <div className="view-text">{text}</div>
+    </div>
+  );
+}
+
 export default function Characters({
   storyId,
   onClose,
@@ -28,7 +38,8 @@ export default function Characters({
 }) {
   // 현재 이야기의 인물만 본다(이야기별 분리).
   const { chars, loading, dbReady, err, refresh } = useCharacters(storyId);
-  const [editing, setEditing] = useState<Character | null>(null);
+  const [viewing, setViewing] = useState<Character | null>(null); // 읽기 모드
+  const [editing, setEditing] = useState<Character | null>(null); // 편집 모드
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
@@ -69,6 +80,7 @@ export default function Characters({
       }
       await refresh();
       setEditing(null);
+      if (data.character) setViewing(data.character); // 저장 후 뷰로
     } finally {
       setSaving(false);
     }
@@ -88,34 +100,89 @@ export default function Characters({
     }
     await refresh();
     setEditing(null);
+    setViewing(null); // 소각 후 목록으로
   }
+
+  const viewMode = viewing && !editing; // 순수 읽기 모드
 
   return (
     <div className="modal-bg" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-head">
-          <h2>{editing ? (editing.id ? '인물 편집' : '새 인물') : '인물 명부'}</h2>
-          <button className="x" onClick={onClose}>
-            ✕
-          </button>
-        </div>
+      <div className={'modal' + (viewMode ? ' has-hero' : '')} onClick={(e) => e.stopPropagation()}>
+        {/* 헤더·안내 — 뷰 모드에선 히어로가 대신하므로 숨김 */}
+        {!viewMode && (
+          <>
+            <div className="modal-head">
+              <h2>{editing ? (editing.id ? '인물 편집' : '새 인물') : '인물 명부'}</h2>
+              <button className="x" onClick={onClose}>
+                ✕
+              </button>
+            </div>
 
-        {/* 안내: Supabase/표 상태 */}
-        {!dbReady && (
-          <p className="warn">아직 기록의 샘이 닿지 않아 인물을 기록할 수 없어요.</p>
-        )}
-        {dbReady && err && (
-          <p className="warn">
-            인물 표가 아직 없는 것 같아요. 안내된 SQL을 Supabase에서 한 번 실행해 주세요.
-            <br />
-            <span className="dim">({err})</span>
-          </p>
+            {!dbReady && <p className="warn">아직 기록의 샘이 닿지 않아 인물을 기록할 수 없어요.</p>}
+            {dbReady && err && (
+              <p className="warn">
+                인물 표가 아직 없는 것 같아요. 안내된 SQL을 Supabase에서 한 번 실행해 주세요.
+                <br />
+                <span className="dim">({err})</span>
+              </p>
+            )}
+            {storyId == null && <p className="warn">이야기를 먼저 만들어 주세요.</p>}
+          </>
         )}
 
-        {storyId == null && <p className="warn">이야기를 먼저 만들어 주세요.</p>}
+        {/* 뷰(읽기) 화면 */}
+        {viewMode && viewing && (
+          <div className="char-view">
+            <div className="char-hero">
+              {viewing.thumbnail ? (
+                <img src={viewing.thumbnail} alt="" />
+              ) : (
+                <div className="char-hero-mono">{viewing.name.slice(0, 1)}</div>
+              )}
+              <div className="char-hero-top">
+                <button className="hero-btn" onClick={() => setViewing(null)} aria-label="목록으로">
+                  ←
+                </button>
+                <div className="hero-top-right">
+                  <button className="hero-btn" onClick={() => setEditing(viewing)}>
+                    편집
+                  </button>
+                  <button className="hero-btn" onClick={onClose} aria-label="닫기">
+                    ✕
+                  </button>
+                </div>
+              </div>
+              <div className="char-hero-info">
+                <div className="char-hero-name">
+                  {viewing.name}
+                  {viewing.life_status === 'deceased' && <span className="tag">故</span>}
+                  {viewing.life_status === 'unknown' && <span className="tag">불명</span>}
+                </div>
+                {viewing.english_name && <div className="char-hero-en">{viewing.english_name}</div>}
+                {(viewing.faction || viewing.title) && (
+                  <div className="char-hero-chips">
+                    {viewing.faction && <span className="vchip">{viewing.faction}</span>}
+                    {viewing.title && <span className="vchip">{viewing.title}</span>}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="char-view-body">
+              {viewing.aliases && <ViewSection label="이명" text={viewing.aliases} />}
+              {viewing.personality && <ViewSection label="내면" text={viewing.personality} />}
+              {viewing.appearance && <ViewSection label="외양" text={viewing.appearance} />}
+              {viewing.combat && <ViewSection label="무기·전투" text={viewing.combat} />}
+              {viewing.notes && <ViewSection label="비고" text={viewing.notes} />}
+              {viewing.is_active === false && (
+                <p className="dim small">지금 이야기엔 잠들어 있는 인물입니다.</p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* 목록 화면 */}
-        {!editing && (
+        {!editing && !viewing && (
           <div className="modal-body">
             <button className="new" onClick={() => setEditing(빈인물())}>
               ＋ 새 인물
@@ -132,7 +199,7 @@ export default function Characters({
             ) : (
               <ul className="char-list">
                 {chars.map((c) => (
-                  <li key={c.id} className="char-row" onClick={() => setEditing(c)}>
+                  <li key={c.id} className="char-row" onClick={() => setViewing(c)}>
                     {c.thumbnail ? (
                       <img className="thumb" src={c.thumbnail} alt="" />
                     ) : (
