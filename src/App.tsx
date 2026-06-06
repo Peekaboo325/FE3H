@@ -315,6 +315,7 @@ export default function App() {
       {showLore && <LorePanel storyId={storyId} onClose={() => setShowLore(false)} />}
 
       <main className="scroll">
+        <div className="scroll-inner">
         {turns.length === 0 && (
           <p className="hint">
             첫 장면을 적어 이야기를 펼치세요. (예: “사관학교 새벽, 텅 빈 훈련장에 선 디미트리.”)
@@ -387,6 +388,7 @@ export default function App() {
           );
         })}
         <div ref={끝} />
+        </div>
       </main>
 
       {mode === 'write' && (
