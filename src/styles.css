@@ -558,7 +558,7 @@ body::before {
 /* 명부 목록 썸네일은 얼굴 클로즈업 둥근 형태(레퍼런스 캐릭터 명부 느낌) + 테두리 링 */
 .thumb.round {
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 .thumb.empty {
   display: flex;
