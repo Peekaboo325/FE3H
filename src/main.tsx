@@ -8,12 +8,14 @@ import './styles.css';
 // VisualViewport가 알려주는 실측 높이로 페이지 높이를 직접 제어한다(닫으면 즉시 원복).
 const vv = window.visualViewport;
 if (vv) {
-  const applyHeight = () => {
+  const apply = () => {
+    // 보이는 영역의 높이 + 위치(키보드로 창이 밀릴 때의 offset)를 둘 다 추적한다.
     document.documentElement.style.setProperty('--app-height', `${vv.height}px`);
+    document.documentElement.style.setProperty('--app-top', `${vv.offsetTop}px`);
   };
-  applyHeight();
-  vv.addEventListener('resize', applyHeight);
-  vv.addEventListener('scroll', applyHeight);
+  apply();
+  vv.addEventListener('resize', apply);
+  vv.addEventListener('scroll', apply);
 }
 
 createRoot(document.getElementById('root')!).render(

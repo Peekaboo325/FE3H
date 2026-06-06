@@ -68,13 +68,17 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 
 .page {
+  /* 보이는 뷰포트에 딱 고정 — iOS 웹앱에서 키보드가 창을 밀거나 높이를 흔드는 걸 회피.
+     높이·위치(top)를 VisualViewport 실측값으로 제어한다(main.tsx). */
+  position: fixed;
+  top: var(--app-top, 0);
+  left: 0;
   width: 100%;
   height: 100vh;
-  height: 100dvh; /* 모바일 동적 뷰포트 (폴백) */
-  height: var(--app-height, 100dvh); /* VisualViewport 실측 — iOS 키보드 흔들림 회피 */
+  height: 100dvh; /* 폴백 */
+  height: var(--app-height, 100dvh);
   display: flex;
   flex-direction: column;
-  position: relative;
   z-index: 1;
 }
 
