@@ -95,7 +95,7 @@ export default function ImportDialog<T extends { id?: number }>({
           </button>
         </div>
 
-        <div className="modal-body">
+        <div className="modal-body import-body">
           <Dropdown
             value={sourceId != null ? String(sourceId) : ''}
             options={stories.map((s) => ({ value: String(s.id), label: s.title }))}

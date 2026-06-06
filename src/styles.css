@@ -556,10 +556,13 @@ body::before {
 .char-row.inactive { opacity: 0.5; }
 .char-row.inactive .row-bm { opacity: 1; }
 
-/* 명부 반입 — 선택 목록 */
-.import-list { margin-top: 12px; }
-.import-msg { margin-top: 12px; }
+/* 명부 반입 */
+.import-body { display: flex; flex-direction: column; gap: 14px; padding-top: 14px; }
+.import-body .editor-actions { margin-top: 0; }
+.import-list { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+.import-msg { margin: 0; }
 .import-row { justify-content: space-between; }
+.import-row .char-name { font-size: 14px; }
 .import-row.picked { background: var(--surface-2); }
 .import-check { color: var(--accent); flex-shrink: 0; }
 
@@ -767,10 +770,8 @@ body::before {
   margin: 0 2px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
-  overflow-x: auto;
-  scrollbar-width: none;
+  overflow-x: hidden;
 }
-.char-tabs::-webkit-scrollbar { display: none; }
 .char-tab {
   flex: 1 1 0;
   min-width: 0;
