@@ -336,9 +336,9 @@ body::before {
   width: 100%;
   border-top: 1px solid var(--border);
   background: var(--bg);
-  /* 홈 인디케이터만 살짝 비키게 — 안전영역이 기본 여백을 '대체'(더하지 않음).
-     키보드 올라오면 안전영역=0이라 12px로 바짝 붙는다. */
-  padding: 12px 0 max(12px, env(safe-area-inset-bottom));
+  /* 홈 인디케이터만 살짝 비키게 — 안전영역에서 좀 덜어 더 바짝 내린다.
+     키보드 올라오면 안전영역=0이라 8px로 붙는다. */
+  padding: 12px 0 max(8px, calc(env(safe-area-inset-bottom) - 16px));
 }
 .compose-inner {
   display: flex;
@@ -384,7 +384,8 @@ body::before {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 32px 16px;
+  /* 다이나믹 아일랜드(위)·홈 인디케이터(아래)를 비키게 — 안전영역이 기본 여백을 대체 */
+  padding: max(32px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom));
   overflow-y: auto;
   z-index: 50;
 }
