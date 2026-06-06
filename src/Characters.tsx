@@ -17,6 +17,7 @@ const 빈인물 = (): Character => ({
   life_status: 'alive',
   is_active: true,
   thumbnail: '',
+  avatar: '',
 });
 
 // 초상이 없을 때 쓰는 기본 아바타 (public/avatar-placeholder.webp).
@@ -56,10 +57,21 @@ export default function Characters({
     const f = e.target.files?.[0];
     if (!f || !editing) return;
     try {
-      const thumb = await 이미지를_썸네일로(f);
+      const thumb = await 이미지를_썸네일로(f); // 초상: 큰 히어로용(1400px)
       set('thumbnail', thumb);
     } catch (err) {
       await alertAsk({ message: '초상을 올리지 못했어요.', detail: (err as Error).message });
+    }
+  }
+
+  async function onPickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f || !editing) return;
+    try {
+      const face = await 이미지를_썸네일로(f, 512, 0.85); // 얼굴: 목록 둥근 썸네일용(작게)
+      set('avatar', face);
+    } catch (err) {
+      await alertAsk({ message: '얼굴을 올리지 못했어요.', detail: (err as Error).message });
     }
   }
 
@@ -151,7 +163,7 @@ export default function Characters({
                 </div>
               </div>
               <div className="char-hero-portrait">
-                <img src={viewing.thumbnail || PLACEHOLDER} alt="" />
+                <img src={viewing.thumbnail || viewing.avatar || PLACEHOLDER} alt="" />
               </div>
               <div className="char-hero-info">
                 <div className="char-hero-name">
@@ -201,7 +213,7 @@ export default function Characters({
               <ul className="char-list">
                 {chars.map((c) => (
                   <li key={c.id} className="char-row" onClick={() => setViewing(c)}>
-                    <img className="thumb" src={c.thumbnail || PLACEHOLDER} alt="" />
+                    <img className="thumb round" src={c.avatar || c.thumbnail || PLACEHOLDER} alt="" />
                     <div className="char-meta">
                       <div className="char-name">
                         {c.name}
@@ -220,19 +232,37 @@ export default function Characters({
         {/* 편집 화면 */}
         {editing && (
           <div className="modal-body editor">
-            <div className="thumb-edit">
-              <img className="thumb big" src={editing.thumbnail || PLACEHOLDER} alt="" />
-              <label className="filebtn">
-                초상 올리기
-                <input type="file" accept="image/*" onChange={onPickImage} hidden />
-              </label>
-              {editing.thumbnail && (
-                <button className="link" onClick={() => set('thumbnail', '')}>
-                  지우기
-                </button>
-              )}
-              <p className="dim small">WebP로 자동 변환됩니다(투명 배경 유지·고화질).</p>
+            <div className="thumb-edit-row">
+              <div className="thumb-edit">
+                <div className="thumb-cap">초상 · 인물 카드용</div>
+                <img className="thumb big" src={editing.thumbnail || PLACEHOLDER} alt="" />
+                <label className="filebtn">
+                  초상 올리기
+                  <input type="file" accept="image/*" onChange={onPickImage} hidden />
+                </label>
+                {editing.thumbnail && (
+                  <button className="link" onClick={() => set('thumbnail', '')}>
+                    지우기
+                  </button>
+                )}
+              </div>
+              <div className="thumb-edit">
+                <div className="thumb-cap">얼굴 · 명부 목록용</div>
+                <img className="thumb big round" src={editing.avatar || PLACEHOLDER} alt="" />
+                <label className="filebtn">
+                  얼굴 올리기
+                  <input type="file" accept="image/*" onChange={onPickAvatar} hidden />
+                </label>
+                {editing.avatar && (
+                  <button className="link" onClick={() => set('avatar', '')}>
+                    지우기
+                  </button>
+                )}
+              </div>
             </div>
+            <p className="dim small">
+              WebP로 자동 변환됩니다(투명 배경 유지·고화질). 얼굴을 안 올리면 명부 목록엔 초상이 쓰여요.
+            </p>
 
             <div className="row2">
               <label>
