@@ -48,3 +48,30 @@ const out =
 fs.writeFileSync(path.join(libDir, 'worldview.mjs'), out, 'utf-8');
 
 console.log(`[bake] 세계관 박제 ${SYSTEM.length.toLocaleString()}자 → lib/worldview.mjs`);
+
+// ─── 고유명사 사전 → {정발 표기(한글) → 원어(영문)} 맵 (영문명 자동 매칭용) ───
+const dict = {};
+try {
+  const md = fs.readFileSync(path.join(srcDir, '풍화설월_고유명사_사전.md'), 'utf-8');
+  for (const line of md.split('\n')) {
+    const t = line.trim();
+    if (!t.startsWith('|')) continue;
+    const cells = t.split('|').slice(1, -1).map((c) => c.trim());
+    if (cells.length < 2) continue;
+    const [kr, en] = cells;
+    if (!kr || !en) continue; // 빈 칸(원어 미상 등) 제외
+    if (kr === '정발 표기' || en === '원어') continue; // 헤더 행
+    if (/^:?-+:?$/.test(kr) || /^:?-+:?$/.test(en)) continue; // 구분선 행
+    dict[kr] = en;
+  }
+} catch {
+  console.warn('[bake] 고유명사 사전을 못 찾음 (이름 맵 건너뜀)');
+}
+
+const nameOut =
+  '// ⚠️ 자동 생성 파일 — 직접 수정하지 마세요.\n' +
+  "// worldview/풍화설월_고유명사_사전.md 가 바뀌면 'npm run bake' 로 다시 만듭니다.\n" +
+  '// { 정발 표기(한글) → 원어(영문) } — 영문명 자동 매칭용.\n' +
+  `export const nameDict: Record<string, string> = ${JSON.stringify(dict, null, 2)};\n`;
+fs.writeFileSync(path.resolve(process.cwd(), 'src', 'nameDict.generated.ts'), nameOut, 'utf-8');
+console.log(`[bake] 고유명사 ${Object.keys(dict).length}개 → src/nameDict.generated.ts`);

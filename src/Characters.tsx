@@ -4,6 +4,7 @@ import { alertAsk } from './dialog';
 import { useCharacters, type Character } from './useCharacters';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
+import { nameDict } from './nameDict.generated';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -287,7 +288,15 @@ export default function Characters({
             <div className="row2">
               <label>
                 성명 *
-                <input value={editing.name} onChange={(e) => set('name', e.target.value)} />
+                <input
+                  value={editing.name}
+                  onChange={(e) => set('name', e.target.value)}
+                  onBlur={() => {
+                    // 사전에 정확히 있는 성명이고 영문명이 비어 있으면 자동 채움(원작 표기)
+                    const en = nameDict[editing.name.trim()];
+                    if (en && !editing.english_name?.trim()) set('english_name', en);
+                  }}
+                />
               </label>
               <label>
                 영문명
