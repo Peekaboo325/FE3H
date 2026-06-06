@@ -700,13 +700,14 @@ body::before {
   display: flex;
   margin: 0 2px;
   border-bottom: 1px solid var(--border);
+  background: var(--surface);
   overflow-x: auto;
   scrollbar-width: none;
 }
 .char-tabs::-webkit-scrollbar { display: none; }
 .char-tab {
-  flex: 1 0 auto;
-  min-width: 60px;
+  flex: 1 1 0;
+  min-width: 0;
   padding: 12px 12px;
   margin-bottom: -1px;
   border: none;
@@ -721,6 +722,20 @@ body::before {
 
 .char-view-body { padding: 18px 2px 2px; }
 .empty-tab { text-align: center; padding: 44px 0; font-size: 13px; }
+
+/* 모바일: 인물 뷰만 풀스크린 (여백 0·가장자리까지·탭 상단 고정) */
+@media (max-width: 600px) {
+  .modal-bg:has(.modal.has-hero) { padding: 0; }
+  .modal.has-hero {
+    max-width: none;
+    min-height: 100dvh;
+    border-radius: 0;
+    padding: env(safe-area-inset-top) 16px max(20px, env(safe-area-inset-bottom));
+  }
+  .modal.has-hero .char-hero { margin: 0 -16px 0; border-radius: 0; }
+  .char-tabs { position: sticky; top: env(safe-area-inset-top); z-index: 3; }
+  .char-tab { padding: 12px 4px; font-size: 13px; }
+}
 .view-section { margin: 0 0 16px; }
 .view-label {
   font-size: 12px;
