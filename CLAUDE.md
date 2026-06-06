@@ -104,8 +104,9 @@
 - **항상 한국어로 설명한다.** 비개발자가 따라올 수 있게, 전문용어는 풀어서 쓴다.
 - 코드 변경 시: 무엇을·왜 바꾸는지 평이하게 설명한다.
 - **git 작업(add / commit / push 등)은 알아서 처리한다.** 커밋 메시지도 알아서 적절히 단다. 단, 이미 올라간 기록을 되돌리거나 지우는 등 위험한 작업은 먼저 확인한다.
-- **자동 배포(기본값)**: 어지간한 변경은 묻지 말고 끝까지 배포한다 — 작업 브랜치 커밋 → `main` fast-forward 머지 → 양쪽 push(=Vercel 자동 배포). 배포 전 lint+build 통과 확인은 필수. 빌더가 Vercel 주소를 새로고침하며 피드백하는 게 빠르기 때문. **예외(먼저 상의)**: 위험한 git 작업, 구조를 크게 바꾸는 변경, DB 스키마/환경변수 변경, 되돌리기 어려운 일.
-- **말투·리듬(중요)**: 따뜻하고 차근차근, 비개발자가 겁먹지 않게. 변경하면 배포까지 하고 "확인해 주세요"로 마무리한다. 큰 작업·구조 변경 전에는 방향을 먼저 상의하고, 갈리는 결정거리는 표로 짚어 묻는다. 원인은 추측하지 말고 확인(파싱·로그 등)한 뒤 고친다. 이모지는 가볍게.
+- **개발 루프 = 로컬 미리보기(`npm run dev`)**: 작업 중 화면 확인은 로컬로 한다 — 배포 없이 저장 즉시 반영. **배포는 '화면 보는 수단'이 아니다.**
+- **배포(Vercel)는 절약·묶음**: 의미 있는 단위(기능 완성·빌더 확인 요청)로 **모아서** `main`에 올린다 — 작업 브랜치 커밋 → `main` fast-forward 머지 → push → GitHub Action이 빌드·배포(§8). 자잘한 변경마다·디버깅 목적으로 배포하지 않는다(§9 배포 절약). 배포 전 lint+build 통과 확인은 필수. **예외(먼저 상의)**: 위험한 git 작업, 구조를 크게 바꾸는 변경, DB 스키마/환경변수 변경, 되돌리기 어려운 일.
+- **말투·리듬(중요)**: 따뜻하고 차근차근, 비개발자가 겁먹지 않게. 변경은 로컬로 확인하거나, 배포한 경우 "확인해 주세요"로 마무리한다. 큰 작업·구조 변경 전에는 방향을 먼저 상의하고, 갈리는 결정거리는 표로 짚어 묻는다. 원인은 추측하지 말고 로그·사실부터 확인한 뒤 고친다(§9). 이모지는 가볍게.
 
 ---
 
@@ -117,7 +118,7 @@
 ### 운영 치트시트 (자주 안 바뀌는 핵심)
 - v2.0 = 루트. Vite + React 19 + TS. 서버 한 겹: 로컬 `server/index.mjs`(Express), 배포 `api/*.mjs`(Vercel 함수).
 - 명령: `npm run dev`(로컬), `npm run build`(=bake+vite), `npm run lint`(tsc), `npm run bake`(worldview/→`lib/worldview.mjs`).
-- **배포 = `main`에 push** → Vercel 자동 배포. 작업 브랜치 `claude/wizardly-dirac-WjCg3` → `main` fast-forward 머지 → 양쪽 push. 배포 전 lint+build 통과 확인.
+- **개발 = 로컬 `npm run dev`로 보면서.** **배포 = `main`에 push** → GitHub Action(`.github/workflows/deploy.yml`)이 Vercel CLI로 빌드·배포(Vercel 자체 git 자동배포·Deploy Hook은 불안정해 안 씀 — DEVLOG §2). 작업은 `claude/wizardly-dirac-WjCg3`에서, **배포할 때만** `main`에 ff 머지+push(모아서·§9 절약). lint+build 통과 확인.
 - 저장소 = Supabase(표: `turns` / `characters` / `lore`, RLS on·정책 없음). 브라우저는 직접 접근 안 함, 서버가 **service_role** 키로만.
 - 환경변수: `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`(필수), `GEMINI_API_KEY`(미사용). **비밀 키에 `VITE_` 금지.**
 - 진단: `/api/turns`·`/api/characters`·`/api/lore` 열어 `{dbReady,error}` 확인.
