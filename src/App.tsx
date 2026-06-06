@@ -5,7 +5,7 @@ import Stories from './Stories';
 import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
 import { stripMarkdown } from './podraScript';
-import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine } from 'lucide-react';
+import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu } from 'lucide-react';
 
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
 type Story = { id: number; title: string };
@@ -279,7 +279,7 @@ export default function App() {
     <div className={'page ' + mode}>
       <header className="head">
         <button className="hamburger" onClick={() => setMenuOpen(true)} aria-label="메뉴">
-          ☰
+          <Menu size={18} />
         </button>
         <p className="story-tag">{storyTitle}</p>
         <button
