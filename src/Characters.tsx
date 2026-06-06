@@ -441,11 +441,9 @@ export default function Characters({
                                     alt=""
                                   />
                                   <div className="bond-fname">{firstName(b.name)}</div>
+                                  {b.category && <div className="bond-rel">{b.category}</div>}
                                 </div>
-                                <div className="bond-body">
-                                  {b.category && <span className="bond-cat">{b.category}</span>}
-                                  {b.description && <div className="bond-desc">{b.description}</div>}
-                                </div>
+                                {b.description && <div className="bond-desc">{b.description}</div>}
                               </li>
                             );
                           })}
