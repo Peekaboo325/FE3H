@@ -5,7 +5,7 @@ import Stories from './Stories';
 import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
 import { stripMarkdown } from './podraScript';
-import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu } from 'lucide-react';
+import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon } from 'lucide-react';
 
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
 type Story = { id: number; title: string };
@@ -30,6 +30,7 @@ export default function App() {
   );
   const 끝 = useRef<HTMLDivElement>(null);
   const editRef = useRef<HTMLTextAreaElement>(null);
+  const composeRef = useRef<HTMLTextAreaElement>(null);
 
   function 모드전환() {
     setMode((m) => {
@@ -111,6 +112,15 @@ export default function App() {
       el.style.height = Math.min(el.scrollHeight, window.innerHeight * 0.7) + 'px';
     }
   }, [editText, editingTurn]);
+
+  // 입력칸도 분량에 맞춰 자동 높이(처음 1줄 → 줄바꿈 시 늘어남, 40vh 상한).
+  useEffect(() => {
+    const el = composeRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, window.innerHeight * 0.4) + 'px';
+    }
+  }, [input]);
 
   // 이야기 전환(불러오기).
   function switchStory(id: number, title: string) {
@@ -279,7 +289,7 @@ export default function App() {
     <div className={'page ' + mode}>
       <header className="head">
         <button className="hamburger" onClick={() => setMenuOpen(true)} aria-label="메뉴">
-          <Menu size={18} />
+          <MenuIcon size={17} />
         </button>
         <p className="story-tag">{storyTitle}</p>
         <button
@@ -287,7 +297,7 @@ export default function App() {
           onClick={모드전환}
           title={mode === 'read' ? '집필 모드로' : '읽기 모드로'}
         >
-          {mode === 'read' ? <PenLine size={18} /> : <BookOpen size={18} />}
+          {mode === 'read' ? <PenLine size={17} /> : <BookOpen size={17} />}
         </button>
       </header>
 
@@ -381,19 +391,27 @@ export default function App() {
 
       {mode === 'write' && (
         <footer className="compose">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) 보내기();
-          }}
-          placeholder="이야기를 이어 적으세요…  (Ctrl/⌘ + Enter 로 전송)"
-          rows={3}
-          disabled={busy}
-        />
-        <button onClick={보내기} disabled={busy || !input.trim()}>
-          {busy ? '집필 중…' : '잇기'}
-        </button>
+          <div className="compose-inner">
+            <textarea
+              ref={composeRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter') return;
+                if (e.nativeEvent.isComposing) return; // 한글 조합 중 엔터 무시
+                if (window.matchMedia('(pointer: coarse)').matches) return; // 모바일: 엔터=줄바꿈
+                if (e.shiftKey) return; // Shift+Enter = 줄바꿈
+                e.preventDefault(); // 데스크탑: 엔터 = 전송
+                보내기();
+              }}
+              placeholder="운명의 장을 이어가십시오."
+              rows={1}
+              disabled={busy}
+            />
+            <button onClick={보내기} disabled={busy || !input.trim()}>
+              {busy ? '집필 중…' : '잇기'}
+            </button>
+          </div>
         </footer>
       )}
     </div>

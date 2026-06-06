@@ -55,6 +55,7 @@ body {
   /* 한글은 단어(어절) 단위로 줄바꿈 — '아름다움'이 중간에서 안 끊기게 */
   word-break: keep-all;
   overflow-wrap: break-word;
+  overflow-x: hidden; /* 풀폭 입력 바(100vw)로 인한 가로 스크롤 방지 */
 }
 
 .page {
@@ -99,15 +100,15 @@ body::before {
 .hamburger,
 .mode-toggle {
   position: absolute;
-  top: 10px;
+  top: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 34px;
+  width: 34px;
+  height: 30px;
   padding: 0;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 9px;
   background: var(--surface);
   color: var(--text-dim);
   cursor: pointer;
@@ -283,15 +284,28 @@ body::before {
 
 /* ── 입력 바 ──────────────────────────────────────────── */
 .compose {
-  display: flex;
-  gap: 8px;
-  padding: 12px 20px 24px;
+  /* 화면 전체 너비로 꽉 찬 입력 바 (내용은 가운데 720px) */
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
   border-top: 1px solid var(--border);
   background: var(--bg);
+  padding: 12px 0 22px;
+}
+.compose-inner {
+  display: flex;
+  gap: 8px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 .compose textarea {
   flex: 1;
   resize: none;
+  min-height: 0;
+  max-height: 40vh;
+  overflow-y: auto;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
