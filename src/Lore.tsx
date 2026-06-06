@@ -38,7 +38,7 @@ export default function LorePanel({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        await alertAsk({ message: '새기지 못했어요.', detail: data.error || '알 수 없는 까닭' });
+        await alertAsk({ message: '기록하지 못했어요.', detail: data.error || '알 수 없는 까닭' });
         return;
       }
       await refresh();
@@ -68,14 +68,14 @@ export default function LorePanel({
     <div className="modal-bg" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>{editing ? (editing.id ? '견문록 고치기' : '새 견문록') : '견문록'}</h2>
+          <h2>{editing ? (editing.id ? '견문록 편집' : '새 견문록') : '견문록'}</h2>
           <button className="x" onClick={onClose}>
             ✕
           </button>
         </div>
 
         {!dbReady && (
-          <p className="warn">아직 기록의 샘이 닿지 않아 견문록을 새길 수 없어요.</p>
+          <p className="warn">아직 기록의 샘이 닿지 않아 견문록을 기록할 수 없어요.</p>
         )}
         {dbReady && err && (
           <p className="warn">
@@ -96,13 +96,13 @@ export default function LorePanel({
             </button>
             {storyId != null && (
               <button className="new" onClick={() => setImporting(true)}>
-                ↧ 다른 장에서 들이기
+                ↧ 다른 장에서 반입
               </button>
             )}
             {loading ? (
               <p className="dim">펼치는 중…</p>
             ) : entries.length === 0 ? (
-              <p className="dim">아직 새겨진 견문록이 없어요.</p>
+              <p className="dim">아직 기록된 견문록이 없어요.</p>
             ) : (
               <ul className="char-list">
                 {entries.map((e) => (
@@ -164,9 +164,9 @@ export default function LorePanel({
 
             <div className="editor-actions">
               <button className="primary" onClick={save} disabled={saving}>
-                {saving ? '새기는 중…' : '새김'}
+                {saving ? '기록하는 중…' : '기록'}
               </button>
-              <button onClick={() => setEditing(null)}>철회</button>
+              <button onClick={() => setEditing(null)}>취소</button>
               {editing.id && (
                 <button
                   className={'danger' + (armed ? ' armed' : '')}
@@ -181,7 +181,7 @@ export default function LorePanel({
 
         {importing && storyId != null && (
           <ImportDialog<Lore>
-            title="견문록 들이기"
+            title="견문록 반입"
             endpoint="/api/lore"
             itemsKey="lore"
             payloadKey="entry"

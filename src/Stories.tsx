@@ -141,7 +141,7 @@ export default function Stories({
         </div>
 
         {!dbReady && (
-          <p className="warn">기록의 샘이 닿지 않아 운명의 장을 새기거나 갈무리할 수 없어요.</p>
+          <p className="warn">기록의 샘이 닿지 않아 운명의 장을 기록하거나 갈무리할 수 없어요.</p>
         )}
         {dbReady && err && (
           <p className="warn">
@@ -153,7 +153,7 @@ export default function Stories({
 
         <div className="modal-body">
           <p className="dim small">
-            여러 운명의 장을 두고 오갈 수 있어요. 기록은 절로 새겨지고, 지금 펼친 장에 쌓입니다.
+            여러 운명의 장을 두고 오갈 수 있어요. 기록은 절로 남고, 지금 펼친 장에 쌓입니다.
             (인물·견문록은 장마다 따로 둡니다.)
           </p>
           <button className="new" onClick={새이야기}>
@@ -179,7 +179,7 @@ export default function Stories({
                         if (e.key === 'Escape') setRenamingId(null);
                       }}
                     />
-                    <button className="rowbtn" title="새김" onClick={() => 개칭저장(s)}>
+                    <button className="rowbtn" title="기록" onClick={() => 개칭저장(s)}>
                       <Check size={15} />
                     </button>
                     <button className="rowbtn" title="물림" onClick={() => setRenamingId(null)}>

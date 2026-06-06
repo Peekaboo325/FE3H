@@ -80,7 +80,7 @@ export function DialogHost() {
         <div className="dialog-actions">
           {isConfirm && (
             <button className="dialog-btn" onClick={() => 닫기(false)}>
-              {(o as ConfirmOpts).cancelLabel || '철회'}
+              {(o as ConfirmOpts).cancelLabel || '취소'}
             </button>
           )}
           <button

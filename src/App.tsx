@@ -358,10 +358,10 @@ export default function App() {
                     rows={2}
                   />
                   <div className="turn-actions">
-                    <button className="turn-btn" title="새김" onClick={() => 턴저장(editingTurn!)}>
+                    <button className="turn-btn" title="기록" onClick={() => 턴저장(editingTurn!)}>
                       <Check size={16} />
                     </button>
-                    <button className="turn-btn" title="철회" onClick={() => setEditingTurn(null)}>
+                    <button className="turn-btn" title="취소" onClick={() => setEditingTurn(null)}>
                       <X size={16} />
                     </button>
                   </div>
@@ -395,7 +395,7 @@ export default function App() {
                               <RotateCcw size={16} />
                             </button>
                           )}
-                          <button className="turn-btn" title="고침" onClick={() => 턴수정시작(t)}>
+                          <button className="turn-btn" title="편집" onClick={() => 턴수정시작(t)}>
                             <Pencil size={16} />
                           </button>
                           <button

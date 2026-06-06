@@ -95,7 +95,7 @@ export default function ImportDialog<T extends { id?: number }>({
 
         <div className="modal-body">
           <p className="dim small">
-            다른 장에서 골라 <b>필사</b>해 들입니다. 들인 뒤 고쳐도 본래의 장은 그대로예요.
+            다른 장에서 골라 <b>필사</b>해 반입합니다. 반입한 뒤 고쳐도 본래의 장은 그대로예요.
           </p>
 
           <label>
@@ -129,7 +129,7 @@ export default function ImportDialog<T extends { id?: number }>({
               {loading ? (
                 <p className="dim">펼치는 중…</p>
               ) : items.length === 0 ? (
-                <p className="dim">그 장엔 들일 것이 없어요.</p>
+                <p className="dim">그 장엔 반입할 것이 없어요.</p>
               ) : (
                 <ul className="char-list" style={{ marginTop: 10 }}>
                   {items.map((it) => (
@@ -150,9 +150,9 @@ export default function ImportDialog<T extends { id?: number }>({
 
               <div className="editor-actions">
                 <button className="primary" onClick={가져오기} disabled={busy || picked.size === 0}>
-                  {busy ? '들이는 중…' : `${picked.size}개 들이기`}
+                  {busy ? '반입 중…' : `${picked.size}개 반입`}
                 </button>
-                <button onClick={onClose}>철회</button>
+                <button onClick={onClose}>취소</button>
               </div>
             </>
           )}
