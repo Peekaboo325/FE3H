@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { defaultStoryTitle } from './storyTitle';
 
 type Story = { id: number; title: string; updated_at?: string };
 
@@ -39,7 +40,7 @@ export default function Stories({
     const r = await fetch('/api/stories', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ title: `이야기 ${list.length + 1}` }),
+      body: JSON.stringify({ title: defaultStoryTitle(list.length + 1) }),
     });
     const d = await r.json();
     if (!r.ok || d.error || !d.story) {
@@ -105,7 +106,7 @@ export default function Stories({
         const cr = await fetch('/api/stories', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ title: '이야기 1' }),
+          body: JSON.stringify({ title: defaultStoryTitle(1) }),
         });
         const cd = await cr.json();
         if (cd.story) onSwitch(cd.story.id, cd.story.title);
@@ -117,7 +118,7 @@ export default function Stories({
     <div className="modal-bg" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>이야기</h2>
+          <h2>천각의 박동</h2>
           <button className="x" onClick={onClose}>
             ✕
           </button>
@@ -140,7 +141,7 @@ export default function Stories({
             (인물·견문록은 모든 이야기가 공유해요.)
           </p>
           <button className="new" onClick={새이야기}>
-            ＋ 새 이야기
+            ＋ 새로운 운명의 장
           </button>
           {loading ? (
             <p className="dim">불러오는 중…</p>

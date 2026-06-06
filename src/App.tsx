@@ -5,6 +5,7 @@ import Stories from './Stories';
 import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
 import { stripMarkdown } from './podraScript';
+import { defaultStoryTitle } from './storyTitle';
 import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon } from 'lucide-react';
 
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
@@ -47,10 +48,11 @@ export default function App() {
   }
 
   // 드로어 메뉴 항목 — 늘릴 땐 여기 한 줄만 추가하면 됨.
+  // '천각의 박동'(이야기/세이브)은 가장 아래에 둔다.
   const menuItems: MenuItem[] = [
-    { label: '이야기', hint: '세이브 전환·관리', onClick: () => setShowStories(true) },
-    { label: '인물', hint: '캐릭터 프로필', onClick: () => setShowChars(true) },
-    { label: '견문록', hint: '연재 고유 설정', onClick: () => setShowLore(true) },
+    { label: '인물', onClick: () => setShowChars(true) },
+    { label: '견문록', onClick: () => setShowLore(true) },
+    { label: '천각의 박동', onClick: () => setShowStories(true) },
   ];
 
   // 특정 이야기의 본문을 불러온다.
@@ -87,7 +89,7 @@ export default function App() {
           const cr = await fetch('/api/stories', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ title: '이야기 1' }),
+            body: JSON.stringify({ title: defaultStoryTitle(1) }),
           });
           const cd = await cr.json();
           cur = cd.story;

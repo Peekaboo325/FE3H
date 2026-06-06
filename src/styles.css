@@ -159,7 +159,7 @@ body::before {
 }
 .drawer.open { transform: translateX(0); }
 .drawer-head { padding: 4px 10px 16px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
-.drawer-title { font-size: 20px; letter-spacing: 0.25em; }
+.drawer-title { font-size: 20px; letter-spacing: normal; }
 .drawer-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
 .drawer-list { display: flex; flex-direction: column; gap: 2px; }
 .drawer-item {

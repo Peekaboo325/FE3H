@@ -19,7 +19,7 @@ export default function Menu({
       <div className={'drawer-bg' + (open ? ' show' : '')} onClick={onClose} />
       <nav className={'drawer' + (open ? ' open' : '')} aria-hidden={!open}>
         <div className="drawer-head">
-          <div className="drawer-title">풍화설월</div>
+          <div className="drawer-title">Fire Emblem</div>
           {subtitle && <div className="drawer-sub">{subtitle}</div>}
         </div>
         <div className="drawer-list">
