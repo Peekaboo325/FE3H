@@ -44,6 +44,16 @@ function EmptyTab() {
   return <p className="empty-tab dim">아직 펼쳐지지 않은 장입니다.</p>;
 }
 
+// 신원 카드의 한 줄(라벨 + 값).
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="info-row">
+      <span className="info-row-label">{label}</span>
+      <span className="info-row-value">{value}</span>
+    </div>
+  );
+}
+
 export default function Characters({
   storyId,
   onClose,
@@ -202,12 +212,21 @@ export default function Characters({
             <div className="char-view-body">
               {tab === '약력' ? (
                 <>
-                  {viewing.faction && <ViewSection label="신원" text={viewing.faction} />}
+                  {(viewing.faction || viewing.rank || viewing.crest) && (
+                    <div className="info-card">
+                      <div className="info-card-title">신원</div>
+                      {viewing.faction && <InfoRow label="소속" value={viewing.faction} />}
+                      {viewing.rank && <InfoRow label="신분" value={viewing.rank} />}
+                      {viewing.crest && <InfoRow label="문장" value={viewing.crest} />}
+                    </div>
+                  )}
                   {viewing.appearance && <ViewSection label="용모" text={viewing.appearance} />}
                   {viewing.personality && <ViewSection label="성향" text={viewing.personality} />}
                   {viewing.combat && <ViewSection label="전법" text={viewing.combat} />}
                   {viewing.notes && <ViewSection label="비고" text={viewing.notes} />}
                   {!viewing.faction &&
+                    !viewing.rank &&
+                    !viewing.crest &&
                     !viewing.appearance &&
                     !viewing.personality &&
                     !viewing.combat &&
@@ -288,6 +307,8 @@ export default function Characters({
               둥근 명부 얼굴을 만드세요. 안 만들면 목록엔 초상이 그대로 쓰입니다.
             </p>
 
+            <div className="editor-section">신원</div>
+
             <div className="row2">
               <label>
                 성명 *
@@ -316,11 +337,27 @@ export default function Characters({
             </label>
 
             <label>
-              신원
+              소속
               <input
                 value={editing.faction || ''}
                 onChange={(e) => set('faction', e.target.value)}
-                placeholder="예: 퍼거스 신성 왕국의 왕세자"
+                placeholder="예: 퍼거스 신성 왕국"
+              />
+            </label>
+            <label>
+              신분
+              <input
+                value={editing.rank || ''}
+                onChange={(e) => set('rank', e.target.value)}
+                placeholder="예: 왕자 / 국왕"
+              />
+            </label>
+            <label>
+              문장
+              <input
+                value={editing.crest || ''}
+                onChange={(e) => set('crest', e.target.value)}
+                placeholder="예: 블레다드의 소문장"
               />
             </label>
 

@@ -745,6 +745,34 @@ body::before {
 }
 .view-text { font-size: 14px; color: var(--text); line-height: 1.75; white-space: pre-wrap; }
 
+/* 신원 정보 카드 (레퍼런스 '기본 정보' 박스) */
+.info-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.info-card-title {
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.info-row { display: flex; gap: 14px; padding: 6px 0; font-size: 14px; }
+.info-row-label { flex: 0 0 56px; color: var(--text-dim); }
+.info-row-value { color: var(--text); white-space: pre-wrap; }
+
+/* 편집 폼 섹션 제목 */
+.editor-section {
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin: 8px 0 -2px;
+}
+
 /* 편집 폼 */
 .editor { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
 .editor label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-dim); }
