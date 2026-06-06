@@ -78,7 +78,7 @@ body {
 }
 
 /* 읽기 모드 — 본문을 소설처럼 (더 크게·여유롭게) */
-.read .scroll-inner { padding: 24px 24px 64px; }
+.read .scroll-inner { padding: 24px 24px calc(64px + env(safe-area-inset-bottom)); }
 .read .turn { margin: 22px 0; }
 .read .turn.story { font-size: 16px; line-height: 1.95; }
 
@@ -97,7 +97,8 @@ body::before {
   position: relative;
   text-align: center;
   width: 100%;
-  padding: 14px 16px 10px;
+  /* 다이나믹 아일랜드/상태바와 겹치지 않게 위 안전영역만큼 내려준다(웹앱 전체화면) */
+  padding: calc(14px + env(safe-area-inset-top)) 16px 10px;
   min-height: 30px;
 }
 .story-tag {
@@ -325,7 +326,8 @@ body::before {
   width: 100%;
   border-top: 1px solid var(--border);
   background: var(--bg);
-  padding: 12px 0 22px;
+  /* 홈 인디케이터/둥근 모서리 위로 들어 올리게 아래 안전영역만큼 더한다 */
+  padding: 12px 0 calc(22px + env(safe-area-inset-bottom));
 }
 .compose-inner {
   display: flex;
