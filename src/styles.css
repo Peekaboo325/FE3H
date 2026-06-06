@@ -555,8 +555,11 @@ body::before {
   object-fit: cover;
   flex-shrink: 0;
 }
-/* 명부 목록 썸네일은 얼굴 클로즈업 둥근 형태(레퍼런스 캐릭터 명부 느낌) */
-.thumb.round { border-radius: 50%; }
+/* 명부 목록 썸네일은 얼굴 클로즈업 둥근 형태(레퍼런스 캐릭터 명부 느낌) + 테두리 링 */
+.thumb.round {
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+}
 .thumb.empty {
   display: flex;
   align-items: center;
@@ -721,14 +724,10 @@ body::before {
 .check { flex-direction: row !important; align-items: center; gap: 8px; }
 .check input { width: auto; }
 
-/* 편집 폼: 초상·얼굴 두 슬롯을 나란히 */
-.thumb-edit-row { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
 .thumb-edit { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.thumb-cap { font-size: 12px; color: var(--text-dim); }
 .thumb.big { width: 120px; height: 120px; border-radius: 12px; }
-.thumb.big.round { border-radius: 50%; }
 .thumb.big.empty { font-size: 13px; }
-.thumb-edit-links { display: flex; gap: 12px; align-items: center; }
+.thumb-edit-links { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
 
 /* 얼굴 따기(크롭) 도구 */
 .crop-modal { max-width: 420px; }

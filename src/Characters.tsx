@@ -21,9 +21,9 @@ const 빈인물 = (): Character => ({
   avatar: '',
 });
 
-// 이미지가 없을 때 쓰는 기본 그림.
-const PORTRAIT_PLACEHOLDER = '/portrait-placeholder.webp'; // 히어로(전신·인물 카드)용
-const AVATAR_PLACEHOLDER = '/avatar-placeholder.webp'; // 명부 목록 둥근 얼굴용
+// 이미지가 없을 때 쓰는 기본 그림 (매핑: 히어로=아바타 그림 / 목록 썸네일=포트레이트 그림).
+const HERO_PLACEHOLDER = '/avatar-placeholder.webp'; // 히어로(인물 카드)용
+const LIST_PLACEHOLDER = '/portrait-placeholder.webp'; // 명부 목록 둥근 썸네일용
 
 // 뷰 모드의 한 섹션(내용 있을 때만 호출).
 function ViewSection({ label, text }: { label: string; text: string }) {
@@ -155,7 +155,7 @@ export default function Characters({
                 </div>
               </div>
               <div className="char-hero-portrait">
-                <img src={viewing.thumbnail || viewing.avatar || PORTRAIT_PLACEHOLDER} alt="" />
+                <img src={viewing.thumbnail || viewing.avatar || HERO_PLACEHOLDER} alt="" />
               </div>
               <div className="char-hero-info">
                 <div className="char-hero-name">
@@ -205,7 +205,7 @@ export default function Characters({
               <ul className="char-list">
                 {chars.map((c) => (
                   <li key={c.id} className="char-row" onClick={() => setViewing(c)}>
-                    <img className="thumb round" src={c.avatar || c.thumbnail || AVATAR_PLACEHOLDER} alt="" />
+                    <img className="thumb round" src={c.avatar || c.thumbnail || LIST_PLACEHOLDER} alt="" />
                     <div className="char-meta">
                       <div className="char-name">
                         {c.name}
@@ -224,34 +224,27 @@ export default function Characters({
         {/* 편집 화면 */}
         {editing && (
           <div className="modal-body editor">
-            <div className="thumb-edit-row">
-              <div className="thumb-edit">
-                <div className="thumb-cap">초상 · 인물 카드용</div>
-                <img className="thumb big" src={editing.thumbnail || PORTRAIT_PLACEHOLDER} alt="" />
-                <label className="filebtn">
-                  초상 올리기
-                  <input type="file" accept="image/*" onChange={onPickImage} hidden />
-                </label>
-                {editing.thumbnail && (
-                  <div className="thumb-edit-links">
-                    <button className="link" onClick={() => setCropping(true)}>
-                      여기서 얼굴 따기 ▸
-                    </button>
-                    <button className="link" onClick={() => set('thumbnail', '')}>
-                      지우기
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div className="thumb-edit">
-                <div className="thumb-cap">얼굴 · 명부 목록용</div>
-                <img className="thumb big round" src={editing.avatar || AVATAR_PLACEHOLDER} alt="" />
-                {editing.avatar && (
-                  <button className="link" onClick={() => set('avatar', '')}>
-                    지우기
+            <div className="thumb-edit">
+              <img className="thumb big" src={editing.thumbnail || HERO_PLACEHOLDER} alt="" />
+              <label className="filebtn">
+                초상 올리기
+                <input type="file" accept="image/*" onChange={onPickImage} hidden />
+              </label>
+              {editing.thumbnail && (
+                <div className="thumb-edit-links">
+                  <button className="link" onClick={() => setCropping(true)}>
+                    {editing.avatar ? '얼굴 다시 따기 ▸' : '여기서 얼굴 따기 ▸'}
                   </button>
-                )}
-              </div>
+                  {editing.avatar && (
+                    <button className="link" onClick={() => set('avatar', '')}>
+                      얼굴 지우기
+                    </button>
+                  )}
+                  <button className="link" onClick={() => set('thumbnail', '')}>
+                    초상 지우기
+                  </button>
+                </div>
+              )}
             </div>
             <p className="dim small">
               WebP로 자동 변환됩니다(투명 배경 유지·고화질). 초상을 올린 뒤 <b>‘여기서 얼굴 따기’</b>로
