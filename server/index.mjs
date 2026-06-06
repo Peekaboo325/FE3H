@@ -21,6 +21,7 @@ import {
   createStory,
   renameStory,
   deleteStory,
+  copyStory,
   touchStory,
   listCharacters,
   saveCharacter,
@@ -78,10 +79,11 @@ app.get('/api/stories', async (_req, res) => {
 });
 
 app.post('/api/stories', async (req, res) => {
-  const { id, title } = req.body || {};
-  const r = id
-    ? await renameStory(Number(id), (title || '').trim() || '제목 없는 이야기')
-    : await createStory((title || '').trim());
+  const { id, title, copy_from } = req.body || {};
+  let r;
+  if (copy_from) r = await copyStory(Number(copy_from));
+  else if (id) r = await renameStory(Number(id), (title || '').trim() || '제목 없는 이야기');
+  else r = await createStory((title || '').trim());
   res.status(r.error ? 500 : 200).json(r);
 });
 

@@ -4,7 +4,7 @@
 //   POST {id, title}      → 이름 바꾸기
 //   DELETE ?id=123        → 삭제 (그 이야기의 본문도 cascade 삭제)
 
-import { listStories, createStory, renameStory, deleteStory, dbReady } from '../lib/db.mjs';
+import { listStories, createStory, renameStory, deleteStory, copyStory, dbReady } from '../lib/db.mjs';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -15,10 +15,11 @@ export default async function handler(req, res) {
       return;
     }
     if (req.method === 'POST') {
-      const { id, title } = req.body || {};
-      const r = id
-        ? await renameStory(Number(id), (title || '').trim() || '제목 없는 이야기')
-        : await createStory((title || '').trim());
+      const { id, title, copy_from } = req.body || {};
+      let r;
+      if (copy_from) r = await copyStory(Number(copy_from));
+      else if (id) r = await renameStory(Number(id), (title || '').trim() || '제목 없는 이야기');
+      else r = await createStory((title || '').trim());
       res.status(r.error ? 500 : 200).end(JSON.stringify(r));
       return;
     }

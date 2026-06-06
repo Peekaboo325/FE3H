@@ -15,6 +15,7 @@ export default function Stories({
   const [loading, setLoading] = useState(true);
   const [dbReady, setDbReady] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [copyingId, setCopyingId] = useState<number | null>(null);
 
   async function load() {
     setLoading(true);
@@ -46,6 +47,25 @@ export default function Stories({
       return;
     }
     onSwitch(d.story.id, d.story.title); // 새 이야기로 전환
+  }
+
+  async function 복사(s: Story) {
+    setCopyingId(s.id);
+    try {
+      const r = await fetch('/api/stories', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ copy_from: s.id }),
+      });
+      const d = await r.json();
+      if (!r.ok || d.error) {
+        alert('복사 실패: ' + (d.error || ''));
+        return;
+      }
+      await load();
+    } finally {
+      setCopyingId(null);
+    }
   }
 
   async function 이름바꾸기(s: Story) {
@@ -136,6 +156,13 @@ export default function Stories({
                       {s.id === currentStoryId && <span className="tag">현재</span>}
                     </div>
                   </div>
+                  <button
+                    className="rowbtn"
+                    onClick={() => 복사(s)}
+                    disabled={copyingId === s.id}
+                  >
+                    {copyingId === s.id ? '복사 중…' : '복사'}
+                  </button>
                   <button className="rowbtn" onClick={() => 이름바꾸기(s)}>
                     이름
                   </button>
