@@ -7,6 +7,7 @@ import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
 import { splitAliases } from './nameUtils';
 import Markdown from './Markdown';
+import { ImagePlus, Crop, Eraser, Flame } from 'lucide-react';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -330,6 +331,31 @@ export default function Characters({
                   src={editing.thumbnail || HERO_PLACEHOLDER}
                   alt=""
                 />
+                <div className="portrait-tools">
+                  <label className="ptool" data-tip="초상 등록">
+                    <ImagePlus size={18} />
+                    <input type="file" accept="image/*" onChange={onPickImage} hidden />
+                  </label>
+                  {editing.thumbnail && (
+                    <button className="ptool" data-tip="초점 지정" onClick={() => setCropping(true)}>
+                      <Crop size={18} />
+                    </button>
+                  )}
+                  {editing.avatar && (
+                    <button className="ptool" data-tip="초점 해제" onClick={() => set('avatar', '')}>
+                      <Eraser size={18} />
+                    </button>
+                  )}
+                  {editing.thumbnail && (
+                    <button
+                      className="ptool danger"
+                      data-tip="초상 소각"
+                      onClick={() => set('thumbnail', '')}
+                    >
+                      <Flame size={18} />
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="char-hero-info hero-edit-info">
                 <label className="hero-field">
@@ -361,29 +387,6 @@ export default function Characters({
                   />
                 </label>
               </div>
-            </div>
-
-            {/* 초상 도구 */}
-            <div className="edit-portrait-tools">
-              <label className="filebtn">
-                초상 올리기
-                <input type="file" accept="image/*" onChange={onPickImage} hidden />
-              </label>
-              {editing.thumbnail && (
-                <button className="link" onClick={() => setCropping(true)}>
-                  {editing.avatar ? '얼굴 다시 따기 ▸' : '여기서 얼굴 따기 ▸'}
-                </button>
-              )}
-              {editing.avatar && (
-                <button className="link" onClick={() => set('avatar', '')}>
-                  얼굴 지우기
-                </button>
-              )}
-              {editing.thumbnail && (
-                <button className="link" onClick={() => set('thumbnail', '')}>
-                  초상 지우기
-                </button>
-              )}
             </div>
 
             <div className="char-view-body">

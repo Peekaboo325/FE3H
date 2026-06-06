@@ -829,25 +829,66 @@ body::before {
 .hero-edit-info { gap: 10px; }
 .hero-field { display: flex; flex-direction: column; gap: 3px; }
 .hero-lab { font-size: 11px; color: rgba(255, 255, 255, 0.6); }
+/* 히어로 입력칸 — 박스 대신 밑줄형(선 위에 타이핑) */
 .hero-inp {
   width: 100%;
-  background: rgba(0, 0, 0, 0.34);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 0;
   color: #fff;
-  padding: 6px 10px;
+  padding: 4px 2px;
   font-size: 14px;
 }
+.hero-inp:focus { outline: none; border-bottom-color: var(--accent); }
 .hero-inp.name { font-size: 20px; font-weight: 600; }
 .hero-inp.en { font-size: 13px; color: #d6d4e2; }
-.edit-portrait-tools {
+
+/* 초상 위 아이콘 툴바 (하단 중앙, hover 시 툴팁) */
+.portrait-tools {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 10px;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  justify-content: center;
+  gap: 8px;
+}
+.ptool {
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 0 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
 }
+.ptool:hover { background: rgba(0, 0, 0, 0.7); border-color: var(--accent); }
+.ptool.danger:hover { border-color: var(--danger); color: var(--danger); }
+.ptool::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+}
+.ptool:hover::after { opacity: 1; }
 /* 카드 안 입력 행 */
 .edit-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
 .edit-row-label { flex: 0 0 48px; color: var(--text-dim); font-size: 13px; }
