@@ -215,14 +215,29 @@ export default function Characters({
             <div className="char-view-body">
               {tab === '약력' ? (
                 <>
-                  <div className="info-card">
-                    <div className="info-card-title">신원</div>
-                    {viewing.faction && <InfoRow label="소속" value={viewing.faction} />}
-                    {viewing.rank && <InfoRow label="신분" value={viewing.rank} />}
-                    {viewing.crest && <InfoRow label="문장" value={viewing.crest} />}
-                    <InfoRow label="상태" value={상태label[viewing.life_status || 'alive']} />
+                  <div className="info-grid">
+                    <div className="info-card">
+                      <div className="info-card-title">신원</div>
+                      {viewing.faction && <InfoRow label="소속" value={viewing.faction} />}
+                      {viewing.rank && <InfoRow label="신분" value={viewing.rank} />}
+                      {viewing.crest && <InfoRow label="문장" value={viewing.crest} />}
+                      <InfoRow label="상태" value={상태label[viewing.life_status || 'alive']} />
+                    </div>
+                    {(viewing.height ||
+                      viewing.build ||
+                      viewing.hair ||
+                      viewing.iris ||
+                      viewing.impression) && (
+                      <div className="info-card">
+                        <div className="info-card-title">용모</div>
+                        {viewing.height && <InfoRow label="신장" value={viewing.height} />}
+                        {viewing.build && <InfoRow label="체격" value={viewing.build} />}
+                        {viewing.hair && <InfoRow label="모발" value={viewing.hair} />}
+                        {viewing.iris && <InfoRow label="홍채" value={viewing.iris} />}
+                        {viewing.impression && <InfoRow label="인상" value={viewing.impression} />}
+                      </div>
+                    )}
                   </div>
-                  {viewing.appearance && <ViewSection label="용모" text={viewing.appearance} />}
                   {viewing.personality && <ViewSection label="성향" text={viewing.personality} />}
                   {viewing.combat && <ViewSection label="전법" text={viewing.combat} />}
                   {viewing.notes && <ViewSection label="비고" text={viewing.notes} />}
@@ -367,13 +382,49 @@ export default function Characters({
               </select>
             </label>
 
+            <div className="editor-section">용모</div>
+            <div className="row2">
+              <label>
+                신장
+                <input
+                  value={editing.height || ''}
+                  onChange={(e) => set('height', e.target.value)}
+                  placeholder="예: 185cm"
+                />
+              </label>
+              <label>
+                체격
+                <input
+                  value={editing.build || ''}
+                  onChange={(e) => set('build', e.target.value)}
+                  placeholder="예: 다부진 장신"
+                />
+              </label>
+            </div>
+            <div className="row2">
+              <label>
+                모발
+                <input
+                  value={editing.hair || ''}
+                  onChange={(e) => set('hair', e.target.value)}
+                  placeholder="예: 금발"
+                />
+              </label>
+              <label>
+                홍채
+                <input
+                  value={editing.iris || ''}
+                  onChange={(e) => set('iris', e.target.value)}
+                  placeholder="예: 청색"
+                />
+              </label>
+            </div>
             <label>
-              용모
-              <textarea
-                rows={2}
-                value={editing.appearance || ''}
-                onChange={(e) => set('appearance', e.target.value)}
-                placeholder="머리·눈·체격 등"
+              인상
+              <input
+                value={editing.impression || ''}
+                onChange={(e) => set('impression', e.target.value)}
+                placeholder="예: 서늘하고 형형한 눈빛"
               />
             </label>
             <label>

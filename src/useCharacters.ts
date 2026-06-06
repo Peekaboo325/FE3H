@@ -10,7 +10,12 @@ export type Character = {
   rank?: string; // 신분 (예: 왕자 / 국왕)
   crest?: string; // 문장 (예: 블레다드의 소문장)
   title?: string;
-  appearance?: string;
+  appearance?: string; // (구) 외양 자유서술 — 미사용, 용모 5항목으로 대체
+  height?: string; // 신장
+  build?: string; // 체격
+  hair?: string; // 모발
+  iris?: string; // 홍채
+  impression?: string; // 인상
   personality?: string;
   combat?: string;
   notes?: string;

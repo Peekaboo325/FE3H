@@ -596,7 +596,7 @@ body::before {
      --hero-h(높이) · --hero-portrait-w(초상 폭 비율) · 그라데이션 · 초상 object-fit/position */
 .char-view { --hero-h: 280px; --hero-portrait-w: 46%; }
 /* 인물 뷰 한정으로 모달을 살짝 넓혀 가로 히어로에 여유를 준다(긴 이름 한 줄 + 큰 글씨) */
-.modal.has-hero { max-width: 600px; }
+.modal.has-hero { max-width: 760px; }
 .char-hero {
   position: relative;
   display: flex;
@@ -736,14 +736,30 @@ body::before {
   .char-tabs { position: sticky; top: env(safe-area-inset-top); z-index: 3; }
   .char-tab { padding: 12px 4px; font-size: 13px; }
 }
-.view-section { margin: 0 0 16px; }
+/* 성향·전법·비고 = 글 카드 (신원·용모 카드와 같은 박스) */
+.view-section {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 0 0 16px;
+}
 .view-label {
-  font-size: 12px;
+  font-size: 16px;
   color: var(--accent);
-  letter-spacing: 0.08em;
-  margin-bottom: 5px;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  margin-bottom: 10px;
 }
 .view-text { font-size: 14px; color: var(--text); line-height: 1.75; white-space: pre-wrap; }
+
+/* 신원·용모 2분할 (데스크탑 2열 / 모바일 1열로 자동) */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
 
 /* 신원 정보 카드 (레퍼런스 '기본 정보' 박스) */
 .info-card {
@@ -751,7 +767,6 @@ body::before {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px 16px;
-  margin-bottom: 16px;
 }
 .info-card-title {
   font-size: 16px;
