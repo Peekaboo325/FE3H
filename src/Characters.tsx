@@ -197,7 +197,7 @@ export default function Characters({
   useEffect(() => {
     setTab('약력');
     setBondsOpen(false);
-  }, [viewing]); // 다른 인물 열면 약력부터·인연 접힘
+  }, [viewing?.id]); // 다른 인물(id 변경) 열 때만 약력·인연 접힘 초기화
 
   function set<K extends keyof Character>(k: K, v: Character[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
