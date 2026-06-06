@@ -6,6 +6,7 @@ export type Character = {
   name: string;
   english_name?: string;
   aliases?: string;
+  gender?: string; // 성별 (남성/여성)
   faction?: string; // 소속
   rank?: string; // 신분 (예: 왕자 / 국왕)
   crest?: string; // 문장 (예: 블레다드의 소문장)

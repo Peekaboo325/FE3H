@@ -555,6 +555,34 @@ body::before {
   object-fit: cover;
   flex-shrink: 0;
 }
+/* 생사 상태별 초상/썸네일 효과 */
+.fx-dead { filter: grayscale(1); }
+.fx-unknown { filter: grayscale(1) brightness(0.5); }
+.thumb-wrap { position: relative; display: inline-flex; flex-shrink: 0; }
+.thumb-q {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  font-size: 18px;
+  pointer-events: none;
+}
+.hero-q {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 700;
+  font-size: 84px;
+  pointer-events: none;
+}
+
 /* 명부 목록 썸네일은 얼굴 클로즈업 둥근 형태(레퍼런스 캐릭터 명부 느낌) + 테두리 링 */
 .thumb.round {
   border-radius: 50%;
@@ -745,7 +773,7 @@ body::before {
   margin: 0 0 16px;
 }
 .view-label {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--accent);
   letter-spacing: 0.02em;
   font-weight: 700;
@@ -769,7 +797,7 @@ body::before {
   padding: 14px 16px;
 }
 .info-card-title {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--accent);
   letter-spacing: 0.02em;
   font-weight: 700;

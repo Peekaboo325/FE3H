@@ -29,6 +29,10 @@ const LIST_PLACEHOLDER = '/portrait-placeholder.webp'; // 명부 목록 둥근 �
 // 생사 상태 → 표시 라벨
 const 상태label: Record<string, string> = { alive: '생존', deceased: '사망', unknown: '불명' };
 
+// 생사 상태 → 초상/썸네일 효과 클래스 (사망=흑백, 불명=흑백+어둡게)
+const statusFx = (s?: string) =>
+  s === 'deceased' ? 'fx-dead' : s === 'unknown' ? 'fx-unknown' : '';
+
 // 뷰 모드의 한 섹션(내용 있을 때만 호출).
 function ViewSection({ label, text }: { label: string; text: string }) {
   return (
@@ -179,7 +183,12 @@ export default function Characters({
                 </div>
               </div>
               <div className="char-hero-portrait">
-                <img src={viewing.thumbnail || viewing.avatar || HERO_PLACEHOLDER} alt="" />
+                <img
+                  className={statusFx(viewing.life_status)}
+                  src={viewing.thumbnail || viewing.avatar || HERO_PLACEHOLDER}
+                  alt=""
+                />
+                {viewing.life_status === 'unknown' && <span className="hero-q">?</span>}
               </div>
               <div className="char-hero-info">
                 <div className="char-hero-name">
@@ -218,6 +227,7 @@ export default function Characters({
                   <div className="info-grid">
                     <div className="info-card">
                       <div className="info-card-title">신원</div>
+                      {viewing.gender && <InfoRow label="성별" value={viewing.gender} />}
                       {viewing.faction && <InfoRow label="소속" value={viewing.faction} />}
                       {viewing.rank && <InfoRow label="신분" value={viewing.rank} />}
                       {viewing.crest && <InfoRow label="문장" value={viewing.crest} />}
@@ -271,7 +281,14 @@ export default function Characters({
               <ul className="char-list">
                 {chars.map((c) => (
                   <li key={c.id} className="char-row" onClick={() => setViewing(c)}>
-                    <img className="thumb round" src={c.avatar || c.thumbnail || LIST_PLACEHOLDER} alt="" />
+                    <span className="thumb-wrap">
+                      <img
+                        className={'thumb round ' + statusFx(c.life_status)}
+                        src={c.avatar || c.thumbnail || LIST_PLACEHOLDER}
+                        alt=""
+                      />
+                      {c.life_status === 'unknown' && <span className="thumb-q">?</span>}
+                    </span>
                     <div className="char-meta">
                       <div className="char-name">
                         {c.name}
@@ -346,6 +363,14 @@ export default function Characters({
               <input value={editing.aliases || ''} onChange={(e) => set('aliases', e.target.value)} />
             </label>
 
+            <label>
+              성별
+              <select value={editing.gender || ''} onChange={(e) => set('gender', e.target.value)}>
+                <option value="">—</option>
+                <option value="남성">남성</option>
+                <option value="여성">여성</option>
+              </select>
+            </label>
             <label>
               소속
               <input
