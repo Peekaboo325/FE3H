@@ -716,8 +716,8 @@ body::before {
   .char-view { --hero-h: 230px; --hero-portrait-w: 40%; }
 }
 .vchip {
-  font-size: 12px;
-  padding: 4px 10px;
+  font-size: 10px;
+  padding: 3px 9px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.13);
   color: #e6e4ee;
@@ -983,7 +983,69 @@ body::before {
   font-size: 14px;
   cursor: pointer;
 }
-.editor-actions .primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.editor-actions .primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  min-width: 88px; /* 로딩 스피너로 바뀌어도 크기 고정 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .editor-actions .danger { margin-left: auto; color: var(--danger); border-color: #6a4a44; }
 /* 활성화(첫 클릭): 붉게 채워 둘째 클릭을 기다린다 */
 .editor-actions .danger.armed { background: var(--danger); color: var(--accent-ink); border-color: var(--danger); }
+
+/* 버튼 로딩 스피너 (크기 고정·텍스트 대신 회전) */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 활성(등장) 북마크 켜짐 */
+.hero-btn.on { color: var(--accent); border-color: var(--accent); }
+
+/* 커스텀 드롭다운 */
+.dd { position: relative; flex: 1; min-width: 0; }
+.dd-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+.dd-val.ph { color: var(--text-faint); }
+.dd-chev { color: var(--text-dim); flex-shrink: 0; transition: transform 0.15s; }
+.dd.open .dd-chev { transform: rotate(180deg); }
+.dd-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  max-height: 240px;
+  overflow-y: auto;
+}
+.dd-opt { padding: 8px 10px; border-radius: 6px; font-size: 14px; color: var(--text); cursor: pointer; }
+.dd-opt:hover { background: var(--surface); }
+.dd-opt.on { color: var(--accent); }

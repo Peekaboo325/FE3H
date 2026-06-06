@@ -7,7 +7,8 @@ import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
 import { splitAliases } from './nameUtils';
 import Markdown from './Markdown';
-import { ImagePlus, Crop, Eraser, Flame } from 'lucide-react';
+import Dropdown from './Dropdown';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X } from 'lucide-react';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -142,6 +143,24 @@ export default function Characters({
     setViewing(null); // 소각 후 목록으로
   }
 
+  // 뷰모드에서 활성(등장) 토글 — 즉시 저장(낙관적 갱신)
+  async function toggleActive() {
+    if (!viewing) return;
+    const prev = viewing;
+    const updated = { ...viewing, is_active: viewing.is_active === false };
+    setViewing(updated);
+    try {
+      await fetch('/api/characters', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ character: { ...updated, story_id: storyId } }),
+      });
+      await refresh();
+    } catch {
+      setViewing(prev); // 실패 시 되돌림
+    }
+  }
+
   const viewMode = viewing && !editing; // 순수 읽기 모드
 
   return (
@@ -175,14 +194,21 @@ export default function Characters({
             <div className="char-hero">
               <div className="char-hero-top">
                 <button className="hero-btn" onClick={() => setViewing(null)} aria-label="목록으로">
-                  ←
+                  <ArrowLeft size={18} />
                 </button>
                 <div className="hero-top-right">
-                  <button className="hero-btn" onClick={() => setEditing(viewing)}>
-                    편집
+                  <button
+                    className={'hero-btn' + (viewing.is_active !== false ? ' on' : '')}
+                    onClick={toggleActive}
+                    aria-label={viewing.is_active !== false ? '등장 끄기' : '등장 켜기'}
+                  >
+                    <Bookmark size={18} fill={viewing.is_active !== false ? 'currentColor' : 'none'} />
+                  </button>
+                  <button className="hero-btn" onClick={() => setEditing(viewing)} aria-label="편집">
+                    <Pencil size={17} />
                   </button>
                   <button className="hero-btn" onClick={onClose} aria-label="닫기">
-                    ✕
+                    <X size={18} />
                   </button>
                 </div>
               </div>
@@ -314,14 +340,11 @@ export default function Characters({
             <div className="char-hero">
               <div className="char-hero-top">
                 <button className="hero-btn" onClick={() => setEditing(null)} aria-label="취소">
-                  ←
+                  <ArrowLeft size={18} />
                 </button>
                 <div className="hero-top-right">
-                  <button className="hero-btn" onClick={save} disabled={saving}>
-                    {saving ? '기록 중…' : '기록'}
-                  </button>
                   <button className="hero-btn" onClick={onClose} aria-label="닫기">
-                    ✕
+                    <X size={18} />
                   </button>
                 </div>
               </div>
@@ -395,15 +418,15 @@ export default function Characters({
                   <div className="info-card-title">신원</div>
                   <div className="edit-row">
                     <span className="edit-row-label">성별</span>
-                    <select
-                      className="edit-inp"
+                    <Dropdown
                       value={editing.gender || ''}
-                      onChange={(e) => set('gender', e.target.value)}
-                    >
-                      <option value="">—</option>
-                      <option value="남성">남성</option>
-                      <option value="여성">여성</option>
-                    </select>
+                      options={[
+                        { value: '남성', label: '남성' },
+                        { value: '여성', label: '여성' },
+                      ]}
+                      onChange={(v) => set('gender', v)}
+                      placeholder=""
+                    />
                   </div>
                   <div className="edit-row">
                     <span className="edit-row-label">소속</span>
@@ -431,15 +454,15 @@ export default function Characters({
                   </div>
                   <div className="edit-row">
                     <span className="edit-row-label">상태</span>
-                    <select
-                      className="edit-inp"
+                    <Dropdown
                       value={editing.life_status || 'alive'}
-                      onChange={(e) => set('life_status', e.target.value as Character['life_status'])}
-                    >
-                      <option value="alive">생존</option>
-                      <option value="deceased">사망</option>
-                      <option value="unknown">불명</option>
-                    </select>
+                      options={[
+                        { value: 'alive', label: '생존' },
+                        { value: 'deceased', label: '사망' },
+                        { value: 'unknown', label: '불명' },
+                      ]}
+                      onChange={(v) => set('life_status', v as Character['life_status'])}
+                    />
                   </div>
                 </div>
                 <div className="info-card">
@@ -515,18 +538,9 @@ export default function Characters({
                 />
               </div>
 
-              <label className="check edit-active">
-                <input
-                  type="checkbox"
-                  checked={editing.is_active !== false}
-                  onChange={(e) => set('is_active', e.target.checked)}
-                />
-                활성 (지금 이야기에 등장)
-              </label>
-
               <div className="editor-actions">
                 <button className="primary" onClick={save} disabled={saving}>
-                  {saving ? '기록하는 중…' : '기록'}
+                  {saving ? <span className="spinner" /> : '기록'}
                 </button>
                 <button onClick={() => setEditing(null)}>취소</button>
                 {editing.id && (
