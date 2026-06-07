@@ -19,5 +19,5 @@ export const UI = {
   close: '닫기', //   닫기
   rename: '개칭', //  이름 바꾸기
   submit: '전개', //  보내기
-  regen: '다시 받기', // 재생성
+  regen: '재작성', // 재생성(다시 받기)
 } as const;

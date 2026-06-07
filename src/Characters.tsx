@@ -245,7 +245,7 @@ function ReportView({
         <ReportBody report={report} />
         <div className="report-foot">
           <button className="link-btn" onClick={onIssue} disabled={reporting}>
-            {reporting ? '다시 받는 중…' : UI.regen}
+            {reporting ? '재작성하는 중…' : UI.regen}
           </button>
         </div>
         {err && <p className="report-err">{err}</p>}
