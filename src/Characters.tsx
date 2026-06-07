@@ -100,37 +100,15 @@ function StatBar({ label, value, comment }: { label: string; value: number; comm
   );
 }
 
-// 보고서 탭 본문 — 발급 전(버튼) / 발급 중(대기) / 발급 후(보고서).
-function ReportView({
-  report,
-  reporting,
-  err,
-  onIssue,
-}: {
-  report?: CharReport | null;
-  reporting: boolean;
-  err: string | null;
-  onIssue: () => void;
-}) {
-  if (reporting) return <p className="empty-tab dim">분석관이 보고서를 작성하는 중…</p>;
-  if (!report) {
-    return (
-      <div className="report-empty">
-        <p className="dim">아직 발급되지 않은 보고서입니다.</p>
-        <button className="list-btn" onClick={onIssue}>
-          분석 보고서 발급
-        </button>
-        {err && <p className="report-err">{err}</p>}
-      </div>
-    );
-  }
+// 보고서 본문 렌더(발급본·골격 공용) — 인용구·해시태그·능력치·분석·평판.
+function ReportBody({ report }: { report: CharReport }) {
   return (
-    <div className="report">
+    <>
       {report.quote && <p className="report-quote">“{report.quote}”</p>}
       {!!report.hashtags?.length && (
         <div className="report-tags">
-          {report.hashtags.map((t) => (
-            <span key={t} className="report-tag">
+          {report.hashtags.map((t, i) => (
+            <span key={i} className="report-tag">
               #{t}
             </span>
           ))}
@@ -161,12 +139,91 @@ function ReportView({
           </ul>
         </div>
       )}
-      <div className="report-foot">
-        <button className="link-btn" onClick={onIssue}>
-          다시 받기
-        </button>
+    </>
+  );
+}
+
+// 미발급/발급중 화면용 골격 — 흐릿하게 깔리므로 내용은 그저 그럴듯한 자리채움.
+const 골격보고서: CharReport = {
+  quote: '아직 거두지 못한 한마디',
+  hashtags: ['미상', '미상', '미상', '미상', '미상'],
+  stats: {
+    prowess: 62,
+    magic: 38,
+    faith: 74,
+    intellect: 56,
+    standing: 80,
+    wealth: 47,
+    charm: 64,
+    resilience: 33,
+  },
+  stat_comments: {
+    prowess: '아직 가늠하지 못함',
+    magic: '아직 가늠하지 못함',
+    faith: '아직 가늠하지 못함',
+    intellect: '아직 가늠하지 못함',
+    standing: '아직 가늠하지 못함',
+    wealth: '아직 가늠하지 못함',
+    charm: '아직 가늠하지 못함',
+    resilience: '아직 가늠하지 못함',
+  },
+  personality:
+    '겉으로 드러나는 면모와 행동의 결이 이 자리에 적힌다. 분석관이 인물을 들여다보면 그 윤곽이 또렷이 떠오를 것이다.',
+  unconscious:
+    '본인도 미처 헤아리지 못한 내면의 동기와 오래된 상처가 이 자리에 새겨진다. 아직은 안개 너머에 잠들어 있다.',
+  reputation: [
+    { source: '아직 이름 없는 목소리', comment: '그분에 대해선 아직 할 말을 고르는 중이라네.' },
+    { source: '아직 이름 없는 목소리', comment: '소문이 닿기엔 너무 먼 분이지.' },
+    { source: '아직 이름 없는 목소리', comment: '글쎄, 무어라 말해야 할지.' },
+    { source: '아직 이름 없는 목소리', comment: '곧 누군가 입을 열 테지.' },
+    { source: '아직 이름 없는 목소리', comment: '판단은 잠시 미뤄두겠네.' },
+    { source: '아직 이름 없는 사물', comment: '…….' },
+  ],
+};
+
+// 보고서 탭 — 발급본이 있으면 그대로, 없으면(또는 발급 중) 골격을 흐리고 위에 안내·버튼.
+function ReportView({
+  report,
+  reporting,
+  err,
+  onIssue,
+}: {
+  report?: CharReport | null;
+  reporting: boolean;
+  err: string | null;
+  onIssue: () => void;
+}) {
+  if (report) {
+    return (
+      <div className="report">
+        <ReportBody report={report} />
+        <div className="report-foot">
+          <button className="link-btn" onClick={onIssue} disabled={reporting}>
+            {reporting ? '다시 받는 중…' : '다시 받기'}
+          </button>
+        </div>
+        {err && <p className="report-err">{err}</p>}
       </div>
-      {err && <p className="report-err">{err}</p>}
+    );
+  }
+  return (
+    <div className="report-locked">
+      <div className="report report--ghost" aria-hidden="true">
+        <ReportBody report={골격보고서} />
+      </div>
+      <div className="report-lock-overlay">
+        {reporting ? (
+          <p className="report-lock-msg">분석관이 보고서를 작성하는 중…</p>
+        ) : (
+          <>
+            <p className="report-lock-msg">아직 발급되지 않은 보고서입니다.</p>
+            <button className="list-btn" onClick={onIssue}>
+              분석 보고서 발급
+            </button>
+            {err && <p className="report-err">{err}</p>}
+          </>
+        )}
+      </div>
     </div>
   );
 }
