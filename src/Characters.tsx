@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment, type ReactNode } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
 import { alertAsk } from './dialog';
 import { useCharacters, type Character, type Bond, type CharReport } from './useCharacters';
@@ -276,12 +276,25 @@ function ReportView({
   );
 }
 
+// (괄호) 안 텍스트를 작고 연하게 — 약력 값의 부연 설명 톤. (Markdown 경량 렌더러와 동일 규칙)
+function dimParens(text: string): ReactNode[] {
+  return (text ?? '').split(/(\([^)]*\))/g).map((p, i) =>
+    p.startsWith('(') && p.endsWith(')') ? (
+      <span key={i} className="paren-dim">
+        {p}
+      </span>
+    ) : (
+      <Fragment key={i}>{p}</Fragment>
+    ),
+  );
+}
+
 // 신원 카드의 한 줄(라벨 + 값).
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="info-row">
       <span className="info-row-label">{label}</span>
-      <span className="info-row-value">{value}</span>
+      <span className="info-row-value">{dimParens(value)}</span>
     </div>
   );
 }

@@ -1178,6 +1178,8 @@ body::before {
 .info-row { display: flex; gap: 14px; padding: 6px 0; font-size: 14px; }
 .info-row-label { flex: 0 0 56px; color: var(--text-dim); }
 .info-row-value { color: var(--text); white-space: pre-wrap; }
+/* (괄호) 부연 — 약력 신원~비고에서 작고 연하게 */
+.paren-dim { font-size: 0.85em; color: var(--text-dim); }
 
 /* ── 보고서 탭 (분석 보고서) ──────────────────────────────── */
 .report-err { color: #d9534f; font-size: 12px; margin-top: 6px; }

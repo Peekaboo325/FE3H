@@ -4,10 +4,10 @@ import { Fragment, type ReactNode } from 'react';
 //  지원: **굵게**, *기울임*/_기울임_, "- " 불릿 목록, 빈 줄=문단 / 단일 줄바꿈.
 //  (성향·전법·비고 같은 자유서술 칸 표시용)
 
-// 한 줄 안의 굵게/기울임 처리.
+// 한 줄 안의 굵게/기울임/(괄호) 처리.  (괄호)는 작고 연하게 — 부연 설명 톤.
 function inline(text: string, kp: string): ReactNode[] {
   const nodes: ReactNode[] = [];
-  const re = /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_)/g;
+  const re = /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|\([^)]*\))/g;
   let last = 0;
   let m: RegExpExecArray | null;
   let i = 0;
@@ -15,6 +15,12 @@ function inline(text: string, kp: string): ReactNode[] {
     if (m.index > last) nodes.push(text.slice(last, m.index));
     const tok = m[0];
     if (tok.startsWith('**')) nodes.push(<strong key={kp + i}>{tok.slice(2, -2)}</strong>);
+    else if (tok.startsWith('('))
+      nodes.push(
+        <span className="paren-dim" key={kp + i}>
+          {tok}
+        </span>,
+      );
     else nodes.push(<em key={kp + i}>{tok.slice(1, -1)}</em>);
     last = m.index + tok.length;
     i++;
