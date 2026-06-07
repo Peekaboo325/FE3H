@@ -546,6 +546,8 @@ body::before {
   padding: 10px 18px;
   border-radius: 9px;
   font-size: 14px;
+  line-height: 1.2; /* 글자 무게·기호와 무관하게 높이 고정 → 한 화면 버튼 크기 일치 */
+  box-sizing: border-box;
   cursor: pointer;
   border: 1px solid var(--border);
 }
@@ -575,6 +577,9 @@ body::before {
   text-align: center;
 }
 .empty-state-msg { color: var(--text-dim); font-size: 14px; margin: 0; }
+/* 빈 상태의 두 버튼은 같은 폭으로 — 글자 수가 달라도 크기 일치 */
+.empty-state .btn-accent,
+.empty-state .btn-ghost { min-width: 200px; }
 
 /* (그 외 컨텍스트에서 쓰이는 점선 버튼 — 보고서 발급·인연 추가) */
 .list-btn {
