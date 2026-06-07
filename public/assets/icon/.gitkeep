@@ -1,0 +1,2 @@
+# 앱 내부 아이콘 — 파일형 아이콘을 둘 자리.
+# (UI 아이콘은 대개 lucide-react 컴포넌트, FIRE EMBLEM 로고는 src/Logo.tsx 인라인 SVG)

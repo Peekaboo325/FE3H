@@ -45,8 +45,8 @@ const 빈인물 = (): Character => ({
 });
 
 // 이미지가 없을 때 쓰는 기본 그림 (매핑: 히어로=아바타 그림 / 목록 썸네일=포트레이트 그림).
-const HERO_PLACEHOLDER = '/avatar-placeholder.webp'; // 히어로(인물 카드)용
-const LIST_PLACEHOLDER = '/portrait-placeholder.webp'; // 명부 목록 둥근 썸네일용
+const HERO_PLACEHOLDER = '/assets/illust/avatar-placeholder.webp'; // 히어로(인물 카드)용
+const LIST_PLACEHOLDER = '/assets/illust/portrait-placeholder.webp'; // 명부 목록 둥근 썸네일용
 
 // 생사 상태 → 표시 라벨
 const 상태label: Record<string, string> = { alive: '생존', deceased: '사망', unknown: '불명' };
