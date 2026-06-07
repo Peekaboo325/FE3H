@@ -1,6 +1,8 @@
 // 햄버거 드로어 메뉴 — 헤더의 ☰ 하나로 모든 메뉴를 연다.
 // 항목이 늘어도 여기 목록에 한 줄만 추가하면 됨(헤더는 깔끔 유지).
 
+import Logo from './Logo';
+
 export type MenuItem = { label: string; hint?: string; onClick: () => void };
 
 export default function Menu({
@@ -19,7 +21,9 @@ export default function Menu({
       <div className={'drawer-bg' + (open ? ' show' : '')} onClick={onClose} />
       <nav className={'drawer' + (open ? ' open' : '')} aria-hidden={!open}>
         <div className="drawer-head">
-          <div className="drawer-title">Fire Emblem</div>
+          <div className="drawer-title">
+            <Logo className="drawer-logo" />
+          </div>
           {subtitle && <div className="drawer-sub">{subtitle}</div>}
         </div>
         <div className="drawer-list">
