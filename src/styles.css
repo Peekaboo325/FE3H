@@ -1197,9 +1197,9 @@ body::before {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* 가운데(긴 골격이라 스크롤해야 보임) 대신 위쪽에 — 바로 보이게 */
   gap: 16px;
-  padding: 24px;
+  padding: 64px 24px 24px;
   text-align: center;
 }
 .report-lock-msg {

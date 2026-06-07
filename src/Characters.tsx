@@ -242,36 +242,44 @@ function ReportView({
   err: string | null;
   onIssue: () => void;
 }) {
+  // 발급/재작성 중 — (있으면) 현재 보고서, 없으면 골격을 흐리고 위에 스피너로 '작동 중' 피드백.
+  if (reporting) {
+    return (
+      <div className="report-locked">
+        <div className="report report--ghost" aria-hidden="true">
+          <ReportBody report={report ?? 골격보고서} />
+        </div>
+        <div className="report-lock-overlay">
+          <Spinner label="분석관이 보고서를 작성하는 중…" />
+        </div>
+      </div>
+    );
+  }
   if (report) {
     return (
       <div className="report">
         <ReportBody report={report} />
         <div className="report-foot">
-          <button className="link-btn" onClick={onIssue} disabled={reporting}>
-            {reporting ? '재작성하는 중…' : UI.regen}
+          <button className="link-btn" onClick={onIssue}>
+            {UI.regen}
           </button>
         </div>
         {err && <p className="report-err">{err}</p>}
       </div>
     );
   }
+  // 미발급 — 골격 흐리고 위쪽에 안내·발급 버튼.
   return (
     <div className="report-locked">
       <div className="report report--ghost" aria-hidden="true">
         <ReportBody report={골격보고서} />
       </div>
       <div className="report-lock-overlay">
-        {reporting ? (
-          <p className="report-lock-msg">분석관이 보고서를 작성하는 중…</p>
-        ) : (
-          <>
-            <p className="report-lock-msg">아직 발급되지 않은 보고서입니다.</p>
-            <button className="list-btn" onClick={onIssue}>
-              분석 보고서 발급
-            </button>
-            {err && <p className="report-err">{err}</p>}
-          </>
-        )}
+        <p className="report-lock-msg">아직 발급되지 않은 보고서입니다.</p>
+        <button className="list-btn" onClick={onIssue}>
+          분석 보고서 발급
+        </button>
+        {err && <p className="report-err">{err}</p>}
       </div>
     </div>
   );
