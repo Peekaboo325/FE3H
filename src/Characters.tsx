@@ -1140,6 +1140,9 @@ export default function Characters({
             payloadKey="character"
             currentStoryId={storyId}
             labelOf={(c) => c.name}
+            subOf={(c) => splitAliases(c.aliases)[0] || c.faction || undefined}
+            avatarOf={(c) => c.avatar || c.thumbnail || LIST_PLACEHOLDER}
+            fxOf={(c) => statusFx(c.life_status)}
             onClose={() => setImporting(false)}
             onDone={refresh}
           />

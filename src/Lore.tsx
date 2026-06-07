@@ -191,6 +191,7 @@ export default function LorePanel({
             payloadKey="entry"
             currentStoryId={storyId}
             labelOf={(e) => e.title}
+            subOf={(e) => e.category || undefined}
             onClose={() => setImporting(false)}
             onDone={refresh}
           />

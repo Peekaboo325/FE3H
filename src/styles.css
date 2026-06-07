@@ -704,12 +704,46 @@ body::before {
 /* 드롭다운은 세로로 늘어나면 안 됨(늘어나면 옵션 목록이 바닥에 붙는 버그) — 높이는 내용만 */
 .import-body > .dd { flex: 0 0 auto; }
 .import-body .editor-actions { margin-top: 0; }
-.import-list { display: flex; flex-direction: column; gap: 6px; margin: 0; }
 .import-msg { margin: 0; }
-.import-row { justify-content: space-between; }
-.import-row .char-name { font-size: 14px; }
-.import-row.picked { background: var(--surface-2); }
-.import-check { color: var(--accent); flex-shrink: 0; }
+
+/* ── 행(列) 리스트 자산 (ListRow) — 둥근 얼굴 + 이름 + 우측 슬롯 ───────────── */
+.list-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.list-row:hover { background: var(--surface-2); }
+.list-row.selected { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.list-row-av {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.list-row-av img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+.list-row.selected .list-row-av {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.list-row-meta { flex: 1; min-width: 0; }
+.list-row-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.list-row-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+.list-row-right { flex-shrink: 0; color: var(--accent); display: inline-flex; }
 
 .char-list { list-style: none; margin: 0; padding: 0; }
 .char-row {

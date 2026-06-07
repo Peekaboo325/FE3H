@@ -3,6 +3,7 @@ import Dropdown from './Dropdown';
 import { Check, X } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
+import ListRow from './ListRow';
 
 type Story = { id: number; title: string };
 
@@ -15,6 +16,9 @@ export default function ImportDialog<T extends { id?: number }>({
   payloadKey,
   currentStoryId,
   labelOf,
+  subOf,
+  avatarOf,
+  fxOf,
   onClose,
   onDone,
 }: {
@@ -24,6 +28,9 @@ export default function ImportDialog<T extends { id?: number }>({
   payloadKey: string; // 'character' | 'entry'
   currentStoryId: number;
   labelOf: (it: T) => string;
+  subOf?: (it: T) => string | undefined; // 부가(이명/분류 등)
+  avatarOf?: (it: T) => string | undefined; // 얼굴(초점 크롭) — 인물 전용
+  fxOf?: (it: T) => string | undefined; // 상태 효과 클래스
   onClose: () => void;
   onDone: () => void;
 }) {
@@ -112,20 +119,20 @@ export default function ImportDialog<T extends { id?: number }>({
               ) : items.length === 0 ? (
                 <p className="dim import-msg">그 장엔 {UI.import}할 것이 없습니다.</p>
               ) : (
-                <ul className="char-list import-list">
+                <ul className="list-rows">
                   {items.map((it) => {
                     const on = it.id != null && picked.has(it.id);
                     return (
-                      <li
+                      <ListRow
                         key={it.id}
-                        className={'char-row import-row' + (on ? ' picked' : '')}
+                        avatar={avatarOf?.(it)}
+                        name={labelOf(it)}
+                        sub={subOf?.(it)}
+                        fx={fxOf?.(it)}
+                        selected={on}
+                        right={on ? <Check size={18} /> : null}
                         onClick={() => it.id != null && toggle(it.id)}
-                      >
-                        <div className="char-meta">
-                          <div className="char-name">{labelOf(it)}</div>
-                        </div>
-                        {on && <Check className="import-check" size={18} />}
-                      </li>
+                      />
                     );
                   })}
                 </ul>
