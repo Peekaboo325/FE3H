@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+import { UI } from './strings';
+import IconButton from './IconButton';
 
-type Entry = { id: number | null; ep: number; title: string; summary: string | null };
+type Entry ={ id: number | null; ep: number; title: string; summary: string | null };
 
 // 연대 문헌 — 화별 줄거리(왕실 사관의 기록)를 읽는 패널. 읽기 전용.
 export default function Chronicle({
@@ -41,9 +44,9 @@ export default function Chronicle({
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h2>연대 문헌</h2>
-          <button className="x" onClick={onClose}>
-            ✕
-          </button>
+          <IconButton label={UI.close} onClick={onClose}>
+            <X size={17} />
+          </IconButton>
         </div>
 
         {!dbOk && <p className="warn">기록의 샘이 닿지 않아 연대 문헌을 펼칠 수 없습니다.</p>}

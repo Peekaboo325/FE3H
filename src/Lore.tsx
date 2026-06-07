@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useLore, type Lore } from './useLore';
 import { alertAsk } from './dialog';
 import ImportDialog from './ImportDialog';
+import { X } from 'lucide-react';
 import { UI } from './strings';
+import IconButton from './IconButton';
 
 const 빈설정 = (): Lore => ({ title: '', category: '', body: '', is_active: true });
 
@@ -70,9 +72,9 @@ export default function LorePanel({
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h2>{editing ? (editing.id ? `문헌 ${UI.edit}` : '새 문헌') : '대륙 문헌'}</h2>
-          <button className="x" onClick={onClose}>
-            ✕
-          </button>
+          <IconButton label={UI.close} onClick={onClose}>
+            <X size={17} />
+          </IconButton>
         </div>
 
         {!dbReady && (

@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { UI } from './strings';
+import IconButton from './IconButton';
 
 // 초상(thumbnail)에서 얼굴 영역을 네모로 집어 둥근 명부 썸네일(avatar)을 만든다.
 // - 외부 라이브러리 없이 캔버스로 그 자리에서 크롭(512px·WebP·투명 보존).
@@ -85,9 +87,9 @@ export default function FaceCrop({
       <div className="modal crop-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h2>초점 지정</h2>
-          <button className="x" onClick={onCancel}>
-            ✕
-          </button>
+          <IconButton label={UI.cancel} onClick={onCancel}>
+            <X size={17} />
+          </IconButton>
         </div>
         <div className="crop-stage" ref={wrapRef}>
           {disp.w > 0 && (

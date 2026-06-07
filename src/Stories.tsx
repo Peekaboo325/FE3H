@@ -3,6 +3,7 @@ import { Check, X } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
 import { confirmAsk, alertAsk } from './dialog';
 import { UI } from './strings';
+import IconButton from './IconButton';
 
 type Story = { id: number; title: string; updated_at?: string };
 
@@ -136,9 +137,9 @@ export default function Stories({
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h2>천각의 박동</h2>
-          <button className="x" onClick={onClose}>
-            ✕
-          </button>
+          <IconButton label={UI.close} onClick={onClose}>
+            <X size={17} />
+          </IconButton>
         </div>
 
         {!dbReady && (

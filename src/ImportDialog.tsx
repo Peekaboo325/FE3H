@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import Dropdown from './Dropdown';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { UI } from './strings';
+import IconButton from './IconButton';
 
 type Story = { id: number; title: string };
 
@@ -91,9 +92,9 @@ export default function ImportDialog<T extends { id?: number }>({
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h2>{title}</h2>
-          <button className="x" onClick={onClose}>
-            ✕
-          </button>
+          <IconButton label={UI.close} onClick={onClose}>
+            <X size={17} />
+          </IconButton>
         </div>
 
         <div className="modal-body import-body">

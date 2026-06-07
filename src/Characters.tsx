@@ -645,23 +645,23 @@ export default function Characters({
           <div className="char-view">
             <div className="char-hero">
               <div className="char-hero-top">
-                <button className="hero-btn" onClick={() => setViewing(null)} aria-label="목록으로">
+                <IconButton label="목록으로" onClick={() => setViewing(null)}>
                   <ArrowLeft size={18} />
-                </button>
+                </IconButton>
                 <div className="hero-top-right">
-                  <button
-                    className={'hero-btn' + (viewing.is_active !== false ? ' on' : '')}
+                  <IconButton
+                    label={viewing.is_active !== false ? '등장 끄기' : '등장 켜기'}
+                    active={viewing.is_active !== false}
                     onClick={toggleActive}
-                    aria-label={viewing.is_active !== false ? '등장 끄기' : '등장 켜기'}
                   >
                     <Bookmark size={18} fill={viewing.is_active !== false ? 'currentColor' : 'none'} />
-                  </button>
-                  <button className="hero-btn" onClick={() => setEditing(viewing)} aria-label={UI.edit}>
+                  </IconButton>
+                  <IconButton label={UI.edit} onClick={() => setEditing(viewing)}>
                     <Pencil size={17} />
-                  </button>
-                  <button className="hero-btn" onClick={onClose} aria-label={UI.close}>
+                  </IconButton>
+                  <IconButton label={UI.close} onClick={onClose}>
                     <X size={18} />
-                  </button>
+                  </IconButton>
                 </div>
               </div>
               <div className="char-hero-portrait">
@@ -840,13 +840,13 @@ export default function Characters({
           <div className="char-view char-edit">
             <div className="char-hero">
               <div className="char-hero-top">
-                <button className="hero-btn" onClick={() => setEditing(null)} aria-label={UI.cancel}>
+                <IconButton label={UI.cancel} onClick={() => setEditing(null)}>
                   <ArrowLeft size={18} />
-                </button>
+                </IconButton>
                 <div className="hero-top-right">
-                  <button className="hero-btn" onClick={onClose} aria-label={UI.close}>
+                  <IconButton label={UI.close} onClick={onClose}>
                     <X size={18} />
-                  </button>
+                  </IconButton>
                 </div>
               </div>
               <div className="char-hero-portrait">

@@ -477,13 +477,6 @@ body::before {
   .modal.has-hero.modal--list { max-width: 620px; }
 }
 .modal--list .modal-body { min-height: 420px; }
-.x {
-  border: none;
-  background: none;
-  font-size: 18px;
-  color: var(--text-dim);
-  cursor: pointer;
-}
 .warn {
   background: var(--warn-bg);
   border: 1px solid var(--warn-border);
@@ -947,8 +940,7 @@ body::before {
   padding: 10px;
 }
 .hero-top-right { display: flex; gap: 8px; }
-/* 둥근 아이콘 버튼 — 히어로 상단·모달 헤더 공용 자산(IconButton.tsx). 한 곳에서 정의 */
-.hero-btn,
+/* 둥근 아이콘 버튼 — 모든 모달 상단·히어로 공용 자산(IconButton.tsx) */
 .icon-btn {
   display: inline-flex;
   align-items: center;
@@ -964,7 +956,6 @@ body::before {
   backdrop-filter: blur(4px);
   cursor: pointer;
 }
-.hero-btn:hover,
 .icon-btn:hover { background: rgba(0, 0, 0, 0.55); border-color: var(--accent); }
 .char-hero-info {
   flex: 1;
@@ -1438,7 +1429,6 @@ body::before {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* 활성(등장) 북마크 켜짐 */
-.hero-btn.on,
 .icon-btn.on { color: var(--accent); border-color: var(--accent); }
 
 /* 커스텀 드롭다운 */
