@@ -706,44 +706,71 @@ body::before {
 .import-body .editor-actions { margin-top: 0; }
 .import-msg { margin: 0; }
 
-/* ── 행(列) 리스트 자산 (ListRow) — 둥근 얼굴 + 이름 + 우측 슬롯 ───────────── */
-.list-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+/* ── 행(列) 리스트 자산 (ListRow) — 배너형: 초상이 왼쪽에서 번지고 이름이 옆에 ──── */
+.list-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .list-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.12s ease;
-}
-.list-row:hover { background: var(--surface-2); }
-.list-row.selected { background: color-mix(in srgb, var(--accent) 14%, transparent); }
-.list-row-av {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  position: relative;
+  height: 80px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--border);
+  cursor: pointer;
   background: var(--surface-2);
+  border: 1px solid var(--border);
+  transition: filter 0.12s ease;
 }
-.list-row-av img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
-.list-row.selected .list-row-av {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+.list-row:hover { filter: brightness(1.08); }
+.list-row.selected { border-color: var(--accent); outline: 1px solid var(--accent); outline-offset: -2px; }
+/* 초상 — 왼쪽에서 깔리고 우측으로 마스크되어 행 배경에 녹는다(가두지 않음) */
+.list-row-img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 54%;
+  object-fit: cover;
+  object-position: center 15%;
+  -webkit-mask-image: linear-gradient(90deg, #000 46%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 46%, transparent 100%);
 }
-.list-row-meta { flex: 1; min-width: 0; }
+.list-row-meta {
+  position: absolute;
+  left: 50%;
+  right: 46px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .list-row-name {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
-.list-row-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-.list-row-right { flex-shrink: 0; color: var(--accent); display: inline-flex; }
+.list-row-sub { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+.list-row-right {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  display: inline-flex;
+}
+/* 이미지 없는 행(문헌 등) — 평범한 텍스트 행 */
+.list-row--plain {
+  height: auto;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+}
+.list-row--plain .list-row-meta { position: static; left: auto; right: auto; flex: 1; min-width: 0; }
+.list-row--plain .list-row-name { text-shadow: none; }
+.list-row--plain .list-row-right { position: static; transform: none; margin-left: 10px; }
 
 .char-list { list-style: none; margin: 0; padding: 0; }
 .char-row {
@@ -898,17 +925,7 @@ body::before {
   cursor: pointer;
 }
 .card-bm.on { color: var(--accent); }
-/* 사망 배지 / 생사불명 물음표 */
-.card-badge {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.6);
-  color: rgba(255, 255, 255, 0.85);
-}
+/* 생사불명 물음표 */
 .card-q {
   position: absolute;
   top: 50%;

@@ -323,7 +323,6 @@ function SortableCharCard({
           src={c.thumbnail || c.avatar || HERO_PLACEHOLDER}
           alt=""
         />
-        {c.life_status === 'deceased' && <span className="card-badge">사망</span>}
         {c.life_status === 'unknown' && <span className="card-q">?</span>}
         <button
           className={'card-bm' + (active ? ' on' : '')}
@@ -1141,7 +1140,7 @@ export default function Characters({
             currentStoryId={storyId}
             labelOf={(c) => c.name}
             subOf={(c) => splitAliases(c.aliases)[0] || c.faction || undefined}
-            avatarOf={(c) => c.avatar || c.thumbnail || LIST_PLACEHOLDER}
+            imageOf={(c) => c.thumbnail || c.avatar || LIST_PLACEHOLDER}
             fxOf={(c) => statusFx(c.life_status)}
             onClose={() => setImporting(false)}
             onDone={refresh}

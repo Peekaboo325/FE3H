@@ -17,7 +17,7 @@ export default function ImportDialog<T extends { id?: number }>({
   currentStoryId,
   labelOf,
   subOf,
-  avatarOf,
+  imageOf,
   fxOf,
   onClose,
   onDone,
@@ -29,7 +29,7 @@ export default function ImportDialog<T extends { id?: number }>({
   currentStoryId: number;
   labelOf: (it: T) => string;
   subOf?: (it: T) => string | undefined; // 부가(이명/분류 등)
-  avatarOf?: (it: T) => string | undefined; // 얼굴(초점 크롭) — 인물 전용
+  imageOf?: (it: T) => string | undefined; // 초상(전체 이미지) — 인물 전용
   fxOf?: (it: T) => string | undefined; // 상태 효과 클래스
   onClose: () => void;
   onDone: () => void;
@@ -125,7 +125,7 @@ export default function ImportDialog<T extends { id?: number }>({
                     return (
                       <ListRow
                         key={it.id}
-                        avatar={avatarOf?.(it)}
+                        image={imageOf?.(it)}
                         name={labelOf(it)}
                         sub={subOf?.(it)}
                         fx={fxOf?.(it)}
