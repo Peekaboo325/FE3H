@@ -708,7 +708,7 @@ body::before {
 .import-body > .dd { flex: 0 0 auto; }
 /* 목록(또는 안내)은 가운데서 스크롤, 버튼은 그 아래(=모달 하단)에 */
 .import-scroll { flex: 1; min-height: 0; overflow-y: auto; }
-.import-body .editor-actions { margin-top: 0; flex: 0 0 auto; }
+.import-body .editor-actions { margin-top: 0; flex: 0 0 auto; justify-content: center; }
 .import-msg { margin: 0; }
 
 /* ── 행(列) 리스트 자산 (ListRow) — 배너형: 초상이 왼쪽에서 번지고 이름이 옆에 ──── */
@@ -731,16 +731,16 @@ body::before {
   left: 0;
   top: 0;
   height: 100%;
-  width: 54%;
+  width: 50%;
   object-fit: cover;
-  object-position: center 15%;
-  -webkit-mask-image: linear-gradient(90deg, #000 46%, transparent 100%);
-  mask-image: linear-gradient(90deg, #000 46%, transparent 100%);
+  object-position: center 42%;
+  -webkit-mask-image: linear-gradient(90deg, #000 35%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 35%, transparent 100%);
 }
 .list-row-meta {
   position: absolute;
-  left: 50%;
-  right: 46px;
+  left: 44%;
+  right: 44px;
   top: 0;
   bottom: 0;
   display: flex;
@@ -751,12 +751,16 @@ body::before {
   font-size: 14px;
   font-weight: 700;
   color: var(--text);
-  white-space: nowrap;
+  line-height: 1.2;
+  /* 이름은 자르지 않는다 — 길면(최대 15자) 단어 단위로 최대 2줄 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: keep-all;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
-.list-row-sub { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+.list-row-sub { font-size: 11px; color: var(--text-dim); margin-top: -3px; }
 .list-row-right {
   position: absolute;
   right: 14px;
