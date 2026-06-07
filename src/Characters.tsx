@@ -604,10 +604,27 @@ export default function Characters({
         {!viewMode && !editing && (
           <>
             <div className="modal-head">
-              <h2>인물 명부</h2>
-              <button className="x" onClick={onClose}>
-                ✕
-              </button>
+              <h2>
+                인물 명부
+                {chars.length > 0 && <span className="head-count">{chars.length}</span>}
+              </h2>
+              <div className="head-actions">
+                {chars.length > 0 && (
+                  <>
+                    <button className="btn-accent btn-sm" onClick={() => setEditing(빈인물())}>
+                      작성
+                    </button>
+                    {storyId != null && (
+                      <button className="btn-ghost btn-sm" onClick={() => setImporting(true)}>
+                        {UI.import}
+                      </button>
+                    )}
+                  </>
+                )}
+                <button className="x" onClick={onClose}>
+                  ✕
+                </button>
+              </div>
             </div>
 
             {!dbReady && <p className="warn">아직 기록의 샘이 닿지 않아 인물을 기록할 수 없습니다.</p>}
@@ -799,32 +816,20 @@ export default function Characters({
                 )}
               </div>
             ) : (
-              <>
-                <div className="list-actions">
-                  <button className="btn-accent btn-sm" onClick={() => setEditing(빈인물())}>
-                    작성
-                  </button>
-                  {storyId != null && (
-                    <button className="btn-ghost btn-sm" onClick={() => setImporting(true)}>
-                      {UI.import}
-                    </button>
-                  )}
-                </div>
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-                  <SortableContext items={items.map((c) => c.id!)} strategy={rectSortingStrategy}>
-                    <ul className="char-grid">
-                      {items.map((c) => (
-                        <SortableCharCard
-                          key={c.id}
-                          c={c}
-                          onOpen={() => setViewing(c)}
-                          onToggle={() => toggleActiveOf(c)}
-                        />
-                      ))}
-                    </ul>
-                  </SortableContext>
-                </DndContext>
-              </>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                <SortableContext items={items.map((c) => c.id!)} strategy={rectSortingStrategy}>
+                  <ul className="char-grid">
+                    {items.map((c) => (
+                      <SortableCharCard
+                        key={c.id}
+                        c={c}
+                        onOpen={() => setViewing(c)}
+                        onToggle={() => toggleActiveOf(c)}
+                      />
+                    ))}
+                  </ul>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         )}
