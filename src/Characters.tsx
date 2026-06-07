@@ -782,38 +782,50 @@ export default function Characters({
         {/* 목록 화면 */}
         {!editing && !viewing && (
           <div className="modal-body">
-            <div className="list-actions">
-              <button className="list-btn" onClick={() => setEditing(빈인물())}>
-                ＋ 명부 추가
-              </button>
-              {storyId != null && (
-                <button className="list-btn" onClick={() => setImporting(true)}>
-                  ↧ 명부 {UI.import}
-                </button>
-              )}
-            </div>
             {loading ? (
               <p className="dim">펼치는 중…</p>
             ) : chars.length === 0 ? (
-              <p className="dim">아직 기록된 인물이 없습니다.</p>
+              <div className="empty-state">
+                <p className="empty-state-msg">아직 명부에 오른 이가 없습니다.</p>
+                <button className="btn-accent" onClick={() => setEditing(빈인물())}>
+                  첫 인물 등록
+                </button>
+                {storyId != null && (
+                  <button className="btn-ghost" onClick={() => setImporting(true)}>
+                    다른 장에서 {UI.import}
+                  </button>
+                )}
+              </div>
             ) : (
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-                <SortableContext
-                  items={items.map((c) => c.id!)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <ul className="char-list">
-                    {items.map((c) => (
-                      <SortableCharRow
-                        key={c.id}
-                        c={c}
-                        onOpen={() => setViewing(c)}
-                        onToggle={() => toggleActiveOf(c)}
-                      />
-                    ))}
-                  </ul>
-                </SortableContext>
-              </DndContext>
+              <>
+                <div className="list-actions">
+                  <button className="btn-accent btn-sm" onClick={() => setEditing(빈인물())}>
+                    ＋ 인물
+                  </button>
+                  {storyId != null && (
+                    <button className="btn-ghost btn-sm" onClick={() => setImporting(true)}>
+                      {UI.import}
+                    </button>
+                  )}
+                </div>
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                  <SortableContext
+                    items={items.map((c) => c.id!)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <ul className="char-list">
+                      {items.map((c) => (
+                        <SortableCharRow
+                          key={c.id}
+                          c={c}
+                          onOpen={() => setViewing(c)}
+                          onToggle={() => toggleActiveOf(c)}
+                        />
+                      ))}
+                    </ul>
+                  </SortableContext>
+                </DndContext>
+              </>
             )}
           </div>
         )}
