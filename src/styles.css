@@ -457,7 +457,7 @@ body::before {
   box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .modal-head { display: flex; justify-content: space-between; align-items: center; }
-.modal-head h2 { margin: 0; font-size: 20px; letter-spacing: 0.1em; }
+.modal-head h2 { margin: 0; font-size: 20px; letter-spacing: normal; }
 /* 인물 목록 헤더 — 인물 수·작성/반입을 한 줄로, 아래 구분선 */
 .modal--list .modal-head {
   padding-bottom: 14px;
@@ -580,6 +580,8 @@ body::before {
 .btn-ghost:hover { background: var(--surface-2); color: var(--text); }
 /* 툴바용 소형 변형 */
 .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
+/* 아이콘 전용(정사각) — 한 화면 아이콘 버튼 크기 통일 */
+.btn-icon { width: 34px; height: 34px; padding: 0; border-radius: 9px; }
 
 /* 빈 명부 — 휑하지 않게 가운데 안내 + 단일 주 동작 */
 .empty-state {
@@ -710,6 +712,8 @@ body::before {
 
 /* 명부 반입 */
 .import-body { display: flex; flex-direction: column; gap: 14px; padding-top: 14px; }
+/* 드롭다운은 세로로 늘어나면 안 됨(늘어나면 옵션 목록이 바닥에 붙는 버그) — 높이는 내용만 */
+.import-body > .dd { flex: 0 0 auto; }
 .import-body .editor-actions { margin-top: 0; }
 .import-list { display: flex; flex-direction: column; gap: 6px; margin: 0; }
 .import-msg { margin: 0; }

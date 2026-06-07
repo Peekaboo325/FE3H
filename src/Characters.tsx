@@ -9,7 +9,7 @@ import { nameDict } from './nameDict.generated';
 import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
-import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown } from 'lucide-react';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -611,12 +611,22 @@ export default function Characters({
               <div className="head-actions">
                 {chars.length > 0 && (
                   <>
-                    <button className="btn-accent btn-sm" onClick={() => setEditing(빈인물())}>
-                      작성
+                    <button
+                      className="btn-accent btn-icon"
+                      onClick={() => setEditing(빈인물())}
+                      title="작성"
+                      aria-label="작성"
+                    >
+                      <UserPlus size={17} />
                     </button>
                     {storyId != null && (
-                      <button className="btn-ghost btn-sm" onClick={() => setImporting(true)}>
-                        {UI.import}
+                      <button
+                        className="btn-ghost btn-icon"
+                        onClick={() => setImporting(true)}
+                        title={UI.import}
+                        aria-label={UI.import}
+                      >
+                        <Download size={17} />
                       </button>
                     )}
                   </>
