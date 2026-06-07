@@ -800,7 +800,7 @@ export default function Characters({
               <>
                 <div className="list-actions">
                   <button className="btn-accent btn-sm" onClick={() => setEditing(빈인물())}>
-                    추가
+                    작성
                   </button>
                   {storyId != null && (
                     <button className="btn-ghost btn-sm" onClick={() => setImporting(true)}>
