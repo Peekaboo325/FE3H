@@ -731,33 +731,32 @@ body::before {
   left: 0;
   top: 0;
   height: 100%;
-  width: 50%;
+  width: 30%;
   object-fit: cover;
   object-position: center 42%;
-  -webkit-mask-image: linear-gradient(90deg, #000 35%, transparent 100%);
-  mask-image: linear-gradient(90deg, #000 35%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 40%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 40%, transparent 100%);
 }
 .list-row-meta {
   position: absolute;
-  left: 44%;
+  left: 35%;
   right: 44px;
   top: 0;
   bottom: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  container-type: inline-size; /* 이름 폰트를 이 폭에 맞춰 줄여 항상 1줄 보장 */
 }
 .list-row-name {
-  font-size: 14px;
+  /* 풀네임(최대 15자)은 무조건 1줄 — 폭이 좁으면 폰트가 줄어 맞춘다(잘림·줄바꿈 없음) */
+  font-size: clamp(11px, 6cqi, 15px);
   font-weight: 700;
   color: var(--text);
-  line-height: 1.2;
-  /* 이름은 자르지 않는다 — 길면(최대 15자) 단어 단위로 최대 2줄 */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  line-height: 1.25;
+  white-space: nowrap;
   overflow: hidden;
-  word-break: keep-all;
+  text-overflow: ellipsis;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 .list-row-sub { font-size: 11px; color: var(--text-dim); margin-top: -3px; }
