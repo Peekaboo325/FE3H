@@ -96,7 +96,7 @@ export default function ImportDialog<T extends { id?: number }>({
 
   return (
     <div className="modal-bg" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal--import" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h2>{title}</h2>
           <IconButton label={UI.close} onClick={onClose}>
@@ -114,29 +114,31 @@ export default function ImportDialog<T extends { id?: number }>({
 
           {sourceId != null && (
             <>
-              {loading ? (
-                <p className="dim import-msg">펼치는 중…</p>
-              ) : items.length === 0 ? (
-                <p className="dim import-msg">그 장엔 {UI.import}할 것이 없습니다.</p>
-              ) : (
-                <ul className="list-rows">
-                  {items.map((it) => {
-                    const on = it.id != null && picked.has(it.id);
-                    return (
-                      <ListRow
-                        key={it.id}
-                        image={imageOf?.(it)}
-                        name={labelOf(it)}
-                        sub={subOf?.(it)}
-                        fx={fxOf?.(it)}
-                        selected={on}
-                        right={on ? <Check size={18} /> : null}
-                        onClick={() => it.id != null && toggle(it.id)}
-                      />
-                    );
-                  })}
-                </ul>
-              )}
+              <div className="import-scroll">
+                {loading ? (
+                  <p className="dim import-msg">펼치는 중…</p>
+                ) : items.length === 0 ? (
+                  <p className="dim import-msg">그 장엔 {UI.import}할 것이 없습니다.</p>
+                ) : (
+                  <ul className="list-rows">
+                    {items.map((it) => {
+                      const on = it.id != null && picked.has(it.id);
+                      return (
+                        <ListRow
+                          key={it.id}
+                          image={imageOf?.(it)}
+                          name={labelOf(it)}
+                          sub={subOf?.(it)}
+                          fx={fxOf?.(it)}
+                          selected={on}
+                          right={on ? <Check size={18} /> : null}
+                          onClick={() => it.id != null && toggle(it.id)}
+                        />
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
 
               <div className="editor-actions">
                 <button className="primary" onClick={가져오기} disabled={busy || picked.size === 0}>

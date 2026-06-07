@@ -1140,7 +1140,7 @@ export default function Characters({
             currentStoryId={storyId}
             labelOf={(c) => c.name}
             subOf={(c) => splitAliases(c.aliases)[0] || c.faction || undefined}
-            imageOf={(c) => c.thumbnail || c.avatar || LIST_PLACEHOLDER}
+            imageOf={(c) => c.avatar || c.thumbnail || LIST_PLACEHOLDER}
             fxOf={(c) => statusFx(c.life_status)}
             onClose={() => setImporting(false)}
             onDone={refresh}
