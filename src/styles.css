@@ -697,7 +697,7 @@ body::before {
   align-items: center;
   justify-content: center;
 }
-.bond-add { margin-top: 2px; }
+.bond-add { display: block; width: fit-content; margin: 8px auto 0; flex: 0 0 auto; }
 
 /* 명부 반입 */
 /* 반입 모달 — 콘텐츠 개수와 무관하게 일정한 높이. 버튼은 항상 모달 하단 고정. */
@@ -1471,9 +1471,25 @@ body::before {
   align-items: center;
   justify-content: center;
 }
-.editor-actions .danger { margin-left: auto; color: var(--danger); border-color: #6a4a44; }
-/* 활성화(첫 클릭): 붉게 채워 둘째 클릭을 기다린다 */
-.editor-actions .danger.armed { background: var(--danger); color: var(--accent-ink); border-color: var(--danger); }
+/* 취소·기록(우측, 동일 너비) — 소각은 좌측 */
+.editor-actions-end { margin-left: auto; display: flex; gap: 8px; }
+.editor-actions-end button { min-width: 88px; }
+/* 소각 = 휴지통 아이콘 버튼(좌). 첫 클릭=활성(붉게), 둘째 클릭=실행 */
+.editor-actions .btn-erase {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid #6a4a44;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--danger);
+  cursor: pointer;
+}
+.editor-actions .btn-erase.armed { background: var(--danger); color: var(--accent-ink); border-color: var(--danger); }
 
 /* 버튼 로딩 스피너 (크기 고정·텍스트 대신 회전) */
 .spinner {

@@ -141,10 +141,10 @@ export default function ImportDialog<T extends { id?: number }>({
               </div>
 
               <div className="editor-actions">
+                <button onClick={onClose}>{UI.cancel}</button>
                 <button className="primary" onClick={가져오기} disabled={busy || picked.size === 0}>
                   {busy ? <span className="spinner" /> : `${picked.size}개 ${UI.import}`}
                 </button>
-                <button onClick={onClose}>{UI.cancel}</button>
               </div>
             </>
           )}

@@ -118,10 +118,10 @@ export default function FaceCrop({
           />
         )}
         <div className="editor-actions">
+          <button onClick={onCancel}>{UI.cancel}</button>
           <button className="primary" onClick={confirm} disabled={sel.s <= 0}>
             지정
           </button>
-          <button onClick={onCancel}>{UI.cancel}</button>
         </div>
       </div>
     </div>

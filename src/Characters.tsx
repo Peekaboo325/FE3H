@@ -10,7 +10,7 @@ import { nameDict } from './nameDict.generated';
 import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
-import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download } from 'lucide-react';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2 } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -1103,18 +1103,22 @@ export default function Characters({
               </div>
 
               <div className="editor-actions">
-                <button className="primary" onClick={save} disabled={saving}>
-                  {saving ? <span className="spinner" /> : UI.save}
-                </button>
-                <button onClick={() => setEditing(null)}>{UI.cancel}</button>
                 {editing.id && (
                   <button
-                    className={'danger' + (armed ? ' armed' : '')}
+                    className={'btn-erase' + (armed ? ' armed' : '')}
                     onClick={() => (armed ? remove() : setArmed(true))}
+                    title={UI.erase}
+                    aria-label={UI.erase}
                   >
-                    {UI.erase}
+                    <Trash2 size={18} />
                   </button>
                 )}
+                <div className="editor-actions-end">
+                  <button onClick={() => setEditing(null)}>{UI.cancel}</button>
+                  <button className="primary" onClick={save} disabled={saving}>
+                    {saving ? <span className="spinner" /> : UI.save}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

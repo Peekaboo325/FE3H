@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLore, type Lore } from './useLore';
 import { alertAsk } from './dialog';
 import ImportDialog from './ImportDialog';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
 
@@ -167,18 +167,22 @@ export default function LorePanel({
             </label>
 
             <div className="editor-actions">
-              <button className="primary" onClick={save} disabled={saving}>
-                {saving ? `${UI.save}하는 중…` : UI.save}
-              </button>
-              <button onClick={() => setEditing(null)}>{UI.cancel}</button>
               {editing.id && (
                 <button
-                  className={'danger' + (armed ? ' armed' : '')}
+                  className={'btn-erase' + (armed ? ' armed' : '')}
                   onClick={() => (armed ? remove() : setArmed(true))}
+                  title={UI.erase}
+                  aria-label={UI.erase}
                 >
-                  {UI.erase}
+                  <Trash2 size={18} />
                 </button>
               )}
+              <div className="editor-actions-end">
+                <button onClick={() => setEditing(null)}>{UI.cancel}</button>
+                <button className="primary" onClick={save} disabled={saving}>
+                  {saving ? `${UI.save}하는 중…` : UI.save}
+                </button>
+              </div>
             </div>
           </div>
         )}
