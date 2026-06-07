@@ -22,6 +22,7 @@ import {
 import {
   SortableContext,
   verticalListSortingStrategy,
+  rectSortingStrategy,
   useSortable,
   arrayMove,
 } from '@dnd-kit/sortable';
@@ -285,7 +286,8 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 // 드래그로 정렬 가능한 목록 행.
-function SortableCharRow({
+// 드래그로 정렬 가능한 초상 카드(갤러리 한 칸).
+function SortableCharCard({
   c,
   onOpen,
   onToggle,
@@ -304,41 +306,41 @@ function SortableCharRow({
     zIndex: isDragging ? 2 : undefined,
   };
   const active = c.is_active !== false;
+  const alias = splitAliases(c.aliases)[0] || '';
   return (
     <li
       ref={setNodeRef}
       style={style}
-      className={'char-row' + (active ? '' : ' inactive')}
+      className={'char-card' + (active ? '' : ' inactive')}
       onClick={onOpen}
       {...attributes}
       {...listeners}
     >
-      <span className="thumb-wrap">
+      <div className="char-card-img">
         <img
-          className={'thumb round ' + statusFx(c.life_status)}
-          src={c.avatar || c.thumbnail || LIST_PLACEHOLDER}
+          className={statusFx(c.life_status)}
+          src={c.thumbnail || c.avatar || HERO_PLACEHOLDER}
           alt=""
         />
-        {c.life_status === 'unknown' && <span className="thumb-q">?</span>}
-      </span>
-      <div className="char-meta">
-        <div className="char-name">
-          {c.name}
-          {c.life_status === 'deceased' && <span className="tag">사망</span>}
+        {c.life_status === 'deceased' && <span className="card-badge">사망</span>}
+        {c.life_status === 'unknown' && <span className="card-q">?</span>}
+        <button
+          className={'card-bm' + (active ? ' on' : '')}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          aria-label={active ? '등장 끄기' : '등장 켜기'}
+        >
+          <Bookmark size={15} fill={active ? 'currentColor' : 'none'} />
+        </button>
+        <div className="char-card-grad" />
+        <div className="char-card-meta">
+          <div className="char-card-name">{c.name}</div>
+          {alias && <div className="char-card-sub">{alias}</div>}
         </div>
-        <div className="char-sub">{splitAliases(c.aliases)[0] || ''}</div>
       </div>
-      <button
-        className={'row-bm' + (active ? ' on' : '')}
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggle();
-        }}
-        onPointerDown={(e) => e.stopPropagation()}
-        aria-label={active ? '등장 끄기' : '등장 켜기'}
-      >
-        <Bookmark size={16} fill={active ? 'currentColor' : 'none'} />
-      </button>
     </li>
   );
 }
@@ -809,13 +811,10 @@ export default function Characters({
                   )}
                 </div>
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-                  <SortableContext
-                    items={items.map((c) => c.id!)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <ul className="char-list">
+                  <SortableContext items={items.map((c) => c.id!)} strategy={rectSortingStrategy}>
+                    <ul className="char-grid">
                       {items.map((c) => (
-                        <SortableCharRow
+                        <SortableCharCard
                           key={c.id}
                           c={c}
                           onOpen={() => setViewing(c)}
