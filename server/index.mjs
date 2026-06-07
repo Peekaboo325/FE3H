@@ -33,6 +33,7 @@ import {
   loadLoreForInjection,
 } from '../lib/db.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
+import { runReport } from '../lib/report.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 import { loadTurnsForSummary } from '../lib/db.mjs';
@@ -135,6 +136,23 @@ app.delete('/api/characters', async (req, res) => {
   const id = req.query?.id ?? req.body?.id;
   const r = await deleteCharacter(Number(id));
   res.status(r.error ? 500 : 200).json(r);
+});
+
+// ── 인물 분석 보고서 발급 (Gemini Flash) ──────────────────────────────────
+app.post('/api/report', async (req, res) => {
+  if (!process.env.GEMINI_API_KEY) {
+    res.status(400).json({ error: '분석관과의 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).' });
+    return;
+  }
+  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
+  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
+  const instruction = (req.body?.instruction || '').trim();
+  try {
+    const r = await runReport({ characterId, storyId, customInstruction: instruction });
+    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
 });
 
 // ── 견문록 (목록/저장/삭제) ────────────────────────────────────────────────

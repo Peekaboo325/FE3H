@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
 import { alertAsk } from './dialog';
-import { useCharacters, type Character, type Bond } from './useCharacters';
+import { useCharacters, type Character, type Bond, type CharReport } from './useCharacters';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
@@ -70,6 +70,105 @@ const 인물탭 = ['약력', '보고서', '임무', '소지품', '서신'] as co
 // 아직 안 만든 탭의 빈 화면.
 function EmptyTab() {
   return <p className="empty-tab dim">아직 펼쳐지지 않은 장입니다.</p>;
+}
+
+// 보고서 능력치 8종 (키→라벨). 서버 lib/report.mjs STAT_KEYS와 일치해야 한다.
+const 능력치목록: [string, string][] = [
+  ['prowess', '무력'],
+  ['magic', '마력'],
+  ['faith', '신앙'],
+  ['intellect', '지성'],
+  ['standing', '입지'],
+  ['wealth', '재력'],
+  ['charm', '매력'],
+  ['resilience', '정신'],
+];
+
+// 능력치 한 줄(라벨·점수·막대·한 줄 평).
+function StatBar({ label, value, comment }: { label: string; value: number; comment?: string }) {
+  return (
+    <div className="stat-row">
+      <div className="stat-head">
+        <span className="stat-label">{label}</span>
+        <span className="stat-num">{value}</span>
+      </div>
+      <span className="stat-track">
+        <span className="stat-fill" style={{ width: `${value}%` }} />
+      </span>
+      {comment && <span className="stat-cmt">{comment}</span>}
+    </div>
+  );
+}
+
+// 보고서 탭 본문 — 발급 전(버튼) / 발급 중(대기) / 발급 후(보고서).
+function ReportView({
+  report,
+  reporting,
+  err,
+  onIssue,
+}: {
+  report?: CharReport | null;
+  reporting: boolean;
+  err: string | null;
+  onIssue: () => void;
+}) {
+  if (reporting) return <p className="empty-tab dim">분석관이 보고서를 작성하는 중…</p>;
+  if (!report) {
+    return (
+      <div className="report-empty">
+        <p className="dim">아직 발급되지 않은 보고서입니다.</p>
+        <button className="list-btn" onClick={onIssue}>
+          분석 보고서 발급
+        </button>
+        {err && <p className="report-err">{err}</p>}
+      </div>
+    );
+  }
+  return (
+    <div className="report">
+      {report.quote && <p className="report-quote">“{report.quote}”</p>}
+      {!!report.hashtags?.length && (
+        <div className="report-tags">
+          {report.hashtags.map((t) => (
+            <span key={t} className="report-tag">
+              #{t}
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="report-stats">
+        {능력치목록.map(([k, ko]) => (
+          <StatBar
+            key={k}
+            label={ko}
+            value={report.stats?.[k] ?? 0}
+            comment={report.stat_comments?.[k]}
+          />
+        ))}
+      </div>
+      {report.personality && <ViewSection label="성격 분석" text={report.personality} />}
+      {report.unconscious && <ViewSection label="무의식 분석" text={report.unconscious} />}
+      {!!report.reputation?.length && (
+        <div className="view-section">
+          <div className="view-label">평판</div>
+          <ul className="rep-list">
+            {report.reputation.map((r, i) => (
+              <li key={i} className="rep-item">
+                <div className="rep-src">{r.source}</div>
+                <div className="rep-cmt">{r.comment}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <div className="report-foot">
+        <button className="link-btn" onClick={onIssue}>
+          다시 받기
+        </button>
+      </div>
+      {err && <p className="report-err">{err}</p>}
+    </div>
+  );
 }
 
 // 신원 카드의 한 줄(라벨 + 값).
@@ -192,12 +291,40 @@ export default function Characters({
   const [cropping, setCropping] = useState(false); // 초상에서 얼굴 따기
   const [tab, setTab] = useState<string>('약력'); // 인물 뷰 탭
   const [bondsOpen, setBondsOpen] = useState(false); // 인연 카드 펼침/접힘(기본 접힘)
+  const [reporting, setReporting] = useState(false); // 보고서 발급 중
+  const [reportErr, setReportErr] = useState<string | null>(null);
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
   useEffect(() => {
     setTab('약력');
     setBondsOpen(false);
+    setReportErr(null);
   }, [viewing?.id]); // 다른 인물(id 변경) 열 때만 약력·인연 접힘 초기화
+
+  // 분석 보고서 발급(또는 다시 받기) — Gemini Flash가 약력·맥락을 읽고 짓는다.
+  async function 발급() {
+    if (!viewing?.id || reporting) return;
+    setReporting(true);
+    setReportErr(null);
+    try {
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ character_id: viewing.id, story_id: storyId }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setReportErr(data.error || '발급에 실패했어요.');
+        return;
+      }
+      setViewing((v) => (v ? { ...v, analysis: data.report } : v));
+      await refresh();
+    } catch (e) {
+      setReportErr((e as Error).message);
+    } finally {
+      setReporting(false);
+    }
+  }
 
   function set<K extends keyof Character>(k: K, v: Character[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
@@ -532,6 +659,13 @@ export default function Characters({
                     <p className="dim small">지금 이야기엔 잠들어 있는 인물입니다.</p>
                   )}
                 </>
+              ) : tab === '보고서' ? (
+                <ReportView
+                  report={viewing.analysis}
+                  reporting={reporting}
+                  err={reportErr}
+                  onIssue={발급}
+                />
               ) : (
                 <EmptyTab />
               )}

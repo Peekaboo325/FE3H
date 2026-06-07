@@ -8,6 +8,18 @@ export type Bond = {
   status?: 'alive' | 'deceased' | 'unknown';
 };
 
+// 분석 보고서 — LLM(Gemini Flash)이 약력·맥락을 읽고 발급한다.
+export type CharReport = {
+  quote?: string;
+  hashtags?: string[];
+  stats?: Record<string, number>; // 8종: prowess·magic·faith·intellect·standing·wealth·charm·resilience
+  stat_comments?: Record<string, string>;
+  personality?: string; // 성격 분석
+  unconscious?: string; // 무의식 분석
+  reputation?: { source: string; comment: string }[]; // 평판 6종 (타인의 시선)
+  generated_at?: string; // 발급 시각(ISO)
+};
+
 export type Character = {
   id?: number;
   story_id?: number;
@@ -30,6 +42,7 @@ export type Character = {
   combat?: string;
   notes?: string;
   bonds?: Bond[]; // 인연(관계) — 명부 인물과 이름으로 자동 연동
+  analysis?: CharReport | null; // 분석 보고서 (보고서 탭)
   life_status?: 'alive' | 'deceased' | 'unknown';
   is_active?: boolean;
   sort_order?: number; // 목록 정렬 순서(드래그로 변경)
