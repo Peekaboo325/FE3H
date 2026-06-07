@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
 import { confirmAsk, alertAsk } from './dialog';
+import { UI } from './strings';
 
 type Story = { id: number; title: string; updated_at?: string };
 
@@ -48,7 +49,7 @@ export default function Stories({
     });
     const d = await r.json();
     if (!r.ok || d.error || !d.story) {
-      await alertAsk({ message: '새 이야기를 펼치지 못했어요.', detail: d.error || undefined });
+      await alertAsk({ message: '새 이야기를 펼치지 못했습니다.', detail: d.error || undefined });
       return;
     }
     onSwitch(d.story.id, d.story.title); // 새 이야기로 전환
@@ -64,7 +65,7 @@ export default function Stories({
       });
       const d = await r.json();
       if (!r.ok || d.error) {
-        await alertAsk({ message: '필사하지 못했어요.', detail: d.error || undefined });
+        await alertAsk({ message: `${UI.copy}하지 못했습니다.`, detail: d.error || undefined });
         return;
       }
       await load();
@@ -89,7 +90,7 @@ export default function Stories({
     });
     const d = await r.json();
     if (!r.ok || d.error) {
-      await alertAsk({ message: '개칭하지 못했어요.', detail: d.error || undefined });
+      await alertAsk({ message: `${UI.rename}하지 못했습니다.`, detail: d.error || undefined });
       return;
     }
     await load();
@@ -98,16 +99,16 @@ export default function Stories({
 
   async function 삭제(s: Story) {
     const yes = await confirmAsk({
-      message: `「${s.title}」 이 기록을 소각하시겠습니까?`,
-      detail: '소각된 기록은 다시 불러올 수 없습니다.',
-      confirmLabel: '소각',
+      message: `「${s.title}」 이 기록을 ${UI.erase}하시겠습니까?`,
+      detail: `${UI.erase}된 기록은 다시 불러올 수 없습니다.`,
+      confirmLabel: UI.erase,
       danger: true,
     });
     if (!yes) return;
     const r = await fetch(`/api/stories?id=${s.id}`, { method: 'DELETE' });
     const d = await r.json();
     if (!r.ok || d.error) {
-      await alertAsk({ message: '소각하지 못했어요.', detail: d.error || undefined });
+      await alertAsk({ message: `${UI.erase}하지 못했습니다.`, detail: d.error || undefined });
       return;
     }
     // 목록 갱신 + 현재 이야기를 지웠으면 다른 이야기로 전환.
@@ -141,11 +142,11 @@ export default function Stories({
         </div>
 
         {!dbReady && (
-          <p className="warn">기록의 샘이 닿지 않아 운명의 장을 기록하거나 갈무리할 수 없어요.</p>
+          <p className="warn">기록의 샘이 닿지 않아 운명의 장을 기록하거나 갈무리할 수 없습니다.</p>
         )}
         {dbReady && err && (
           <p className="warn">
-            이야기 표가 아직 없는 것 같아요. 안내된 SQL을 Supabase에서 한 번 실행해 주세요.
+            이야기 표가 아직 없는 듯합니다. 안내된 SQL을 Supabase에서 한 번 실행하십시오.
             <br />
             <span className="dim">({err})</span>
           </p>
@@ -153,7 +154,7 @@ export default function Stories({
 
         <div className="modal-body">
           <p className="dim small">
-            여러 운명의 장을 두고 오갈 수 있어요. 기록은 절로 남고, 지금 펼친 장에 쌓입니다.
+            여러 운명의 장을 두고 오갈 수 있습니다. 기록은 절로 남고, 지금 펼친 장에 쌓입니다.
             (인물·문헌은 장마다 따로 둡니다.)
           </p>
           <button className="new" onClick={새이야기}>
@@ -162,7 +163,7 @@ export default function Stories({
           {loading ? (
             <p className="dim">펼치는 중…</p>
           ) : list.length === 0 ? (
-            <p className="dim">아직 펼친 장이 없어요.</p>
+            <p className="dim">아직 펼친 장이 없습니다.</p>
           ) : (
             <ul className="char-list">
               {list.map((s) =>
@@ -179,10 +180,10 @@ export default function Stories({
                         if (e.key === 'Escape') setRenamingId(null);
                       }}
                     />
-                    <button className="rowbtn" title="기록" onClick={() => 개칭저장(s)}>
+                    <button className="rowbtn" title={UI.save} onClick={() => 개칭저장(s)}>
                       <Check size={15} />
                     </button>
-                    <button className="rowbtn" title="물림" onClick={() => setRenamingId(null)}>
+                    <button className="rowbtn" title={UI.cancel} onClick={() => setRenamingId(null)}>
                       <X size={15} />
                     </button>
                   </li>
@@ -195,17 +196,17 @@ export default function Stories({
                       </div>
                     </div>
                     <button className="rowbtn" onClick={() => 개칭시작(s)}>
-                      개칭
+                      {UI.rename}
                     </button>
                     <button
                       className="rowbtn"
                       onClick={() => 복사(s)}
                       disabled={copyingId === s.id}
                     >
-                      {copyingId === s.id ? '필사 중…' : '필사'}
+                      {copyingId === s.id ? `${UI.copy} 중…` : UI.copy}
                     </button>
                     <button className="rowbtn danger" onClick={() => 삭제(s)}>
-                      소각
+                      {UI.erase}
                     </button>
                   </li>
                 ),

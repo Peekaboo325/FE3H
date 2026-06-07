@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { UI } from './strings';
 
 // 초상(thumbnail)에서 얼굴 영역을 네모로 집어 둥근 명부 썸네일(avatar)을 만든다.
 // - 외부 라이브러리 없이 캔버스로 그 자리에서 크롭(512px·WebP·투명 보존).
@@ -118,7 +119,7 @@ export default function FaceCrop({
           <button className="primary" onClick={confirm} disabled={sel.s <= 0}>
             지정
           </button>
-          <button onClick={onCancel}>취소</button>
+          <button onClick={onCancel}>{UI.cancel}</button>
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import { hasAnchor } from './anchorDetect';
 import { stripMarkdown } from './podraScript';
 import { defaultStoryTitle } from './storyTitle';
 import { alertAsk, DialogHost } from './dialog';
+import { UI } from './strings';
 import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon } from 'lucide-react';
 
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
@@ -285,7 +286,7 @@ export default function App() {
       }
     }
     if (promptIdx < 0) {
-      await alertAsk({ message: '앞에 프롬프트가 없어 새로 받을 수 없어요.' });
+      await alertAsk({ message: '앞선 지시가 없어 다시 받을 수 없습니다.' });
       return;
     }
 
@@ -412,10 +413,10 @@ export default function App() {
                     rows={2}
                   />
                   <div className="turn-actions">
-                    <button className="turn-btn" title="기록" onClick={() => 턴저장(editingTurn!)}>
+                    <button className="turn-btn" title={UI.save} onClick={() => 턴저장(editingTurn!)}>
                       <Check size={16} />
                     </button>
-                    <button className="turn-btn" title="취소" onClick={() => setEditingTurn(null)}>
+                    <button className="turn-btn" title={UI.cancel} onClick={() => setEditingTurn(null)}>
                       <X size={16} />
                     </button>
                   </div>
@@ -439,7 +440,7 @@ export default function App() {
                       {t.role === 'assistant' && (
                         <button
                           className="turn-btn"
-                          title={copied === i ? '필사됨' : '필사'}
+                          title={copied === i ? `${UI.copy}됨` : UI.copy}
                           onClick={() => 복사하기(i, t.content)}
                         >
                           {copied === i ? <Check size={16} /> : <Copy size={16} />}
@@ -448,16 +449,16 @@ export default function App() {
                       {t.id != null && (
                         <>
                           {t.role === 'assistant' && (
-                            <button className="turn-btn" title="다시 받기" onClick={() => 새로받기(i)}>
+                            <button className="turn-btn" title={UI.regen} onClick={() => 새로받기(i)}>
                               <RotateCcw size={16} />
                             </button>
                           )}
-                          <button className="turn-btn" title="편집" onClick={() => 턴수정시작(t)}>
+                          <button className="turn-btn" title={UI.edit} onClick={() => 턴수정시작(t)}>
                             <Pencil size={16} />
                           </button>
                           <button
                             className={'turn-btn' + (armedTurn === t.id ? ' armed' : '')}
-                            title="소각"
+                            title={UI.erase}
                             onClick={() => (armedTurn === t.id ? 턴삭제(t.id!) : setArmedTurn(t.id!))}
                           >
                             <Trash2 size={16} />
@@ -495,7 +496,7 @@ export default function App() {
               disabled={busy}
             />
             <button onClick={보내기} disabled={busy || !input.trim()}>
-              {busy ? '집필 중…' : '전개'}
+              {busy ? '집필 중…' : UI.submit}
             </button>
           </div>
         </footer>

@@ -3,6 +3,7 @@
 // 루트에 <DialogHost/> 하나만 띄워 두면 어디서 부르든 그 위에 그려진다.
 
 import { useEffect, useState } from 'react';
+import { UI } from './strings';
 
 type ConfirmOpts = {
   message: string;
@@ -80,7 +81,7 @@ export function DialogHost() {
         <div className="dialog-actions">
           {isConfirm && (
             <button className="dialog-btn" onClick={() => 닫기(false)}>
-              {(o as ConfirmOpts).cancelLabel || '취소'}
+              {(o as ConfirmOpts).cancelLabel || UI.cancel}
             </button>
           )}
           <button

@@ -1,4 +1,4 @@
-// ⚠️ 자동 생성 파일 — 직접 수정하지 마세요.
+// ⚠️ 자동 생성 파일 — 직접 손대지 마십시오.
 // worldview/풍화설월_고유명사_사전.md 가 바뀌면 'npm run bake' 로 다시 만듭니다.
 // { 정발 표기(한글) → 원어(영문) } — 영문명 자동 매칭용.
 export const nameDict: Record<string, string> = {

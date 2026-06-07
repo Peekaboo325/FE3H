@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLore, type Lore } from './useLore';
 import { alertAsk } from './dialog';
 import ImportDialog from './ImportDialog';
+import { UI } from './strings';
 
 const 빈설정 = (): Lore => ({ title: '', category: '', body: '', is_active: true });
 
@@ -26,7 +27,7 @@ export default function LorePanel({
   async function save() {
     if (!editing) return;
     if (!editing.title.trim()) {
-      await alertAsk({ message: '제목은 꼭 필요해요.' });
+      await alertAsk({ message: '제목은 꼭 필요합니다.' });
       return;
     }
     setSaving(true);
@@ -38,7 +39,7 @@ export default function LorePanel({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        await alertAsk({ message: '기록하지 못했어요.', detail: data.error || '알 수 없는 까닭' });
+        await alertAsk({ message: `${UI.save}하지 못했습니다.`, detail: data.error || '알 수 없는 까닭' });
         return;
       }
       await refresh();
@@ -57,7 +58,7 @@ export default function LorePanel({
     const res = await fetch(`/api/lore?id=${editing.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok || data.error) {
-      await alertAsk({ message: '지우지 못했어요.', detail: data.error || undefined });
+      await alertAsk({ message: `${UI.erase}하지 못했습니다.`, detail: data.error || undefined });
       return;
     }
     await refresh();
@@ -68,41 +69,41 @@ export default function LorePanel({
     <div className="modal-bg" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>{editing ? (editing.id ? '문헌 편집' : '새 문헌') : '대륙 문헌'}</h2>
+          <h2>{editing ? (editing.id ? `문헌 ${UI.edit}` : '새 문헌') : '대륙 문헌'}</h2>
           <button className="x" onClick={onClose}>
             ✕
           </button>
         </div>
 
         {!dbReady && (
-          <p className="warn">아직 기록의 샘이 닿지 않아 문헌을 기록할 수 없어요.</p>
+          <p className="warn">아직 기록의 샘이 닿지 않아 문헌을 기록할 수 없습니다.</p>
         )}
         {dbReady && err && (
           <p className="warn">
-            문헌 표가 아직 없는 것 같아요. 안내된 SQL을 Supabase에서 한 번 실행해 주세요.
+            문헌 표가 아직 없는 듯합니다. 안내된 SQL을 Supabase에서 한 번 실행하십시오.
             <br />
             <span className="dim">({err})</span>
           </p>
         )}
-        {storyId == null && <p className="warn">운명의 장을 먼저 펼쳐 주세요.</p>}
+        {storyId == null && <p className="warn">먼저 운명의 장을 펼치십시오.</p>}
 
         {!editing && (
           <div className="modal-body">
             <p className="dim small">
-              원작에서 바꾸거나 새로 정한 세계의 결을 적어두세요. 깨어 있는 문헌만 이야기에 깃듭니다.
+              원작에서 바꾸거나 새로 정한 세계의 결을 적어둡니다. 깨어 있는 문헌만 이야기에 깃듭니다.
             </p>
             <button className="new" onClick={() => setEditing(빈설정())}>
               ＋ 새 문헌
             </button>
             {storyId != null && (
               <button className="new" onClick={() => setImporting(true)}>
-                ↧ 다른 장에서 반입
+                ↧ 다른 장에서 {UI.import}
               </button>
             )}
             {loading ? (
               <p className="dim">펼치는 중…</p>
             ) : entries.length === 0 ? (
-              <p className="dim">아직 기록된 문헌이 없어요.</p>
+              <p className="dim">아직 기록된 문헌이 없습니다.</p>
             ) : (
               <ul className="char-list">
                 {entries.map((e, i) => (
@@ -150,7 +151,7 @@ export default function LorePanel({
                 rows={8}
                 value={editing.body || ''}
                 onChange={(e) => set('body', e.target.value)}
-                placeholder="원작과 달라진 결, 새로 정한 이치를 적으세요…"
+                placeholder="원작과 달라진 결, 새로 정한 이치를 적으십시오…"
               />
             </label>
 
@@ -165,15 +166,15 @@ export default function LorePanel({
 
             <div className="editor-actions">
               <button className="primary" onClick={save} disabled={saving}>
-                {saving ? '기록하는 중…' : '기록'}
+                {saving ? `${UI.save}하는 중…` : UI.save}
               </button>
-              <button onClick={() => setEditing(null)}>취소</button>
+              <button onClick={() => setEditing(null)}>{UI.cancel}</button>
               {editing.id && (
                 <button
                   className={'danger' + (armed ? ' armed' : '')}
                   onClick={() => (armed ? remove() : setArmed(true))}
                 >
-                  소각
+                  {UI.erase}
                 </button>
               )}
             </div>
@@ -182,7 +183,7 @@ export default function LorePanel({
 
         {importing && storyId != null && (
           <ImportDialog<Lore>
-            title="문헌 반입"
+            title={`문헌 ${UI.import}`}
             endpoint="/api/lore"
             itemsKey="lore"
             payloadKey="entry"

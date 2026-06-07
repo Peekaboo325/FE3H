@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Dropdown from './Dropdown';
 import { Check } from 'lucide-react';
+import { UI } from './strings';
 
 type Story = { id: number; title: string };
 
@@ -108,7 +109,7 @@ export default function ImportDialog<T extends { id?: number }>({
               {loading ? (
                 <p className="dim import-msg">펼치는 중…</p>
               ) : items.length === 0 ? (
-                <p className="dim import-msg">그 장엔 반입할 것이 없어요.</p>
+                <p className="dim import-msg">그 장엔 {UI.import}할 것이 없습니다.</p>
               ) : (
                 <ul className="char-list import-list">
                   {items.map((it) => {
@@ -131,9 +132,9 @@ export default function ImportDialog<T extends { id?: number }>({
 
               <div className="editor-actions">
                 <button className="primary" onClick={가져오기} disabled={busy || picked.size === 0}>
-                  {busy ? <span className="spinner" /> : `${picked.size}개 반입`}
+                  {busy ? <span className="spinner" /> : `${picked.size}개 ${UI.import}`}
                 </button>
-                <button onClick={onClose}>취소</button>
+                <button onClick={onClose}>{UI.cancel}</button>
               </div>
             </>
           )}

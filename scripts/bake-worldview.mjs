@@ -42,7 +42,7 @@ const SYSTEM = `${머리말}\n\n${조각.join('\n\n---\n\n')}`;
 const libDir = path.resolve(process.cwd(), 'lib');
 fs.mkdirSync(libDir, { recursive: true });
 const out =
-  '// ⚠️ 자동 생성 파일 — 직접 수정하지 마세요.\n' +
+  '// ⚠️ 자동 생성 파일 — 직접 손대지 마십시오.\n' +
   "// worldview/ 의 박제 문서가 바뀌면 'npm run bake' 로 다시 만듭니다.\n" +
   `export const SYSTEM = ${JSON.stringify(SYSTEM)};\n`;
 fs.writeFileSync(path.join(libDir, 'worldview.mjs'), out, 'utf-8');
@@ -69,7 +69,7 @@ try {
 }
 
 const nameOut =
-  '// ⚠️ 자동 생성 파일 — 직접 수정하지 마세요.\n' +
+  '// ⚠️ 자동 생성 파일 — 직접 손대지 마십시오.\n' +
   "// worldview/풍화설월_고유명사_사전.md 가 바뀌면 'npm run bake' 로 다시 만듭니다.\n" +
   '// { 정발 표기(한글) → 원어(영문) } — 영문명 자동 매칭용.\n' +
   `export const nameDict: Record<string, string> = ${JSON.stringify(dict, null, 2)};\n`;

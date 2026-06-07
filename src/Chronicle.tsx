@@ -46,10 +46,10 @@ export default function Chronicle({
           </button>
         </div>
 
-        {!dbOk && <p className="warn">기록의 샘이 닿지 않아 연대 문헌을 펼칠 수 없어요.</p>}
+        {!dbOk && <p className="warn">기록의 샘이 닿지 않아 연대 문헌을 펼칠 수 없습니다.</p>}
         {dbOk && !ready && (
           <p className="warn">
-            연대 문헌을 담을 자리가 아직 없어요. 안내된 SQL을 Supabase에서 한 번 실행해 주세요.
+            연대 문헌을 담을 자리가 아직 없습니다. 안내된 SQL을 Supabase에서 한 번 실행하십시오.
           </p>
         )}
 
@@ -58,7 +58,7 @@ export default function Chronicle({
           {loading ? (
             <p className="dim">펼치는 중…</p>
           ) : list.length === 0 ? (
-            <p className="dim">아직 기록된 장이 없어요.</p>
+            <p className="dim">아직 기록된 장이 없습니다.</p>
           ) : (
             <ul className="chronicle-list">
               {list.map((e) => (

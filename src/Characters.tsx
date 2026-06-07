@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
 import { alertAsk } from './dialog';
 import { useCharacters, type Character, type Bond, type CharReport } from './useCharacters';
+import { UI } from './strings';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
@@ -244,7 +245,7 @@ function ReportView({
         <ReportBody report={report} />
         <div className="report-foot">
           <button className="link-btn" onClick={onIssue} disabled={reporting}>
-            {reporting ? '다시 받는 중…' : '다시 받기'}
+            {reporting ? '다시 받는 중…' : UI.regen}
           </button>
         </div>
         {err && <p className="report-err">{err}</p>}
@@ -416,7 +417,7 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        setReportErr(data.error || '발급에 실패했어요.');
+        setReportErr(data.error || '발급에 실패했습니다.');
         return;
       }
       setViewing((v) => (v ? { ...v, analysis: data.report } : v));
@@ -439,14 +440,14 @@ export default function Characters({
       const thumb = await 이미지를_썸네일로(f); // 초상: 큰 히어로용(1400px)
       set('thumbnail', thumb);
     } catch (err) {
-      await alertAsk({ message: '초상을 올리지 못했어요.', detail: (err as Error).message });
+      await alertAsk({ message: '초상을 올리지 못했습니다.', detail: (err as Error).message });
     }
   }
 
   async function save() {
     if (!editing) return;
     if (!editing.name.trim()) {
-      await alertAsk({ message: '성명은 꼭 필요해요.' });
+      await alertAsk({ message: '성명은 꼭 필요합니다.' });
       return;
     }
     setSaving(true);
@@ -460,7 +461,7 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        await alertAsk({ message: '기록하지 못했어요.', detail: data.error || '알 수 없는 까닭' });
+        await alertAsk({ message: `${UI.save}하지 못했습니다.`, detail: data.error || '알 수 없는 까닭' });
         return;
       }
       await refresh();
@@ -480,7 +481,7 @@ export default function Characters({
     const res = await fetch(`/api/characters?id=${editing.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok || data.error) {
-      await alertAsk({ message: '지우지 못했어요.', detail: data.error || undefined });
+      await alertAsk({ message: `${UI.erase}하지 못했습니다.`, detail: data.error || undefined });
       return;
     }
     await refresh();
@@ -604,15 +605,15 @@ export default function Characters({
               </button>
             </div>
 
-            {!dbReady && <p className="warn">아직 기록의 샘이 닿지 않아 인물을 기록할 수 없어요.</p>}
+            {!dbReady && <p className="warn">아직 기록의 샘이 닿지 않아 인물을 기록할 수 없습니다.</p>}
             {dbReady && err && (
               <p className="warn">
-                인물 표가 아직 없는 것 같아요. 안내된 SQL을 Supabase에서 한 번 실행해 주세요.
+                인물 표가 아직 없는 듯합니다. 안내된 SQL을 Supabase에서 한 번 실행하십시오.
                 <br />
                 <span className="dim">({err})</span>
               </p>
             )}
-            {storyId == null && <p className="warn">이야기를 먼저 만들어 주세요.</p>}
+            {storyId == null && <p className="warn">먼저 운명의 장을 펼치십시오.</p>}
           </>
         )}
 
@@ -632,10 +633,10 @@ export default function Characters({
                   >
                     <Bookmark size={18} fill={viewing.is_active !== false ? 'currentColor' : 'none'} />
                   </button>
-                  <button className="hero-btn" onClick={() => setEditing(viewing)} aria-label="편집">
+                  <button className="hero-btn" onClick={() => setEditing(viewing)} aria-label={UI.edit}>
                     <Pencil size={17} />
                   </button>
-                  <button className="hero-btn" onClick={onClose} aria-label="닫기">
+                  <button className="hero-btn" onClick={onClose} aria-label={UI.close}>
                     <X size={18} />
                   </button>
                 </div>
@@ -784,14 +785,14 @@ export default function Characters({
               </button>
               {storyId != null && (
                 <button className="list-btn" onClick={() => setImporting(true)}>
-                  ↧ 명부 반입
+                  ↧ 명부 {UI.import}
                 </button>
               )}
             </div>
             {loading ? (
               <p className="dim">펼치는 중…</p>
             ) : chars.length === 0 ? (
-              <p className="dim">아직 기록된 인물이 없어요.</p>
+              <p className="dim">아직 기록된 인물이 없습니다.</p>
             ) : (
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
                 <SortableContext
@@ -819,11 +820,11 @@ export default function Characters({
           <div className="char-view char-edit">
             <div className="char-hero">
               <div className="char-hero-top">
-                <button className="hero-btn" onClick={() => setEditing(null)} aria-label="취소">
+                <button className="hero-btn" onClick={() => setEditing(null)} aria-label={UI.cancel}>
                   <ArrowLeft size={18} />
                 </button>
                 <div className="hero-top-right">
-                  <button className="hero-btn" onClick={onClose} aria-label="닫기">
+                  <button className="hero-btn" onClick={onClose} aria-label={UI.close}>
                     <X size={18} />
                   </button>
                 </div>
@@ -1040,7 +1041,7 @@ export default function Characters({
                           onChange={(e) => updateBond(i, { name: e.target.value })}
                         />
                       </label>
-                      <button className="bond-del" onClick={() => removeBond(i)} aria-label="삭제">
+                      <button className="bond-del" onClick={() => removeBond(i)} aria-label={UI.erase}>
                         <X size={16} />
                       </button>
                     </div>
@@ -1084,15 +1085,15 @@ export default function Characters({
 
               <div className="editor-actions">
                 <button className="primary" onClick={save} disabled={saving}>
-                  {saving ? <span className="spinner" /> : '기록'}
+                  {saving ? <span className="spinner" /> : UI.save}
                 </button>
-                <button onClick={() => setEditing(null)}>취소</button>
+                <button onClick={() => setEditing(null)}>{UI.cancel}</button>
                 {editing.id && (
                   <button
                     className={'danger' + (armed ? ' armed' : '')}
                     onClick={() => (armed ? remove() : setArmed(true))}
                   >
-                    소각
+                    {UI.erase}
                   </button>
                 )}
               </div>
@@ -1113,7 +1114,7 @@ export default function Characters({
 
         {importing && storyId != null && (
           <ImportDialog<Character>
-            title="명부 반입"
+            title={`명부 ${UI.import}`}
             endpoint="/api/characters"
             itemsKey="characters"
             payloadKey="character"
