@@ -4,6 +4,7 @@ import { defaultStoryTitle } from './storyTitle';
 import { confirmAsk, alertAsk } from './dialog';
 import { UI } from './strings';
 import IconButton from './IconButton';
+import Spinner from './Spinner';
 
 type Story = { id: number; title: string; updated_at?: string };
 
@@ -162,9 +163,9 @@ export default function Stories({
             ＋ 새로운 운명의 장
           </button>
           {loading ? (
-            <p className="dim">펼치는 중…</p>
+            <Spinner />
           ) : list.length === 0 ? (
-            <p className="dim">아직 펼친 장이 없습니다.</p>
+            <p className="list-empty">아직 펼친 장이 없습니다.</p>
           ) : (
             <ul className="char-list">
               {list.map((s) =>

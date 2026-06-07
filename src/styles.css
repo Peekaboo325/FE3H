@@ -709,7 +709,6 @@ body::before {
 /* 목록(또는 안내)은 가운데서 스크롤, 버튼은 그 아래(=모달 하단)에 */
 .import-scroll { flex: 1; min-height: 0; overflow-y: auto; }
 .import-body .editor-actions { margin-top: 0; flex: 0 0 auto; justify-content: center; }
-.import-msg { margin: 0; }
 
 /* ── 행(列) 리스트 자산 (ListRow) — 배너형: 초상이 왼쪽에서 번지고 이름이 옆에 ──── */
 .list-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -1504,6 +1503,21 @@ body::before {
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* 로딩 표시(가운데 스피너 + 문구) — 목록·패널 공용 */
+.loading-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 0;
+  color: var(--text-dim);
+}
+.spinner-lg { width: 22px; height: 22px; border-width: 2.5px; }
+.loading-label { font-size: 13px; color: var(--text-dim); }
+/* 빈 목록 안내 — 무조건 가운데 */
+.list-empty { text-align: center; color: var(--text-dim); padding: 40px 0; margin: 0; }
 
 /* 활성(등장) 북마크 켜짐 */
 .icon-btn.on { color: var(--accent); border-color: var(--accent); }

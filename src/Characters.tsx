@@ -4,6 +4,7 @@ import { alertAsk } from './dialog';
 import { useCharacters, type Character, type Bond, type CharReport } from './useCharacters';
 import { UI } from './strings';
 import IconButton from './IconButton';
+import Spinner from './Spinner';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
@@ -815,7 +816,7 @@ export default function Characters({
         {!editing && !viewing && (
           <div className="modal-body">
             {loading ? (
-              <p className="dim">펼치는 중…</p>
+              <Spinner />
             ) : chars.length === 0 ? (
               <div className="empty-state">
                 <p className="empty-state-msg">아직 명부에 오른 이가 없습니다.</p>

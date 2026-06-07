@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
+import Spinner from './Spinner';
 
 type Entry ={ id: number | null; ep: number; title: string; summary: string | null };
 
@@ -59,9 +60,9 @@ export default function Chronicle({
         <div className="modal-body">
           <p className="dim small">화마다 흘러온 줄거리를 왕실 사관이 정리한 기록입니다.</p>
           {loading ? (
-            <p className="dim">펼치는 중…</p>
+            <Spinner />
           ) : list.length === 0 ? (
-            <p className="dim">아직 기록된 장이 없습니다.</p>
+            <p className="list-empty">아직 기록된 장이 없습니다.</p>
           ) : (
             <ul className="chronicle-list">
               {list.map((e) => (

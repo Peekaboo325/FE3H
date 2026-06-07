@@ -4,6 +4,7 @@ import { Check, X } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import ListRow from './ListRow';
+import Spinner from './Spinner';
 
 type Story = { id: number; title: string };
 
@@ -116,9 +117,9 @@ export default function ImportDialog<T extends { id?: number }>({
             <>
               <div className="import-scroll">
                 {loading ? (
-                  <p className="dim import-msg">펼치는 중…</p>
+                  <Spinner />
                 ) : items.length === 0 ? (
-                  <p className="dim import-msg">그 장엔 {UI.import}할 것이 없습니다.</p>
+                  <p className="list-empty">그 장엔 {UI.import}할 것이 없습니다.</p>
                 ) : (
                   <ul className="list-rows">
                     {items.map((it) => {

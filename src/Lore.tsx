@@ -5,6 +5,7 @@ import ImportDialog from './ImportDialog';
 import { X, Trash2 } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
+import Spinner from './Spinner';
 
 const 빈설정 = (): Lore => ({ title: '', category: '', body: '', is_active: true });
 
@@ -103,9 +104,9 @@ export default function LorePanel({
               </button>
             )}
             {loading ? (
-              <p className="dim">펼치는 중…</p>
+              <Spinner />
             ) : entries.length === 0 ? (
-              <p className="dim">아직 기록된 문헌이 없습니다.</p>
+              <p className="list-empty">아직 기록된 문헌이 없습니다.</p>
             ) : (
               <ul className="char-list">
                 {entries.map((e, i) => (
