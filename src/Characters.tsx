@@ -100,46 +100,91 @@ function StatBar({ label, value, comment }: { label: string; value: number; comm
   );
 }
 
-// 보고서 본문 렌더(발급본·골격 공용) — 인용구·해시태그·능력치·분석·평판.
+// 능력치 8종을 한눈에 — 팔각형 레이더 그래프(SVG, 의존성 없음).
+function StatRadar({ stats }: { stats: Record<string, number> }) {
+  const size = 240;
+  const c = size / 2;
+  const R = c - 30; // 라벨 자리 여백
+  const n = 능력치목록.length; // 8
+  const pt = (i: number, radius: number): [number, number] => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n; // 12시 방향부터 시계방향
+    return [c + radius * Math.cos(a), c + radius * Math.sin(a)];
+  };
+  const poly = (radius: number | ((i: number) => number)) =>
+    능력치목록
+      .map((_, i) => pt(i, typeof radius === 'function' ? radius(i) : radius).join(','))
+      .join(' ');
+  const val = (i: number) => {
+    const v = stats?.[능력치목록[i][0]] ?? 0;
+    return (R * Math.max(0, Math.min(100, v))) / 100;
+  };
+  return (
+    <svg className="stat-radar" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="능력치 그래프">
+      {[0.25, 0.5, 0.75, 1].map((f) => (
+        <polygon key={f} className="radar-ring" points={poly(R * f)} />
+      ))}
+      {능력치목록.map((_, i) => {
+        const [x, y] = pt(i, R);
+        return <line key={i} className="radar-axis" x1={c} y1={c} x2={x} y2={y} />;
+      })}
+      <polygon className="radar-area" points={poly(val)} />
+      {능력치목록.map(([, ko], i) => {
+        const [x, y] = pt(i, R + 16);
+        return (
+          <text key={i} className="radar-label" x={x} y={y} textAnchor="middle" dominantBaseline="central">
+            {ko}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+// 보고서 본문 렌더(발급본·골격 공용) — 2단: 왼쪽 능력치(인용구·해시태그·레이더·막대) / 오른쪽 분석.
 function ReportBody({ report }: { report: CharReport }) {
   return (
-    <>
-      {report.quote && <p className="report-quote">“{report.quote}”</p>}
-      {!!report.hashtags?.length && (
-        <div className="report-tags">
-          {report.hashtags.map((t, i) => (
-            <span key={i} className="report-tag">
-              #{t}
-            </span>
+    <div className="report-grid">
+      <div className="report-side">
+        {report.quote && <p className="report-quote">“{report.quote}”</p>}
+        {!!report.hashtags?.length && (
+          <div className="report-tags">
+            {report.hashtags.map((t, i) => (
+              <span key={i} className="report-tag">
+                #{t}
+              </span>
+            ))}
+          </div>
+        )}
+        <StatRadar stats={report.stats ?? {}} />
+        <div className="report-stats">
+          {능력치목록.map(([k, ko]) => (
+            <StatBar
+              key={k}
+              label={ko}
+              value={report.stats?.[k] ?? 0}
+              comment={report.stat_comments?.[k]}
+            />
           ))}
         </div>
-      )}
-      <div className="report-stats">
-        {능력치목록.map(([k, ko]) => (
-          <StatBar
-            key={k}
-            label={ko}
-            value={report.stats?.[k] ?? 0}
-            comment={report.stat_comments?.[k]}
-          />
-        ))}
       </div>
-      {report.personality && <ViewSection label="성격 분석" text={report.personality} />}
-      {report.unconscious && <ViewSection label="무의식 분석" text={report.unconscious} />}
-      {!!report.reputation?.length && (
-        <div className="view-section">
-          <div className="view-label">평판</div>
-          <ul className="rep-list">
-            {report.reputation.map((r, i) => (
-              <li key={i} className="rep-item">
-                <div className="rep-src">{r.source}</div>
-                <div className="rep-cmt">{r.comment}</div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </>
+      <div className="report-main">
+        {report.personality && <ViewSection label="성격 분석" text={report.personality} />}
+        {report.unconscious && <ViewSection label="무의식 분석" text={report.unconscious} />}
+        {!!report.reputation?.length && (
+          <div className="view-section">
+            <div className="view-label">평판</div>
+            <ul className="rep-list">
+              {report.reputation.map((r, i) => (
+                <li key={i} className="rep-item">
+                  <div className="rep-src">{r.source}</div>
+                  <div className="rep-cmt">{r.comment}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
