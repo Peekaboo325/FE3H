@@ -169,7 +169,7 @@ body::before {
 .drawer-head { padding: 4px 10px 16px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
 .drawer-title { font-size: 20px; letter-spacing: normal; }
 /* FIRE EMBLEM 워드마크 — 글자색(currentColor)을 따른다. 높이로 크기 고정(가로 비율 ~9.2:1) */
-.drawer-logo { display: block; height: 17px; width: auto; }
+.drawer-logo { display: block; height: 14px; width: auto; }
 .drawer-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
 .drawer-list { display: flex; flex-direction: column; gap: 2px; }
 .drawer-item {
