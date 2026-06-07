@@ -75,6 +75,7 @@
 - **메인 본문 = Claude Opus 4.8** 호출 설정: 노력(effort) '낮음', extended thinking 켜되 짧게, 세계관 문서는 **텍스트로 직접 입력**(PDF/파일첨부 금지 — 토큰 약 2배 부풀고 느려짐).
 - Sonnet은 쓰지 않는다 (수빈 기준선 아래, 그럴 거면 v1.0과 차이 없음).
 - 비용은 모델 다운그레이드가 아니라 **입력 토큰 축소**로 푼다.
+- **Gemini 호출엔 박제 세계관(SYSTEM)·고유명사 사전을 넣지 않는다.** 그건 클로드 본문 전용(풍화설월 지식 보강용)이다. Gemini(요약·큰 줄기·앵커 추림·인물 분석 보고서)는 **그 과제에 필요한 입력만** 받는다 — 새 Gemini 프롬프트를 짤 때 worldview/nameDict를 import하지 말 것. (`lib/summarize.mjs`·`lib/report.mjs` 둘 다 현재 db만 import.)
 
 ---
 
