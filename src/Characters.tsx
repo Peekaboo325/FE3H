@@ -337,7 +337,7 @@ function SortableCharCard({
         </button>
         <div className="char-card-grad" />
         <div className="char-card-meta">
-          <div className="char-card-name">{c.name}</div>
+          <div className="char-card-name">{firstName(c.name)}</div>
           {alias && <div className="char-card-sub">{alias}</div>}
         </div>
       </div>
