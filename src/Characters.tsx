@@ -3,6 +3,7 @@ import { 이미지를_썸네일로 } from './imageUtils';
 import { alertAsk } from './dialog';
 import { useCharacters, type Character, type Bond, type CharReport } from './useCharacters';
 import { UI } from './strings';
+import IconButton from './IconButton';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
@@ -611,29 +612,19 @@ export default function Characters({
               <div className="head-actions">
                 {chars.length > 0 && (
                   <>
-                    <button
-                      className="btn-accent btn-icon"
-                      onClick={() => setEditing(빈인물())}
-                      title="작성"
-                      aria-label="작성"
-                    >
+                    <IconButton label="작성" active onClick={() => setEditing(빈인물())}>
                       <UserPlus size={17} />
-                    </button>
+                    </IconButton>
                     {storyId != null && (
-                      <button
-                        className="btn-ghost btn-icon"
-                        onClick={() => setImporting(true)}
-                        title={UI.import}
-                        aria-label={UI.import}
-                      >
+                      <IconButton label={UI.import} onClick={() => setImporting(true)}>
                         <Download size={17} />
-                      </button>
+                      </IconButton>
                     )}
                   </>
                 )}
-                <button className="x" onClick={onClose}>
-                  ✕
-                </button>
+                <IconButton label={UI.close} onClick={onClose}>
+                  <X size={17} />
+                </IconButton>
               </div>
             </div>
 

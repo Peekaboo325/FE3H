@@ -578,10 +578,6 @@ body::before {
   color: var(--text-dim);
 }
 .btn-ghost:hover { background: var(--surface-2); color: var(--text); }
-/* 툴바용 소형 변형 */
-.btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
-/* 아이콘 전용(정사각) — 한 화면 아이콘 버튼 크기 통일 */
-.btn-icon { width: 34px; height: 34px; padding: 0; border-radius: 9px; }
 
 /* 빈 명부 — 휑하지 않게 가운데 안내 + 단일 주 동작 */
 .empty-state {
@@ -951,7 +947,9 @@ body::before {
   padding: 10px;
 }
 .hero-top-right { display: flex; gap: 8px; }
-.hero-btn {
+/* 둥근 아이콘 버튼 — 히어로 상단·모달 헤더 공용 자산(IconButton.tsx). 한 곳에서 정의 */
+.hero-btn,
+.icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -966,7 +964,8 @@ body::before {
   backdrop-filter: blur(4px);
   cursor: pointer;
 }
-.hero-btn:hover { background: rgba(0, 0, 0, 0.55); border-color: var(--accent); }
+.hero-btn:hover,
+.icon-btn:hover { background: rgba(0, 0, 0, 0.55); border-color: var(--accent); }
 .char-hero-info {
   flex: 1;
   min-width: 0;
@@ -1439,7 +1438,8 @@ body::before {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* 활성(등장) 북마크 켜짐 */
-.hero-btn.on { color: var(--accent); border-color: var(--accent); }
+.hero-btn.on,
+.icon-btn.on { color: var(--accent); border-color: var(--accent); }
 
 /* 커스텀 드롭다운 */
 .dd { position: relative; flex: 1; min-width: 0; }
