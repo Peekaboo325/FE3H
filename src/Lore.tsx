@@ -396,7 +396,7 @@ export default function LorePanel({
                   <Spinner />
                 ) : inTopic.length === 0 ? (
                   <div className="empty-state">
-                    <p className="empty-state-msg">이 영역엔 아직 문헌이 없습니다.</p>
+                    <p className="empty-state-msg">기록된 문헌이 없습니다.</p>
                     {topic !== ORPHAN && (
                       <button className="btn-accent" onClick={() => openNew(topic!)}>
                         첫 문헌 기록
