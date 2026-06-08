@@ -498,7 +498,7 @@ export default function LorePanel({
                     </div>
 
                     <div className="lore-secs-wrap">
-                      <span className="lore-secs-label">내용 — 항목</span>
+                      <span className="lore-secs-label">내용</span>
                       <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
