@@ -801,10 +801,24 @@ em, i { font-style: normal; }
 }
 /* 사이드바(목차) */
 .lore-side {
+  position: relative;
   width: 296px; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0;
   border-right: 1px solid var(--border);
   background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, var(--surface)), var(--surface) 40%);
 }
+/* 작성 = 목록 하단 원형 플로팅(FAB) */
+.lore-fab {
+  position: absolute;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: 52px; height: 52px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  background: var(--accent); color: var(--accent-ink);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  cursor: pointer; z-index: 5;
+}
+.lore-fab:hover { filter: brightness(1.06); }
 .lore-side-head {
   display: flex; align-items: center; gap: 6px;
   padding: 12px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
@@ -813,7 +827,7 @@ em, i { font-style: normal; }
   flex: 1; min-width: 0; margin: 0; font-size: 15px; font-weight: 700; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.lore-vols { flex: 1; overflow-y: auto; min-height: 0; padding: 6px; }
+.lore-vols { flex: 1; overflow-y: auto; min-height: 0; padding: 6px 6px 84px; }
 .lore-vol-list { list-style: none; margin: 0; padding: 0; }
 .lore-vol {
   display: flex; align-items: center; gap: 4px;
@@ -848,16 +862,6 @@ em, i { font-style: normal; }
 }
 .lore-main-head-sp { flex: 1; }
 .lore-main-body { flex: 1; overflow-y: auto; min-height: 0; padding: 0; }
-/* 코덱스 헤더 버튼 — 어두운 알약 대신 평평한 아이콘(상단 정돈). 알약은 초상 위 대비용이라 여기선 과함 */
-.lore-side-head .icon-btn,
-.lore-main-head .icon-btn {
-  background: none; border-color: transparent; backdrop-filter: none;
-  min-width: 32px; padding: 0 6px; color: var(--text-dim);
-}
-.lore-side-head .icon-btn:hover,
-.lore-main-head .icon-btn:hover { background: var(--surface-2); border-color: transparent; color: var(--text); }
-.lore-side-head .icon-btn.on,
-.lore-main-head .icon-btn.on { color: var(--accent); border-color: transparent; }
 /* 문헌 한 권(읽기) — 표제·여백을 살린 정갈한 읽기 */
 .lore-doc { max-width: 680px; margin: 0 auto; padding: 34px 32px 56px; }
 .lore-doc-head { border-bottom: 1px solid var(--border); padding-bottom: 22px; margin-bottom: 30px; }
@@ -890,14 +894,15 @@ em, i { font-style: normal; }
 .lore-prompt-sub { font-size: 12px; color: var(--text-faint); margin: 0; }
 /* 편찬 본문 — 코덱스 우측에 들어갈 때 안쪽 여백 */
 .lore-edit { padding: 24px 26px 30px; }
-/* 모바일: 2단을 한 화면씩(목차 ↔ 본문 전환), 전용 버튼 노출 */
+/* 모바일: 2단을 한 화면씩(목차 ↔ 본문 전환). ←(목차로)는 모바일만, 닫기(X)는 데스크탑만. */
 /* (.icon-btn의 display를 이기려면 같은 특이도 이상이어야 함 → .icon-btn 동반) */
-.icon-btn.lore-back-m, .icon-btn.lore-close-m { display: none; }
+.icon-btn.lore-back-m { display: none; }
 @media (max-width: 600px) {
   .lore-side { width: 100%; border-right: none; }
   .lore-codex.has-sel .lore-side { display: none; }
   .lore-codex:not(.has-sel) .lore-main { display: none; }
-  .icon-btn.lore-back-m, .icon-btn.lore-close-m { display: inline-flex; }
+  .icon-btn.lore-back-m { display: inline-flex; }
+  .icon-btn.lore-close-d { display: none; } /* 모바일에선 닫기 숨김(←로 뒤로) */
   .lore-doc { padding: 22px 4px 48px; }
   .lore-doc-title { font-size: 23px; }
   .lore-edit { padding: 16px 2px 24px; }

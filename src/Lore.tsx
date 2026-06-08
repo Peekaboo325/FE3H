@@ -5,7 +5,6 @@ import ImportDialog from './ImportDialog';
 import {
   X,
   Trash2,
-  BookPlus,
   Download,
   ChevronRight,
   ChevronLeft,
@@ -382,14 +381,6 @@ export default function LorePanel({
                   {topic === ORPHAN ? '미분류' : topic}
                   {inTopic.length > 0 && <span className="head-count">{inTopic.length}</span>}
                 </h3>
-                {topic !== ORPHAN && (
-                  <IconButton label="작성" onClick={() => openNew(topic!)}>
-                    <BookPlus size={16} />
-                  </IconButton>
-                )}
-                <IconButton label={UI.close} className="lore-close-m" onClick={onClose}>
-                  <X size={17} />
-                </IconButton>
               </div>
               <div className="lore-vols">
                 {loading ? (
@@ -441,6 +432,12 @@ export default function LorePanel({
                   </ul>
                 )}
               </div>
+              {/* 작성 = 하단 원형 플로팅 */}
+              {topic !== ORPHAN && inTopic.length > 0 && (
+                <button className="lore-fab" onClick={() => openNew(topic!)} title="작성" aria-label="작성">
+                  <Plus size={22} />
+                </button>
+              )}
             </aside>
 
             {/* 오른쪽: 본문(읽기/편찬/안내) */}
@@ -469,7 +466,7 @@ export default function LorePanel({
                     </IconButton>
                   </>
                 )}
-                <IconButton label={UI.close} onClick={onClose}>
+                <IconButton label={UI.close} className="lore-close-d" onClick={onClose}>
                   <X size={17} />
                 </IconButton>
               </div>
