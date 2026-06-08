@@ -716,8 +716,6 @@ export default function Characters({
               <div className="char-hero-info">
                 <div className="char-hero-name">
                   {viewing.name}
-                  {viewing.life_status === 'deceased' && <span className="tag">사망</span>}
-                  {viewing.life_status === 'unknown' && <span className="tag">불명</span>}
                 </div>
                 {viewing.english_name && <div className="char-hero-en">{viewing.english_name}</div>}
                 {splitAliases(viewing.aliases).length > 0 && (
@@ -821,9 +819,6 @@ export default function Characters({
                         </div>
                         </div>
                     </div>
-                  )}
-                  {viewing.is_active === false && (
-                    <p className="dim small">현재 모습을 드러내지 않는 인물입니다.</p>
                   )}
                 </>
               ) : tab === '보고서' ? (
