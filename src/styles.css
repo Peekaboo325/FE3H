@@ -786,6 +786,12 @@ em, i { font-style: normal; }
 /* 대륙 문헌 대주제 배너 — 일반 행보다 키 큼(80), 우측 권수+진입 화살 */
 .lore-topics .list-row { height: 80px; }
 .lore-right { display: inline-flex; align-items: center; gap: 6px; color: var(--text-dim); }
+/* 편찬 필드 — 영역(좁게 25%)·갈래(넓게) */
+.lore-fields > .lore-f-area { flex: 0 0 25%; min-width: 0; }
+.lore-fields > .lore-f-title { flex: 1; }
+/* 문헌 뷰(읽기) — 히어로 없이 정갈한 읽기 */
+.lore-view-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 2px 0 14px; }
+.lore-view-body { font-size: 14px; line-height: 1.85; color: var(--text); }
 .lore-count { font-size: 12px; letter-spacing: normal; }
 .lore-orphan { opacity: 0.85; }
 .head-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
