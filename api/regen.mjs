@@ -52,6 +52,8 @@ export default async function handler(req, res) {
 
   const client = new Anthropic({ apiKey: key });
   res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
 
   let 본문 = '';
   try {

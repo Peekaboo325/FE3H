@@ -210,8 +210,28 @@ export default function App() {
         받은 += 조각;
         붙이기(조각);
       }
-      // 서버가 오류로 끝냈으면(스트림 끝에 [서고 오류]) 재로딩으로 덮지 않는다 — 부분 본문+사유를 화면에 남긴다.
-      if (storyId && !받은.includes('[서고 오류]')) await loadTurnsFor(storyId);
+      // 스트리밍 본문이 사라지지 않게: DB가 '이 답변을 같거나 더 길게 저장'했을 때만 DB판을 채택한다.
+      // (연결이 조용히 끊겨 서버가 저장 못 하면, 화면에 받은 부분 본문을 그대로 남긴다 — 어디서 잘렸는지도 보임.)
+      const 본문길이 = 받은.trim().length;
+      if (storyId && 본문길이 > 0 && !받은.includes('[서고 오류]')) {
+        try {
+          const r = await fetch(`/api/turns?story_id=${storyId}`);
+          const d = await r.json();
+          const fresh = Array.isArray(d?.turns) ? (d.turns as Turn[]) : [];
+          const 끝 = fresh[fresh.length - 1];
+          const 저장길이 = 끝?.role === 'assistant' ? (끝.content?.trim().length || 0) : -1;
+          if (저장길이 >= 본문길이) {
+            setTurns(fresh);
+            setVisibleCount(WINDOW);
+          }
+          // else: 저장이 아직/안 됨 → 화면의 부분 본문 유지(덮지 않음)
+        } catch {
+          /* 조회 실패 — 화면 유지 */
+        }
+      } else if (storyId && 본문길이 === 0) {
+        // 한 글자도 안 왔으면 정상 재로딩으로 빈 자리 정리.
+        await loadTurnsFor(storyId);
+      }
     } catch (e) {
       붙이기(`\n\n[연결 오류] ${(e as Error).message}`);
     } finally {

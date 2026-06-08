@@ -94,6 +94,9 @@ export default async function handler(req, res) {
 
   const client = new Anthropic({ apiKey: key });
   res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');
+  // 스트림이 프록시에 버퍼링·변형돼 끊기지 않게(간헐적 끊김 대비).
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
 
   // 실제로 되짚은 회차·문헌을 헤더로 — 클라가 그 화에 '확인 자취'를 남긴다(본문 전에 전송).
   const 자취 = {};
