@@ -1192,6 +1192,7 @@ export default function Characters({
             imageOf={(c) => c.avatar || c.thumbnail || LIST_PLACEHOLDER}
             fxOf={(c) => statusFx(c.life_status)}
             omit={['analysis', 'is_active', 'sort_order']}
+            noun="인물"
             onClose={() => setImporting(false)}
             onDone={refresh}
           />

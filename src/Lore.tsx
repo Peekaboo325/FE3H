@@ -610,6 +610,7 @@ export default function LorePanel({
             currentStoryId={storyId}
             labelOf={(e) => e.title}
             subOf={(e) => e.category || undefined}
+            noun="문헌"
             onClose={() => setImporting(false)}
             onDone={refresh}
           />

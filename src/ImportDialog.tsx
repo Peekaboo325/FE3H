@@ -21,6 +21,7 @@ export default function ImportDialog<T extends { id?: number }>({
   imageOf,
   fxOf,
   omit,
+  noun = '항목',
   onClose,
   onDone,
 }: {
@@ -34,6 +35,7 @@ export default function ImportDialog<T extends { id?: number }>({
   imageOf?: (it: T) => string | undefined; // 초상(전체 이미지) — 인물 전용
   fxOf?: (it: T) => string | undefined; // 상태 효과 클래스
   omit?: string[]; // 반입에서 제외할 칸(예: 보고서·상태 — 유저가 '작성'한 것만 가져오기)
+  noun?: string; // 빈 안내용 명사(인물/문헌)
   onClose: () => void;
   onDone: () => void;
 }) {
@@ -122,7 +124,7 @@ export default function ImportDialog<T extends { id?: number }>({
                 {loading ? (
                   <Spinner />
                 ) : items.length === 0 ? (
-                  <p className="list-empty">그 장엔 {UI.import}할 것이 없습니다.</p>
+                  <p className="list-empty">반입할 수 있는 {noun}이 없습니다.</p>
                 ) : (
                   <ul className="list-rows">
                     {items.map((it) => {
