@@ -1224,6 +1224,13 @@ em, i { font-style: normal; }
   margin-bottom: 16px;
 }
 .report-analysis-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+/* 보고서 섹션 헤더 — 가는 구분선으로 장(章)을 또렷이 */
+.report-body .view-label {
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 13px;
+  letter-spacing: 0.04em;
+}
 /* 카드 자체 margin과 그리드 gap이 겹쳐 간격이 벌어지지 않게 — 간격은 gap만 담당 */
 .report-analysis-row .view-section { margin: 0; }
 @media (max-width: 600px) {
@@ -1245,12 +1252,13 @@ em, i { font-style: normal; }
 
 /* 대표 인용구 + 해시태그 */
 .report-quote {
-  font-size: 16px;
+  font-size: 19px;
+  font-weight: 500;
   color: var(--text);
-  line-height: 1.7;
+  line-height: 1.6;
   text-align: center;
-  margin: 4px 0 14px;
-  padding: 0 8px;
+  margin: 12px 0 26px;
+  padding: 0 16px;
 }
 .report-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 18px; }
 .report-tag {
