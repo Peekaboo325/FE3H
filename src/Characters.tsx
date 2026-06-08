@@ -174,8 +174,8 @@ function ReportBody({ report }: { report: CharReport }) {
       </div>
       {/* 성격 분석 + 무의식 분석 (한 줄) */}
       <div className="report-analysis-row">
-        {report.personality && <ViewSection label="성격 분석" text={report.personality} />}
-        {report.unconscious && <ViewSection label="무의식 분석" text={report.unconscious} />}
+        {report.personality && <ViewSection label="표층 성향" text={report.personality} />}
+        {report.unconscious && <ViewSection label="심층 심리" text={report.unconscious} />}
       </div>
       {!!report.reputation?.length && (
         <div className="view-section">
