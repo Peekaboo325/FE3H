@@ -70,7 +70,7 @@ export default function Chronicle({
                   {e.summary ? (
                     <div className="chronicle-summary">{e.summary}</div>
                   ) : (
-                    <div className="dim small">아직 정리되지 않은 장입니다.</div>
+                    <div className="dim small">아직 기록되지 않은 장입니다.</div>
                   )}
                 </li>
               ))}

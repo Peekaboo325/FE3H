@@ -803,7 +803,7 @@ export default function Characters({
                     </div>
                   )}
                   {viewing.is_active === false && (
-                    <p className="dim small">지금 이야기엔 잠들어 있는 인물입니다.</p>
+                    <p className="dim small">현재 모습을 드러내지 않는 인물입니다.</p>
                   )}
                 </>
               ) : tab === '보고서' ? (
