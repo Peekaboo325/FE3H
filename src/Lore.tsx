@@ -543,7 +543,7 @@ export default function LorePanel({
                       <div className="editor-actions-end">
                         <button onClick={() => setEditing(null)}>{UI.cancel}</button>
                         <button className="primary" onClick={save} disabled={saving}>
-                          {saving ? `${UI.save}하는 중…` : UI.save}
+                          {saving ? <span className="spinner" /> : UI.save}
                         </button>
                       </div>
                     </div>
