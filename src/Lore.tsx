@@ -51,7 +51,7 @@ const ORPHAN = ' 미분류'; // 다섯 영역과 안 맞는 옛 분류를 모으
 
 const 빈설정 = (category = ''): Lore => ({ title: '', category, sections: [], body: '', is_active: true });
 
-// 편찬용 소주제 — 드래그 정렬을 위해 안정 키(id)를 단다(저장 시 떼어냄).
+// 편찬용 항목 — 드래그 정렬을 위해 안정 키(id)를 단다(저장 시 떼어냄).
 type Sec = { id: string; subtitle: string; content: string };
 let _sid = 0;
 const uid = () => `s${Date.now().toString(36)}${(_sid++).toString(36)}`;
@@ -80,7 +80,7 @@ const tocOf = (e: Lore) =>
     .filter(Boolean)
     .join(' · ');
 
-// ── 편찬: 소주제 한 칸(드래그 정렬) ────────────────────────────────────────
+// ── 편찬: 항목 한 칸(드래그 정렬) ──────────────────────────────────────────
 function SortableSec({
   sec,
   canRemove,
@@ -111,7 +111,6 @@ function SortableSec({
           className="lore-sec-sub"
           value={sec.subtitle}
           onChange={(e) => onUpdate(sec.id, 'subtitle', e.target.value)}
-          placeholder="소주제 제목 (예: 군제와 기사단)"
         />
         {canRemove && (
           <button className="lore-sec-del" onClick={onRemove} title={UI.erase} aria-label={UI.erase}>
@@ -124,7 +123,6 @@ function SortableSec({
         rows={5}
         value={sec.content}
         onChange={(e) => onUpdate(sec.id, 'content', e.target.value)}
-        placeholder="내용을 적으십시오…"
       />
     </div>
   );
@@ -488,7 +486,6 @@ export default function LorePanel({
                           value={editing.category || ''}
                           options={TOPICS.map((t) => ({ value: t.title, label: t.title }))}
                           onChange={(v) => set('category', v)}
-                          placeholder="영역을 고르십시오."
                         />
                       </label>
                       <label className="lore-f-title">
@@ -496,13 +493,12 @@ export default function LorePanel({
                         <input
                           value={editing.title}
                           onChange={(e) => set('title', e.target.value)}
-                          placeholder="예: 퍼거스 신성 왕국"
                         />
                       </label>
                     </div>
 
                     <div className="lore-secs-wrap">
-                      <span className="lore-secs-label">내용 — 소주제</span>
+                      <span className="lore-secs-label">내용 — 항목</span>
                       <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
@@ -525,10 +521,11 @@ export default function LorePanel({
                           </div>
                         </SortableContext>
                       </DndContext>
-                      <button className="lore-add-sec" onClick={addSec}>
-                        <Plus size={15} />
-                        소주제 추가
-                      </button>
+                      <div className="add-foot">
+                        <IconButton label="항목 추가" onClick={addSec}>
+                          <Plus size={17} />
+                        </IconButton>
+                      </div>
                     </div>
 
                     <div className="editor-actions">

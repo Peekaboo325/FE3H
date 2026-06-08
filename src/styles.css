@@ -700,7 +700,6 @@ em, i { font-style: normal; }
   align-items: center;
   justify-content: center;
 }
-.bond-add { display: block; width: fit-content; margin: 8px auto 0; flex: 0 0 auto; }
 
 /* 명부 반입 */
 /* 반입 모달 — 콘텐츠 개수와 무관하게 일정한 높이. 버튼은 항상 모달 하단 고정. */
@@ -924,12 +923,10 @@ em, i { font-style: normal; }
   width: 100%; border: none; background: none; resize: vertical;
   padding: 10px 12px; font-size: 14px; line-height: 1.7; color: var(--text);
 }
-.lore-add-sec {
-  align-self: flex-start; display: inline-flex; align-items: center; gap: 5px;
-  background: none; border: 1px dashed var(--border); color: var(--text-dim);
-  padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; margin-top: 2px;
-}
-.lore-add-sec:hover { border-color: var(--accent); color: var(--text); }
+/* 추가 버튼 — 가운데 [+] 아이콘(보고서 새로고침 버튼과 동일한 결) */
+.add-foot { display: flex; justify-content: center; margin-top: 8px; }
+.add-foot .icon-btn { background: rgba(0, 0, 0, 0.18); }
+.add-foot .icon-btn:hover { background: rgba(0, 0, 0, 0.3); }
 .lore-count { font-size: 12px; letter-spacing: normal; }
 .lore-orphan { opacity: 0.85; }
 .head-left { display: flex; align-items: center; gap: 8px; min-width: 0; }

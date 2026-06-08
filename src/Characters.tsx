@@ -11,7 +11,7 @@ import { nameDict } from './nameDict.generated';
 import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
-import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw } from 'lucide-react';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw, Plus } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -1139,9 +1139,11 @@ export default function Characters({
                     </label>
                   </div>
                 ))}
-                <button className="list-btn bond-add" onClick={addBond}>
-                  ＋ 인연 추가
-                </button>
+                <div className="add-foot">
+                  <IconButton label="인연 추가" onClick={addBond}>
+                    <Plus size={17} />
+                  </IconButton>
+                </div>
               </div>
 
               <div className="editor-actions">
