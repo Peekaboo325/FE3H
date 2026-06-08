@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLore, type Lore } from './useLore';
 import { alertAsk } from './dialog';
 import ImportDialog from './ImportDialog';
-import { X, Trash2, BookPlus, Download, ChevronRight, ArrowLeft, Pencil } from 'lucide-react';
+import { X, Trash2, BookPlus, Download, ChevronRight, ArrowLeft, Pencil, Bookmark } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
@@ -98,6 +98,34 @@ export default function LorePanel({
     setViewing(null); // 소각했으니 목록으로
   }
 
+  // 활성(반영) 토글 — 인물 명부 방식. 뷰에서: 낙관적 갱신 후 저장.
+  async function toggleActive() {
+    if (!viewing) return;
+    const prev = viewing;
+    const updated = { ...viewing, is_active: viewing.is_active === false };
+    setViewing(updated);
+    try {
+      await fetch('/api/lore', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ entry: { ...updated, story_id: storyId } }),
+      });
+      await refresh();
+    } catch {
+      setViewing(prev); // 실패 시 되돌림
+    }
+  }
+
+  // 목록 행에서 토글 — 즉시 저장 후 새로고침.
+  async function toggleActiveOf(e: Lore) {
+    await fetch('/api/lore', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ entry: { ...e, is_active: e.is_active === false, story_id: storyId } }),
+    });
+    await refresh();
+  }
+
   // 화면 단계: 편찬 > 뷰 > 갈래 목록 > 영역 배너
   const mode = editing ? 'edit' : viewing ? 'view' : topic ? 'list' : 'index';
   const headTitle = editing
@@ -146,10 +174,19 @@ export default function LorePanel({
                 <BookPlus size={17} />
               </IconButton>
             )}
-            {mode === 'view' && (
-              <IconButton label={UI.compile} onClick={() => setEditing(viewing)}>
-                <Pencil size={17} />
-              </IconButton>
+            {mode === 'view' && viewing && (
+              <>
+                <IconButton
+                  label={viewing.is_active !== false ? '잠재우기' : '깨우기'}
+                  active={viewing.is_active !== false}
+                  onClick={toggleActive}
+                >
+                  <Bookmark size={18} fill={viewing.is_active !== false ? 'currentColor' : 'none'} />
+                </IconButton>
+                <IconButton label={UI.compile} onClick={() => setEditing(viewing)}>
+                  <Pencil size={17} />
+                </IconButton>
+              </>
             )}
             {/* 반입 = 첫 화면에서(다른 장의 문헌을 분류 그대로 가져온다) */}
             {mode === 'index' && storyId != null && (
@@ -242,15 +279,28 @@ export default function LorePanel({
                 {/* 제N권은 전체 순서(앵커 기준)를 따른다 — 갈래 안에서만 다시 세지 않음 */}
                 {entries.map((e, i) =>
                   belongs(e) ? (
-                    <li key={e.id} className="char-row" onClick={() => setViewing(e)}>
-                      <div className="char-meta">
+                    <li
+                      key={e.id}
+                      className={'char-row' + (e.is_active === false ? ' inactive' : '')}
+                    >
+                      <div className="char-meta clickable" onClick={() => setViewing(e)}>
                         <div className="char-name">
                           <span className="ep-no jang">제{i + 1}권</span>
                           {e.title}
-                          {e.is_active === false && <span className="tag dimtag">잠듦</span>}
                         </div>
                         <div className="char-sub">{(e.body || '').slice(0, 40)}</div>
                       </div>
+                      <button
+                        className={'row-bm' + (e.is_active !== false ? ' on' : '')}
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          toggleActiveOf(e);
+                        }}
+                        title={e.is_active !== false ? '잠재우기' : '깨우기'}
+                        aria-label={e.is_active !== false ? '잠재우기' : '깨우기'}
+                      >
+                        <Bookmark size={18} fill={e.is_active !== false ? 'currentColor' : 'none'} />
+                      </button>
                     </li>
                   ) : null,
                 )}
@@ -309,15 +359,6 @@ export default function LorePanel({
                 onChange={(e) => set('body', e.target.value)}
                 placeholder="원작과 달라진 결, 새로 정한 이치를 적으십시오…"
               />
-            </label>
-
-            <label className="check">
-              <input
-                type="checkbox"
-                checked={editing.is_active !== false}
-                onChange={(e) => set('is_active', e.target.checked)}
-              />
-              활성 (지금 이야기에 반영)
             </label>
 
             <div className="editor-actions">
