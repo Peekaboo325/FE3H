@@ -1026,7 +1026,13 @@ em, i { font-style: normal; }
   grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
   gap: 12px;
 }
-.char-card { cursor: pointer; }
+.char-card {
+  cursor: pointer;
+  /* 드래그앤드롭이 iOS 길게누르기 메뉴·텍스트선택에 가로채이지 않게 */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
 .char-card-img {
   position: relative;
   aspect-ratio: 3 / 4;
@@ -1047,6 +1053,8 @@ em, i { font-style: normal; }
   object-position: top center;
   display: block;
 }
+/* 앱 전역: 이미지 길게누르기 메뉴(iOS 콜아웃)·네이티브 이미지 드래그 끔 → DnD 방해 차단 */
+img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .char-card.inactive .char-card-img { opacity: 0.45; }
 /* 이름·이명 — 하단 그라데이션 위에 */
 .char-card-grad {

@@ -352,6 +352,7 @@ function SortableCharCard({
           className={statusFx(c.life_status)}
           src={c.thumbnail || c.avatar || HERO_PLACEHOLDER}
           alt=""
+          draggable={false}
         />
         {c.life_status === 'unknown' && <span className="card-q">?</span>}
         <button
