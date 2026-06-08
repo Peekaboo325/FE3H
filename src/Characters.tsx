@@ -464,7 +464,7 @@ export default function Characters({
       if (!이전) setReportToast(`${이름}의 보고서가 발급되었습니다.`);
       else if (알맹이(이전) !== 알맹이(data.report))
         setReportToast(`${이름}의 보고서가 갱신되었습니다.`);
-      window.setTimeout(() => setReportToast(null), 1000);
+      window.setTimeout(() => setReportToast(null), 2500);
     } catch (e) {
       setReportErr((e as Error).message);
     } finally {
