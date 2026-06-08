@@ -1064,7 +1064,7 @@ em, i { font-style: normal; }
 }
 /* 앱 전역: 이미지 길게누르기 메뉴(iOS 콜아웃)·네이티브 이미지 드래그 끔 → DnD 방해 차단 */
 img { -webkit-touch-callout: none; -webkit-user-drag: none; }
-.char-card.inactive .char-card-img { opacity: 0.45; }
+/* (비활성 카드 흐림 효과 제거 — 사망 흑백과 헷갈려서. 활성 여부는 북마크로 구분) */
 /* 이름·이명 — 하단 그라데이션 위에 */
 .char-card-grad {
   position: absolute;
