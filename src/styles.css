@@ -795,7 +795,51 @@ em, i { font-style: normal; }
 }
 /* 문헌 뷰(읽기) — 히어로 없이 정갈한 읽기 */
 .lore-view-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 2px 0 14px; }
+.lore-toc { font-size: 12px; color: var(--text-dim); margin: -6px 0 16px; line-height: 1.6; }
 .lore-view-body { font-size: 14px; line-height: 1.85; color: var(--text); }
+.lore-view-sec { margin-bottom: 22px; }
+.lore-view-sec:last-child { margin-bottom: 0; }
+.lore-view-subtitle {
+  font-size: 14px; font-weight: 700; color: var(--text);
+  margin: 0 0 8px; padding-left: 10px; border-left: 3px solid var(--accent);
+}
+/* 편찬: 소주제(섹션) 칸 — 드래그 정렬, 손잡이는 상단 그립만 */
+.lore-secs-wrap { display: flex; flex-direction: column; gap: 6px; }
+.lore-secs-label { font-size: 13px; color: var(--text-dim); }
+.lore-secs { display: flex; flex-direction: column; gap: 10px; }
+.lore-sec { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); overflow: hidden; }
+.lore-sec-head {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 6px 4px 2px; background: rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid var(--border);
+}
+.lore-sec-grip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 30px; border: none; background: none;
+  color: var(--text-faint); cursor: grab; border-radius: 6px;
+  touch-action: none; flex-shrink: 0;
+}
+.lore-sec-grip:active { cursor: grabbing; }
+.editor .lore-sec-sub {
+  flex: 1; min-width: 0; background: none; border: none;
+  font-size: 13px; font-weight: 600; padding: 4px 2px; color: var(--text);
+}
+.lore-sec-del {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border: none; background: none;
+  color: var(--text-faint); cursor: pointer; border-radius: 6px; flex-shrink: 0;
+}
+.lore-sec-del:hover { color: var(--danger); }
+.editor .lore-sec-body {
+  width: 100%; border: none; background: none; resize: vertical;
+  padding: 10px 12px; font-size: 14px; line-height: 1.7; color: var(--text);
+}
+.lore-add-sec {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 5px;
+  background: none; border: 1px dashed var(--border); color: var(--text-dim);
+  padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; margin-top: 2px;
+}
+.lore-add-sec:hover { border-color: var(--accent); color: var(--text); }
 .lore-count { font-size: 12px; letter-spacing: normal; }
 .lore-orphan { opacity: 0.85; }
 .head-left { display: flex; align-items: center; gap: 8px; min-width: 0; }

@@ -1,16 +1,42 @@
 import { useState, useEffect } from 'react';
-import { useLore, type Lore } from './useLore';
+import { useLore, type Lore, type LoreSection } from './useLore';
 import { alertAsk } from './dialog';
 import ImportDialog from './ImportDialog';
-import { X, Trash2, BookPlus, Download, ChevronRight, ArrowLeft, Pencil, Bookmark } from 'lucide-react';
+import {
+  X,
+  Trash2,
+  BookPlus,
+  Download,
+  ChevronRight,
+  ArrowLeft,
+  Pencil,
+  Bookmark,
+  GripVertical,
+  Plus,
+} from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
 import Dropdown from './Dropdown';
 import Markdown from './Markdown';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 // 대륙 문헌의 다섯 영역(닫힌 목록). 분류(category) 칸에 이 제목을 그대로 담아 갈래를 가른다.
-// 일러스트는 public/assets/illust/ 에 두면 배너 왼쪽에 자동으로 깔린다(없으면 빈 행).
 const TOPICS = [
   { title: '세력 · 가문', sub: '대륙을 움직이는 세력과 혈통', img: '/assets/illust/lore-faction.webp' },
   { title: '지역 · 지리', sub: '대륙의 형세와 도시 및 건축의 기록', img: '/assets/illust/lore-region.webp' },
@@ -21,7 +47,90 @@ const TOPICS = [
 const TOPIC_TITLES = TOPICS.map((t) => t.title);
 const ORPHAN = ' 미분류'; // 다섯 영역과 안 맞는 옛 분류를 모으는 자리(센티넬)
 
-const 빈설정 = (category = ''): Lore => ({ title: '', category, body: '', is_active: true });
+const 빈설정 = (category = ''): Lore => ({ title: '', category, sections: [], body: '', is_active: true });
+
+// 편찬용 소주제 — 드래그 정렬을 위해 안정 키(id)를 단다(저장 시 떼어냄).
+type Sec = { id: string; subtitle: string; content: string };
+let _sid = 0;
+const uid = () => `s${Date.now().toString(36)}${(_sid++).toString(36)}`;
+
+// 문헌 → 편찬용 소주제 배열. 옛 문헌(섹션 없음)은 body를 한 소주제로 끌어와 자연히 이주.
+function secsFrom(e: Lore): Sec[] {
+  const src: LoreSection[] = e.sections?.length
+    ? e.sections
+    : e.body
+      ? [{ subtitle: '', content: e.body }]
+      : [];
+  const arr = src.map((s) => ({ id: uid(), subtitle: s.subtitle || '', content: s.content || '' }));
+  return arr.length ? arr : [{ id: uid(), subtitle: '', content: '' }];
+}
+
+// 소주제 → body 평문 거울(주입·검색이 읽는 단일 출처).
+function sectionsToText(secs: LoreSection[]): string {
+  return secs
+    .map((s) => (s.subtitle.trim() ? `${s.subtitle.trim()}\n` : '') + (s.content || '').trim())
+    .filter((t) => t.trim())
+    .join('\n\n')
+    .trim();
+}
+
+// 목록·뷰의 한 줄 목차 — 소주제 제목들을 ' · '로.
+const tocOf = (e: Lore) =>
+  (e.sections || [])
+    .map((s) => s.subtitle)
+    .filter(Boolean)
+    .join(' · ');
+
+// ── 편찬: 소주제 한 칸(드래그 정렬) ────────────────────────────────────────
+function SortableSec({
+  sec,
+  canRemove,
+  onUpdate,
+  onRemove,
+}: {
+  sec: Sec;
+  canRemove: boolean;
+  onUpdate: (id: string, k: 'subtitle' | 'content', v: string) => void;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: sec.id,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+    zIndex: isDragging ? 2 : undefined,
+  };
+  return (
+    <div ref={setNodeRef} style={style} className="lore-sec">
+      <div className="lore-sec-head">
+        {/* 끌기는 손잡이로만 — 본문 텍스트 선택을 방해하지 않게 */}
+        <button className="lore-sec-grip" {...attributes} {...listeners} aria-label="끌어 옮기기">
+          <GripVertical size={16} />
+        </button>
+        <input
+          className="lore-sec-sub"
+          value={sec.subtitle}
+          onChange={(e) => onUpdate(sec.id, 'subtitle', e.target.value)}
+          placeholder="소주제 제목 (예: 군제와 기사단)"
+        />
+        {canRemove && (
+          <button className="lore-sec-del" onClick={onRemove} title={UI.erase} aria-label={UI.erase}>
+            <X size={15} />
+          </button>
+        )}
+      </div>
+      <textarea
+        className="lore-sec-body"
+        rows={5}
+        value={sec.content}
+        onChange={(e) => onUpdate(sec.id, 'content', e.target.value)}
+        placeholder="내용을 적으십시오…"
+      />
+    </div>
+  );
+}
 
 export default function LorePanel({
   storyId,
@@ -34,21 +143,53 @@ export default function LorePanel({
   const [topic, setTopic] = useState<string | null>(null); // null = 영역 배너 첫 화면
   const [viewing, setViewing] = useState<Lore | null>(null); // 읽기(뷰) 모드
   const [editing, setEditing] = useState<Lore | null>(null); // 편찬(편집) 모드
+  const [secs, setSecs] = useState<Sec[]>([]); // 편찬 중인 소주제(독립 상태)
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
   const [armed, setArmed] = useState(false); // 소각 두 번 누르기: 첫 클릭=활성, 둘째=실행
-  useEffect(() => setArmed(false), [editing]); // 다른 기록으로 옮기거나 닫으면 해제
+  useEffect(() => setArmed(false), [editing]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
 
   function set<K extends keyof Lore>(k: K, v: Lore[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
   }
+
+  // 편찬 진입 — 소주제 상태도 같이 세팅(편집 객체 정체성과 무관하게)
+  const openEdit = (e: Lore) => {
+    setSecs(secsFrom(e));
+    setEditing(e);
+  };
+  const openNew = (category: string) => {
+    const e = 빈설정(category);
+    setSecs(secsFrom(e));
+    setEditing(e);
+  };
+
+  const addSec = () => setSecs((p) => [...p, { id: uid(), subtitle: '', content: '' }]);
+  const removeSec = (id: string) =>
+    setSecs((p) => (p.length <= 1 ? p : p.filter((s) => s.id !== id)));
+  const updateSec = (id: string, k: 'subtitle' | 'content', v: string) =>
+    setSecs((p) => p.map((s) => (s.id === id ? { ...s, [k]: v } : s)));
+  const onSecDragEnd = (ev: DragEndEvent) => {
+    const { active, over } = ev;
+    if (!over || active.id === over.id) return;
+    setSecs((p) => {
+      const oldI = p.findIndex((s) => s.id === active.id);
+      const newI = p.findIndex((s) => s.id === over.id);
+      return oldI < 0 || newI < 0 ? p : arrayMove(p, oldI, newI);
+    });
+  };
 
   // 이 문헌이 topic(영역)에 속하는지 — '미분류'는 다섯 영역 어디에도 안 든 것
   const belongs = (e: Lore) =>
     topic === ORPHAN ? !TOPIC_TITLES.includes(e.category || '') : e.category === topic;
   const inTopic = entries.filter(belongs);
   const orphans = entries.filter((e) => !TOPIC_TITLES.includes(e.category || ''));
-  const viewNo = viewing ? entries.findIndex((e) => e.id === viewing.id) + 1 : 0; // 제N권(전체 순서)
+  const viewNo = viewing ? entries.findIndex((e) => e.id === viewing.id) + 1 : 0;
 
   async function save() {
     if (!editing) return;
@@ -60,12 +201,16 @@ export default function LorePanel({
       await alertAsk({ message: '영역을 골라 주십시오.' });
       return;
     }
+    const cleanSecs: LoreSection[] = secs
+      .map((s) => ({ subtitle: s.subtitle.trim(), content: s.content }))
+      .filter((s) => s.subtitle || (s.content || '').trim());
+    const merged: Lore = { ...editing, sections: cleanSecs, body: sectionsToText(cleanSecs) };
     setSaving(true);
     try {
       const res = await fetch('/api/lore', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ entry: { ...editing, story_id: storyId } }),
+        body: JSON.stringify({ entry: { ...merged, story_id: storyId } }),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
@@ -73,8 +218,8 @@ export default function LorePanel({
         return;
       }
       await refresh();
-      setTopic(editing.category); // 기록한 문헌이 든 영역으로
-      setViewing(editing.id ? { ...editing } : null); // 편찬 후엔 그 문헌 뷰로, 새 문헌은 목록으로
+      setTopic(merged.category!);
+      setViewing(merged.id ? merged : null); // 편찬 후엔 그 문헌 뷰로, 새 문헌은 목록으로
       setEditing(null);
     } finally {
       setSaving(false);
@@ -95,10 +240,10 @@ export default function LorePanel({
     }
     await refresh();
     setEditing(null);
-    setViewing(null); // 소각했으니 목록으로
+    setViewing(null);
   }
 
-  // 활성(반영) 토글 — 인물 명부 방식. 뷰에서: 낙관적 갱신 후 저장.
+  // 활성(반영) 토글 — 인물 명부 방식.
   async function toggleActive() {
     if (!viewing) return;
     const prev = viewing;
@@ -112,11 +257,9 @@ export default function LorePanel({
       });
       await refresh();
     } catch {
-      setViewing(prev); // 실패 시 되돌림
+      setViewing(prev);
     }
   }
-
-  // 목록 행에서 토글 — 즉시 저장 후 새로고침.
   async function toggleActiveOf(e: Lore) {
     await fetch('/api/lore', {
       method: 'POST',
@@ -168,9 +311,8 @@ export default function LorePanel({
             </h2>
           </div>
           <div className="head-actions">
-            {/* 작성 = 영역 안에서만(모든 문헌이 갈래를 갖도록). 미분류 칸에선 정리만. */}
             {mode === 'list' && topic !== ORPHAN && (
-              <IconButton label="작성" active onClick={() => setEditing(빈설정(topic!))}>
+              <IconButton label="작성" active onClick={() => openNew(topic!)}>
                 <BookPlus size={17} />
               </IconButton>
             )}
@@ -183,12 +325,11 @@ export default function LorePanel({
                 >
                   <Bookmark size={18} fill={viewing.is_active !== false ? 'currentColor' : 'none'} />
                 </IconButton>
-                <IconButton label={UI.compile} onClick={() => setEditing(viewing)}>
+                <IconButton label={UI.compile} onClick={() => openEdit(viewing)}>
                   <Pencil size={17} />
                 </IconButton>
               </>
             )}
-            {/* 반입 = 첫 화면에서(다른 장의 문헌을 분류 그대로 가져온다) */}
             {mode === 'index' && storyId != null && (
               <IconButton label={UI.import} onClick={() => setImporting(true)}>
                 <Download size={17} />
@@ -220,7 +361,6 @@ export default function LorePanel({
                 const n = entries.filter((e) => e.category === t.title).length;
                 return (
                   <li key={t.title} className="list-row" onClick={() => setTopic(t.title)}>
-                    {/* 일러스트 — 파일을 넣으면 깔리고, 없으면 그냥 빈 행(배경 효과 없음) */}
                     <img
                       className="list-row-img"
                       src={t.img}
@@ -240,7 +380,6 @@ export default function LorePanel({
                   </li>
                 );
               })}
-              {/* 미분류 — 다섯 영역 어디에도 안 든 옛 문헌이 있을 때만 */}
               {orphans.length > 0 && (
                 <li
                   className="list-row list-row--plain lore-orphan"
@@ -269,14 +408,13 @@ export default function LorePanel({
               <div className="empty-state">
                 <p className="empty-state-msg">이 영역엔 아직 문헌이 없습니다.</p>
                 {topic !== ORPHAN && (
-                  <button className="btn-accent" onClick={() => setEditing(빈설정(topic!))}>
+                  <button className="btn-accent" onClick={() => openNew(topic!)}>
                     첫 문헌 기록
                   </button>
                 )}
               </div>
             ) : (
               <ul className="char-list">
-                {/* 제N권은 전체 순서(앵커 기준)를 따른다 — 갈래 안에서만 다시 세지 않음 */}
                 {entries.map((e, i) =>
                   belongs(e) ? (
                     <li
@@ -288,7 +426,7 @@ export default function LorePanel({
                           <span className="ep-no jang">제{i + 1}권</span>
                           {e.title}
                         </div>
-                        <div className="char-sub">{(e.body || '').slice(0, 40)}</div>
+                        <div className="char-sub">{tocOf(e) || (e.body || '').slice(0, 40)}</div>
                       </div>
                       <button
                         className={'row-bm' + (e.is_active !== false ? ' on' : '')}
@@ -316,8 +454,16 @@ export default function LorePanel({
               {viewNo > 0 && <span className="ep-no jang">제{viewNo}권</span>}
               {viewing.category && <span className="tag">{viewing.category}</span>}
             </div>
+            {tocOf(viewing) && <p className="lore-toc">{tocOf(viewing)}</p>}
             <div className="lore-view-body">
-              {viewing.body?.trim() ? (
+              {viewing.sections?.length ? (
+                viewing.sections.map((s, i) => (
+                  <section key={i} className="lore-view-sec">
+                    {s.subtitle && <h3 className="lore-view-subtitle">{s.subtitle}</h3>}
+                    {s.content?.trim() && <Markdown text={s.content} />}
+                  </section>
+                ))
+              ) : viewing.body?.trim() ? (
                 <Markdown text={viewing.body} />
               ) : (
                 <p className="dim small">아직 적힌 내용이 없습니다.</p>
@@ -350,15 +496,29 @@ export default function LorePanel({
               </label>
             </div>
 
-            <label>
-              내용
-              <textarea
-                rows={8}
-                value={editing.body || ''}
-                onChange={(e) => set('body', e.target.value)}
-                placeholder="원작과 달라진 결, 새로 정한 이치를 적으십시오…"
-              />
-            </label>
+            {/* 내용 — 소주제 여러 칸(드래그 정렬) */}
+            <div className="lore-secs-wrap">
+              <span className="lore-secs-label">내용 — 소주제</span>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onSecDragEnd}>
+                <SortableContext items={secs.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                  <div className="lore-secs">
+                    {secs.map((s) => (
+                      <SortableSec
+                        key={s.id}
+                        sec={s}
+                        canRemove={secs.length > 1}
+                        onUpdate={updateSec}
+                        onRemove={() => removeSec(s.id)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+              <button className="lore-add-sec" onClick={addSec}>
+                <Plus size={15} />
+                소주제 추가
+              </button>
+            </div>
 
             <div className="editor-actions">
               {editing.id && (

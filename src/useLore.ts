@@ -1,11 +1,14 @@
 import { useCachedList } from './useCachedList';
 
+export type LoreSection = { subtitle: string; content: string };
+
 export type Lore = {
   id?: number;
   story_id?: number;
   title: string;
   category?: string;
-  body?: string;
+  body?: string; // 섹션의 평문 거울(주입·검색용). sections가 진짜 출처.
+  sections?: LoreSection[];
   is_active?: boolean;
 };
 
