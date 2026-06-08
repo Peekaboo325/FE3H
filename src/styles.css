@@ -476,6 +476,8 @@ em, i { font-style: normal; }
 /* 인물 목록 모드 — 데스크탑 폭은 좁히고, 목록이 비어도 안 쪼그라들게 기본 높이 확보 */
 @media (min-width: 601px) {
   .modal.has-hero.modal--list { max-width: 620px; }
+  /* 대륙 문헌 — 편집까지 전 모드 데스크탑 620 고정(히어로 760으로 안 벌어지게) */
+  .modal.has-hero.modal--lore { max-width: 620px; }
 }
 .modal--list .modal-body { min-height: 420px; }
 .warn {
