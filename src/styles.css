@@ -1223,7 +1223,9 @@ em, i { font-style: normal; }
   padding: 16px;
   margin-bottom: 16px;
 }
-.report-analysis-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.report-analysis-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+/* 카드 자체 margin과 그리드 gap이 겹쳐 간격이 벌어지지 않게 — 간격은 gap만 담당 */
+.report-analysis-row .view-section { margin: 0; }
 @media (max-width: 600px) {
   .report-stats-row { grid-template-columns: 1fr; gap: 14px; }
   .report-analysis-row { grid-template-columns: 1fr; }
