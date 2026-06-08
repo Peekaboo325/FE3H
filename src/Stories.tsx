@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, Pencil, Copy, Trash2 } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
 import { confirmAsk, alertAsk } from './dialog';
 import { UI } from './strings';
@@ -178,12 +178,14 @@ export default function Stories({
                         if (e.key === 'Escape') setRenamingId(null);
                       }}
                     />
-                    <button className="rowbtn" title={UI.save} onClick={() => 개칭저장(s)}>
-                      <Check size={15} />
-                    </button>
-                    <button className="rowbtn" title={UI.cancel} onClick={() => setRenamingId(null)}>
-                      <X size={15} />
-                    </button>
+                    <div className="row-actions">
+                      <IconButton label={UI.save} onClick={() => 개칭저장(s)}>
+                        <Check size={16} />
+                      </IconButton>
+                      <IconButton label={UI.cancel} onClick={() => setRenamingId(null)}>
+                        <X size={16} />
+                      </IconButton>
+                    </div>
                   </li>
                 ) : (
                   <li key={s.id} className={'char-row' + (s.id === currentStoryId ? ' current' : '')}>
@@ -193,19 +195,21 @@ export default function Stories({
                         {s.id === currentStoryId && <span className="tag">현재</span>}
                       </div>
                     </div>
-                    <button className="rowbtn" onClick={() => 개칭시작(s)}>
-                      {UI.rename}
-                    </button>
-                    <button
-                      className="rowbtn"
-                      onClick={() => 복사(s)}
-                      disabled={copyingId === s.id}
-                    >
-                      {copyingId === s.id ? `${UI.copy} 중…` : UI.copy}
-                    </button>
-                    <button className="rowbtn danger" onClick={() => 삭제(s)}>
-                      {UI.erase}
-                    </button>
+                    <div className="row-actions">
+                      <IconButton label={UI.rename} onClick={() => 개칭시작(s)}>
+                        <Pencil size={16} />
+                      </IconButton>
+                      <IconButton
+                        label={UI.copy}
+                        onClick={() => 복사(s)}
+                        disabled={copyingId === s.id}
+                      >
+                        <Copy size={16} />
+                      </IconButton>
+                      <IconButton label={UI.erase} className="danger" onClick={() => 삭제(s)}>
+                        <Trash2 size={16} />
+                      </IconButton>
+                    </div>
                   </li>
                 ),
               )}
