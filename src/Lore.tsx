@@ -315,7 +315,6 @@ export default function LorePanel({
             <div className="lore-view-top">
               {viewNo > 0 && <span className="ep-no jang">제{viewNo}권</span>}
               {viewing.category && <span className="tag">{viewing.category}</span>}
-              {viewing.is_active === false && <span className="tag dimtag">잠듦</span>}
             </div>
             <div className="lore-view-body">
               {viewing.body?.trim() ? (
