@@ -848,6 +848,16 @@ em, i { font-style: normal; }
 }
 .lore-main-head-sp { flex: 1; }
 .lore-main-body { flex: 1; overflow-y: auto; min-height: 0; padding: 0; }
+/* 코덱스 헤더 버튼 — 어두운 알약 대신 평평한 아이콘(상단 정돈). 알약은 초상 위 대비용이라 여기선 과함 */
+.lore-side-head .icon-btn,
+.lore-main-head .icon-btn {
+  background: none; border-color: transparent; backdrop-filter: none;
+  min-width: 32px; padding: 0 6px; color: var(--text-dim);
+}
+.lore-side-head .icon-btn:hover,
+.lore-main-head .icon-btn:hover { background: var(--surface-2); border-color: transparent; color: var(--text); }
+.lore-side-head .icon-btn.on,
+.lore-main-head .icon-btn.on { color: var(--accent); border-color: transparent; }
 /* 문헌 한 권(읽기) — 표제·여백을 살린 정갈한 읽기 */
 .lore-doc { max-width: 680px; margin: 0 auto; padding: 34px 32px 56px; }
 .lore-doc-head { border-bottom: 1px solid var(--border); padding-bottom: 22px; margin-bottom: 30px; }
