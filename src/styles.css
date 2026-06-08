@@ -617,7 +617,7 @@ em, i { font-style: normal; }
   cursor: pointer;
 }
 .row-bm.on { color: var(--accent); }
-.row-bm:hover { background: var(--surface-2); }
+/* 박스 효과 없음 — 아이콘만(모바일 sticky hover로 박스가 남아 보기 싫던 것 제거) */
 .char-row.inactive { opacity: 0.5; }
 .char-row.inactive .row-bm { opacity: 1; }
 
