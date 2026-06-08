@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLore, type Lore } from './useLore';
 import { alertAsk } from './dialog';
 import ImportDialog from './ImportDialog';
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, BookPlus, Download } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
@@ -70,12 +70,32 @@ export default function LorePanel({
 
   return (
     <div className="modal-bg" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={'modal' + (!editing ? ' modal--list' : '')}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-head">
-          <h2>{editing ? (editing.id ? `문헌 ${UI.edit}` : '새 문헌') : '대륙 문헌'}</h2>
-          <IconButton label={UI.close} onClick={onClose}>
-            <X size={17} />
-          </IconButton>
+          <h2>
+            {editing ? (editing.id ? `문헌 ${UI.edit}` : '새 문헌') : '대륙 문헌'}
+            {!editing && entries.length > 0 && <span className="head-count">{entries.length}</span>}
+          </h2>
+          <div className="head-actions">
+            {!editing && entries.length > 0 && (
+              <>
+                <IconButton label="작성" active onClick={() => setEditing(빈설정())}>
+                  <BookPlus size={17} />
+                </IconButton>
+                {storyId != null && (
+                  <IconButton label={UI.import} onClick={() => setImporting(true)}>
+                    <Download size={17} />
+                  </IconButton>
+                )}
+              </>
+            )}
+            <IconButton label={UI.close} onClick={onClose}>
+              <X size={17} />
+            </IconButton>
+          </div>
         </div>
 
         {!dbReady && (
@@ -92,18 +112,20 @@ export default function LorePanel({
 
         {!editing && (
           <div className="modal-body">
-            <button className="new" onClick={() => setEditing(빈설정())}>
-              ＋ 새 문헌
-            </button>
-            {storyId != null && (
-              <button className="new" onClick={() => setImporting(true)}>
-                ↧ 다른 장에서 {UI.import}
-              </button>
-            )}
             {loading ? (
               <Spinner />
             ) : entries.length === 0 ? (
-              <p className="list-empty">아직 기록된 문헌이 없습니다.</p>
+              <div className="empty-state">
+                <p className="empty-state-msg">아직 기록된 문헌이 없습니다.</p>
+                <button className="btn-accent" onClick={() => setEditing(빈설정())}>
+                  첫 문헌 기록
+                </button>
+                {storyId != null && (
+                  <button className="btn-ghost" onClick={() => setImporting(true)}>
+                    다른 장에서 {UI.import}
+                  </button>
+                )}
+              </div>
             ) : (
               <ul className="char-list">
                 {entries.map((e, i) => (
