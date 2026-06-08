@@ -1517,7 +1517,7 @@ body::before {
 .spinner-lg { width: 22px; height: 22px; border-width: 2.5px; }
 .loading-label { font-size: 13px; color: var(--text-dim); }
 /* 빈 목록 안내 — 무조건 가운데 */
-.list-empty { text-align: center; color: var(--text-dim); padding: 40px 0; margin: 0; }
+.list-empty { text-align: center; color: var(--text-dim); font-size: 13px; padding: 40px 0; margin: 0; }
 
 /* 활성(등장) 북마크 켜짐 */
 .icon-btn.on { color: var(--accent); border-color: var(--accent); }

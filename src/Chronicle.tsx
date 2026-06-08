@@ -58,7 +58,6 @@ export default function Chronicle({
         )}
 
         <div className="modal-body">
-          <p className="dim small">화마다 흘러온 줄거리를 왕실 사관이 정리한 기록입니다.</p>
           {loading ? (
             <Spinner />
           ) : list.length === 0 ? (

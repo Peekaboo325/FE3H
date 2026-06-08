@@ -92,9 +92,6 @@ export default function LorePanel({
 
         {!editing && (
           <div className="modal-body">
-            <p className="dim small">
-              원작에서 바꾸거나 새로 정한 세계의 결을 적어둡니다. 깨어 있는 문헌만 이야기에 깃듭니다.
-            </p>
             <button className="new" onClick={() => setEditing(빈설정())}>
               ＋ 새 문헌
             </button>
