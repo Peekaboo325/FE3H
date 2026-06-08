@@ -214,20 +214,25 @@ export default function App() {
       // (연결이 조용히 끊겨 서버가 저장 못 하면, 화면에 받은 부분 본문을 그대로 남긴다 — 어디서 잘렸는지도 보임.)
       const 본문길이 = 받은.trim().length;
       if (storyId && 본문길이 > 0 && !받은.includes('[서고 오류]')) {
-        try {
-          const r = await fetch(`/api/turns?story_id=${storyId}`);
-          const d = await r.json();
-          const fresh = Array.isArray(d?.turns) ? (d.turns as Turn[]) : [];
-          const 끝 = fresh[fresh.length - 1];
-          const 저장길이 = 끝?.role === 'assistant' ? (끝.content?.trim().length || 0) : -1;
-          if (저장길이 >= 본문길이) {
-            setTurns(fresh);
-            setVisibleCount(WINDOW);
+        // 연결만 끊기고 서버는 끝까지 생성·저장했을 수 있다 → 잠깐 폴링해 완성본을 받아온다(본문 완성+버튼 복구).
+        for (let 시도 = 0; 시도 < 6; 시도++) {
+          try {
+            const r = await fetch(`/api/turns?story_id=${storyId}`);
+            const d = await r.json();
+            const fresh = Array.isArray(d?.turns) ? (d.turns as Turn[]) : [];
+            const 끝 = fresh[fresh.length - 1];
+            const 저장길이 = 끝?.role === 'assistant' ? (끝.content?.trim().length || 0) : -1;
+            if (저장길이 >= 본문길이) {
+              setTurns(fresh);
+              setVisibleCount(WINDOW);
+              break;
+            }
+          } catch {
+            /* 무시 — 다음 시도 */
           }
-          // else: 저장이 아직/안 됨 → 화면의 부분 본문 유지(덮지 않음)
-        } catch {
-          /* 조회 실패 — 화면 유지 */
+          if (시도 < 5) await new Promise((r) => setTimeout(r, 2000)); // 2초 간격(총 ≈10초)
         }
+        // 끝까지 안 보이면 화면의 부분 본문을 그대로 둔다(소각 버튼으로 치울 수 있음).
       } else if (storyId && 본문길이 === 0) {
         // 한 글자도 안 왔으면 정상 재로딩으로 빈 자리 정리.
         await loadTurnsFor(storyId);
@@ -469,7 +474,7 @@ export default function App() {
                           {copied === i ? <Check size={16} /> : <Copy size={16} />}
                         </button>
                       )}
-                      {t.id != null && (
+                      {t.id != null ? (
                         <>
                           {t.role === 'assistant' && (
                             <button className="turn-btn" title={UI.regen} onClick={() => 새로받기(i)}>
@@ -487,6 +492,18 @@ export default function App() {
                             <Trash2 size={16} />
                           </button>
                         </>
+                      ) : (
+                        t.role === 'assistant' && (
+                          // 저장 안 된(끊긴) 답변 — 화면에서만 치운다(소각).
+                          <button
+                            className="turn-btn"
+                            title={UI.erase}
+                            aria-label={UI.erase}
+                            onClick={() => setTurns((p) => p.filter((_, idx) => idx !== i))}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )
                       )}
                     </div>
                   )}
