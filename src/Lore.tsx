@@ -40,7 +40,7 @@ import { CSS } from '@dnd-kit/utilities';
 // 대륙 문헌의 다섯 영역(닫힌 목록). 분류(category) 칸에 이 제목을 그대로 담아 갈래를 가른다.
 const TOPICS = [
   { title: '세력 · 가문', sub: '대륙을 움직이는 세력과 혈통', img: '/assets/illust/lore-faction.webp' },
-  { title: '지역 · 지리', sub: '대륙의 형세와 도시 및 건축의 기록', img: '/assets/illust/lore-region.webp' },
+  { title: '지역 · 지리', sub: '대륙의 형세와 도시 및 건축의 모습', img: '/assets/illust/lore-region.webp' },
   { title: '역사 · 사건', sub: '시대를 가른 선택과 사건의 기록', img: '/assets/illust/lore-history.webp' },
   { title: '제도 · 문화', sub: '사람들을 묶는 법도와 삶의 관습', img: '/assets/illust/lore-culture.webp' },
   { title: '문장 · 유산', sub: '피에 깃든 문장과 영웅의 유산', img: '/assets/illust/lore-crest.webp' },
