@@ -1672,6 +1672,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 /* 취소·기록(우측, 동일 너비) — 소각은 좌측 */
 .editor-actions-end { margin-left: auto; display: flex; gap: 8px; }
 .editor-actions-end button { min-width: 88px; }
+/* 초점 지정(FaceCrop) — 취소·지정 같은 너비, 가운데 */
+.crop-actions { justify-content: center; }
+.crop-actions button,
+.crop-actions .primary { min-width: 110px; }
 /* 소각 = 휴지통 아이콘 버튼(좌). 첫 클릭=활성(붉게), 둘째 클릭=실행 */
 .editor-actions .btn-erase {
   display: inline-flex;

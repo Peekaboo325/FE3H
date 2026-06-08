@@ -117,7 +117,7 @@ export default function FaceCrop({
             onChange={onSize}
           />
         )}
-        <div className="editor-actions">
+        <div className="editor-actions crop-actions">
           <button onClick={onCancel}>{UI.cancel}</button>
           <button className="primary" onClick={confirm} disabled={sel.s <= 0}>
             지정
