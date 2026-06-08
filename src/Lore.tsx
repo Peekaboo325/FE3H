@@ -8,11 +8,13 @@ import {
   BookPlus,
   Download,
   ChevronRight,
+  ChevronLeft,
   ArrowLeft,
   Pencil,
   Bookmark,
   GripVertical,
   Plus,
+  BookOpen,
 } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
@@ -54,7 +56,6 @@ type Sec = { id: string; subtitle: string; content: string };
 let _sid = 0;
 const uid = () => `s${Date.now().toString(36)}${(_sid++).toString(36)}`;
 
-// 문헌 → 편찬용 소주제 배열. 옛 문헌(섹션 없음)은 body를 한 소주제로 끌어와 자연히 이주.
 function secsFrom(e: Lore): Sec[] {
   const src: LoreSection[] = e.sections?.length
     ? e.sections
@@ -65,7 +66,6 @@ function secsFrom(e: Lore): Sec[] {
   return arr.length ? arr : [{ id: uid(), subtitle: '', content: '' }];
 }
 
-// 소주제 → body 평문 거울(주입·검색이 읽는 단일 출처).
 function sectionsToText(secs: LoreSection[]): string {
   return secs
     .map((s) => (s.subtitle.trim() ? `${s.subtitle.trim()}\n` : '') + (s.content || '').trim())
@@ -74,7 +74,6 @@ function sectionsToText(secs: LoreSection[]): string {
     .trim();
 }
 
-// 목록·뷰의 한 줄 목차 — 소주제 제목들을 ' · '로.
 const tocOf = (e: Lore) =>
   (e.sections || [])
     .map((s) => s.subtitle)
@@ -105,7 +104,6 @@ function SortableSec({
   return (
     <div ref={setNodeRef} style={style} className="lore-sec">
       <div className="lore-sec-head">
-        {/* 끌기는 손잡이로만 — 본문 텍스트 선택을 방해하지 않게 */}
         <button className="lore-sec-grip" {...attributes} {...listeners} aria-label="끌어 옮기기">
           <GripVertical size={16} />
         </button>
@@ -141,12 +139,12 @@ export default function LorePanel({
 }) {
   const { entries, loading, dbReady, err, refresh } = useLore(storyId);
   const [topic, setTopic] = useState<string | null>(null); // null = 영역 배너 첫 화면
-  const [viewing, setViewing] = useState<Lore | null>(null); // 읽기(뷰) 모드
+  const [viewing, setViewing] = useState<Lore | null>(null); // 우측 본문에 펼친 문헌
   const [editing, setEditing] = useState<Lore | null>(null); // 편찬(편집) 모드
-  const [secs, setSecs] = useState<Sec[]>([]); // 편찬 중인 소주제(독립 상태)
+  const [secs, setSecs] = useState<Sec[]>([]);
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [armed, setArmed] = useState(false); // 소각 두 번 누르기: 첫 클릭=활성, 둘째=실행
+  const [armed, setArmed] = useState(false);
   useEffect(() => setArmed(false), [editing]);
 
   const sensors = useSensors(
@@ -158,7 +156,6 @@ export default function LorePanel({
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));
   }
 
-  // 편찬 진입 — 소주제 상태도 같이 세팅(편집 객체 정체성과 무관하게)
   const openEdit = (e: Lore) => {
     setSecs(secsFrom(e));
     setEditing(e);
@@ -166,7 +163,17 @@ export default function LorePanel({
   const openNew = (category: string) => {
     const e = 빈설정(category);
     setSecs(secsFrom(e));
+    setViewing(null);
     setEditing(e);
+  };
+  const backToVols = () => {
+    setViewing(null);
+    setEditing(null);
+  };
+  const backToTopics = () => {
+    setViewing(null);
+    setEditing(null);
+    setTopic(null);
   };
 
   const addSec = () => setSecs((p) => [...p, { id: uid(), subtitle: '', content: '' }]);
@@ -184,12 +191,16 @@ export default function LorePanel({
     });
   };
 
-  // 이 문헌이 topic(영역)에 속하는지 — '미분류'는 다섯 영역 어디에도 안 든 것
   const belongs = (e: Lore) =>
     topic === ORPHAN ? !TOPIC_TITLES.includes(e.category || '') : e.category === topic;
   const inTopic = entries.filter(belongs);
   const orphans = entries.filter((e) => !TOPIC_TITLES.includes(e.category || ''));
-  const viewNo = viewing ? entries.findIndex((e) => e.id === viewing.id) + 1 : 0;
+  const globalNo = (e: Lore) => entries.findIndex((x) => x.id === e.id) + 1; // 제N권(전체 순서·앵커 정합)
+
+  // 이전/다음 권(현재 영역 안에서)
+  const vIdx = viewing ? inTopic.findIndex((e) => e.id === viewing.id) : -1;
+  const prevE = vIdx > 0 ? inTopic[vIdx - 1] : null;
+  const nextE = vIdx >= 0 && vIdx < inTopic.length - 1 ? inTopic[vIdx + 1] : null;
 
   async function save() {
     if (!editing) return;
@@ -218,8 +229,9 @@ export default function LorePanel({
         return;
       }
       await refresh();
-      setTopic(merged.category!);
-      setViewing(merged.id ? merged : null); // 편찬 후엔 그 문헌 뷰로, 새 문헌은 목록으로
+      const saved: Lore = data.entry || merged;
+      setTopic(saved.category || merged.category!);
+      setViewing(saved); // 기록한 문헌을 우측에 펼침
       setEditing(null);
     } finally {
       setSaving(false);
@@ -243,7 +255,6 @@ export default function LorePanel({
     setViewing(null);
   }
 
-  // 활성(반영) 토글 — 인물 명부 방식.
   async function toggleActive() {
     if (!viewing) return;
     const prev = viewing;
@@ -269,273 +280,327 @@ export default function LorePanel({
     await refresh();
   }
 
-  // 화면 단계: 편찬 > 뷰 > 갈래 목록 > 영역 배너
-  const mode = editing ? 'edit' : viewing ? 'view' : topic ? 'list' : 'index';
-  const headTitle = editing
-    ? editing.id
-      ? `문헌 ${UI.compile}`
-      : '새 문헌'
-    : viewing
-      ? viewing.title
-      : topic
-        ? topic === ORPHAN
-          ? '미분류'
-          : topic
-        : '대륙 문헌';
+  const warns = (
+    <>
+      {!dbReady && <p className="warn">아직 기록의 샘이 닿지 않아 문헌을 기록할 수 없습니다.</p>}
+      {dbReady && err && (
+        <p className="warn">
+          문헌 표가 아직 없는 듯합니다. 안내된 SQL을 Supabase에서 한 번 실행하십시오.
+          <br />
+          <span className="dim">({err})</span>
+        </p>
+      )}
+      {storyId == null && <p className="warn">먼저 운명의 장을 펼치십시오.</p>}
+    </>
+  );
+
+  const hasSel = !!(viewing || editing);
+  const inIndex = !topic;
 
   return (
     <div className="modal-bg" onClick={onClose}>
       <div
-        className={'modal has-hero modal--lore' + (!editing ? ' modal--list' : '')}
+        className={
+          'modal has-hero modal--lore' + (inIndex ? ' modal--list' : ' modal--codex')
+        }
         onClick={(e) => e.stopPropagation()}
       >
         {/* 모바일 풀스크린: 노치/상태바 아래(안전영역) 차폐 */}
         <div className="top-shield" />
-        <div className="modal-head">
-          <div className="head-left">
-            {mode === 'view' && (
-              <IconButton label="갈래로" onClick={() => setViewing(null)}>
-                <ArrowLeft size={18} />
-              </IconButton>
-            )}
-            {mode === 'list' && (
-              <IconButton label="영역으로" onClick={() => setTopic(null)}>
-                <ArrowLeft size={18} />
-              </IconButton>
-            )}
-            <h2>
-              {headTitle}
-              {mode === 'list' && inTopic.length > 0 && (
-                <span className="head-count">{inTopic.length}</span>
-              )}
-            </h2>
-          </div>
-          <div className="head-actions">
-            {mode === 'list' && topic !== ORPHAN && (
-              <IconButton label="작성" active onClick={() => openNew(topic!)}>
-                <BookPlus size={17} />
-              </IconButton>
-            )}
-            {mode === 'view' && viewing && (
-              <>
-                <IconButton
-                  label={viewing.is_active !== false ? '잠재우기' : '깨우기'}
-                  active={viewing.is_active !== false}
-                  onClick={toggleActive}
-                >
-                  <Bookmark size={18} fill={viewing.is_active !== false ? 'currentColor' : 'none'} />
-                </IconButton>
-                <IconButton label={UI.compile} onClick={() => openEdit(viewing)}>
-                  <Pencil size={17} />
-                </IconButton>
-              </>
-            )}
-            {mode === 'index' && storyId != null && (
-              <IconButton label={UI.import} onClick={() => setImporting(true)}>
-                <Download size={17} />
-              </IconButton>
-            )}
-            <IconButton label={UI.close} onClick={onClose}>
-              <X size={17} />
-            </IconButton>
-          </div>
-        </div>
 
-        {!dbReady && (
-          <p className="warn">아직 기록의 샘이 닿지 않아 문헌을 기록할 수 없습니다.</p>
-        )}
-        {dbReady && err && (
-          <p className="warn">
-            문헌 표가 아직 없는 듯합니다. 안내된 SQL을 Supabase에서 한 번 실행하십시오.
-            <br />
-            <span className="dim">({err})</span>
-          </p>
-        )}
-        {storyId == null && <p className="warn">먼저 운명의 장을 펼치십시오.</p>}
-
-        {/* 첫 화면 — 다섯 영역 배너 */}
-        {mode === 'index' && (
-          <div className="modal-body">
-            <ul className="list-rows lore-topics">
-              {TOPICS.map((t) => {
-                const n = entries.filter((e) => e.category === t.title).length;
-                return (
-                  <li key={t.title} className="list-row" onClick={() => setTopic(t.title)}>
-                    <img
-                      className="list-row-img"
-                      src={t.img}
-                      alt=""
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+        {inIndex ? (
+          // ── 첫 화면 — 다섯 영역 배너(표지) ──────────────────────────────
+          <>
+            <div className="modal-head">
+              <div className="head-left">
+                <h2>대륙 문헌</h2>
+              </div>
+              <div className="head-actions">
+                {storyId != null && (
+                  <IconButton label={UI.import} onClick={() => setImporting(true)}>
+                    <Download size={17} />
+                  </IconButton>
+                )}
+                <IconButton label={UI.close} onClick={onClose}>
+                  <X size={17} />
+                </IconButton>
+              </div>
+            </div>
+            {warns}
+            <div className="modal-body">
+              <ul className="list-rows lore-topics">
+                {TOPICS.map((t) => {
+                  const n = entries.filter((e) => e.category === t.title).length;
+                  return (
+                    <li key={t.title} className="list-row" onClick={() => setTopic(t.title)}>
+                      <img
+                        className="list-row-img"
+                        src={t.img}
+                        alt=""
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="list-row-meta">
+                        <div className="list-row-name">{t.title}</div>
+                        <div className="list-row-sub">{t.sub}</div>
+                      </div>
+                      <span className="list-row-right lore-right">
+                        {n > 0 && <span className="lore-count">{n}권</span>}
+                        <ChevronRight size={16} />
+                      </span>
+                    </li>
+                  );
+                })}
+                {orphans.length > 0 && (
+                  <li
+                    className="list-row list-row--plain lore-orphan"
+                    onClick={() => setTopic(ORPHAN)}
+                  >
                     <div className="list-row-meta">
-                      <div className="list-row-name">{t.title}</div>
-                      <div className="list-row-sub">{t.sub}</div>
+                      <div className="list-row-name">미분류 문헌</div>
+                      <div className="list-row-sub">영역을 다시 정해 주십시오</div>
                     </div>
                     <span className="list-row-right lore-right">
-                      {n > 0 && <span className="lore-count">{n}권</span>}
+                      <span className="lore-count">{orphans.length}권</span>
                       <ChevronRight size={16} />
                     </span>
                   </li>
-                );
-              })}
-              {orphans.length > 0 && (
-                <li
-                  className="list-row list-row--plain lore-orphan"
-                  onClick={() => setTopic(ORPHAN)}
-                >
-                  <div className="list-row-meta">
-                    <div className="list-row-name">미분류 문헌</div>
-                    <div className="list-row-sub">영역을 다시 정해 주십시오</div>
-                  </div>
-                  <span className="list-row-right lore-right">
-                    <span className="lore-count">{orphans.length}권</span>
-                    <ChevronRight size={16} />
-                  </span>
-                </li>
-              )}
-            </ul>
-          </div>
-        )}
-
-        {/* 갈래 화면 — 그 영역의 문헌 목록 */}
-        {mode === 'list' && (
-          <div className="modal-body">
-            {loading ? (
-              <Spinner />
-            ) : inTopic.length === 0 ? (
-              <div className="empty-state">
-                <p className="empty-state-msg">이 영역엔 아직 문헌이 없습니다.</p>
-                {topic !== ORPHAN && (
-                  <button className="btn-accent" onClick={() => openNew(topic!)}>
-                    첫 문헌 기록
-                  </button>
-                )}
-              </div>
-            ) : (
-              <ul className="char-list">
-                {entries.map((e, i) =>
-                  belongs(e) ? (
-                    <li
-                      key={e.id}
-                      className={'char-row' + (e.is_active === false ? ' inactive' : '')}
-                    >
-                      <div className="char-meta clickable" onClick={() => setViewing(e)}>
-                        <div className="char-name">
-                          <span className="ep-no jang">제{i + 1}권</span>
-                          {e.title}
-                        </div>
-                        <div className="char-sub">{tocOf(e) || (e.body || '').slice(0, 40)}</div>
-                      </div>
-                      <button
-                        className={'row-bm' + (e.is_active !== false ? ' on' : '')}
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          toggleActiveOf(e);
-                        }}
-                        title={e.is_active !== false ? '잠재우기' : '깨우기'}
-                        aria-label={e.is_active !== false ? '잠재우기' : '깨우기'}
-                      >
-                        <Bookmark size={18} fill={e.is_active !== false ? 'currentColor' : 'none'} />
-                      </button>
-                    </li>
-                  ) : null,
                 )}
               </ul>
-            )}
-          </div>
-        )}
-
-        {/* 뷰(읽기) 화면 */}
-        {mode === 'view' && viewing && (
-          <div className="modal-body lore-view">
-            <div className="lore-view-top">
-              {viewNo > 0 && <span className="ep-no jang">제{viewNo}권</span>}
-              {viewing.category && <span className="tag">{viewing.category}</span>}
             </div>
-            {tocOf(viewing) && <p className="lore-toc">{tocOf(viewing)}</p>}
-            <div className="lore-view-body">
-              {viewing.sections?.length ? (
-                viewing.sections.map((s, i) => (
-                  <section key={i} className="lore-view-sec">
-                    {s.subtitle && <h3 className="lore-view-subtitle">{s.subtitle}</h3>}
-                    {s.content?.trim() && <Markdown text={s.content} />}
-                  </section>
-                ))
-              ) : viewing.body?.trim() ? (
-                <Markdown text={viewing.body} />
-              ) : (
-                <p className="dim small">아직 적힌 내용이 없습니다.</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 편찬(편집) 화면 */}
-        {mode === 'edit' && editing && (
-          <div className="modal-body editor">
-            {/* 영역(좁게·좌) · 갈래(넓게·우) */}
-            <div className="row2 lore-fields">
-              <label className="lore-f-area">
-                영역 *
-                <Dropdown
-                  value={editing.category || ''}
-                  options={TOPICS.map((t) => ({ value: t.title, label: t.title }))}
-                  onChange={(v) => set('category', v)}
-                  placeholder="영역을 고르십시오."
-                />
-              </label>
-              <label className="lore-f-title">
-                갈래 *
-                <input
-                  value={editing.title}
-                  onChange={(e) => set('title', e.target.value)}
-                  placeholder="예: 퍼거스 신성 왕국"
-                />
-              </label>
-            </div>
-
-            {/* 내용 — 소주제 여러 칸(드래그 정렬) */}
-            <div className="lore-secs-wrap">
-              <span className="lore-secs-label">내용 — 소주제</span>
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onSecDragEnd}>
-                <SortableContext items={secs.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-                  <div className="lore-secs">
-                    {secs.map((s) => (
-                      <SortableSec
-                        key={s.id}
-                        sec={s}
-                        canRemove={secs.length > 1}
-                        onUpdate={updateSec}
-                        onRemove={() => removeSec(s.id)}
-                      />
-                    ))}
+          </>
+        ) : (
+          // ── 영역 펼침 — 2단(목차 사이드바 + 본문) ────────────────────────
+          <div className={'lore-codex' + (hasSel ? ' has-sel' : '')}>
+            {/* 왼쪽: 그 영역의 권 목록(목차) */}
+            <aside className="lore-side">
+              <div className="lore-side-head">
+                <IconButton label="영역으로" onClick={backToTopics}>
+                  <ArrowLeft size={18} />
+                </IconButton>
+                <h3 className="lore-side-title">
+                  {topic === ORPHAN ? '미분류' : topic}
+                  {inTopic.length > 0 && <span className="head-count">{inTopic.length}</span>}
+                </h3>
+                {topic !== ORPHAN && (
+                  <IconButton label="작성" active onClick={() => openNew(topic!)}>
+                    <BookPlus size={16} />
+                  </IconButton>
+                )}
+                <IconButton label={UI.close} className="lore-close-m" onClick={onClose}>
+                  <X size={17} />
+                </IconButton>
+              </div>
+              <div className="lore-vols">
+                {loading ? (
+                  <Spinner />
+                ) : inTopic.length === 0 ? (
+                  <div className="empty-state">
+                    <p className="empty-state-msg">이 영역엔 아직 문헌이 없습니다.</p>
+                    {topic !== ORPHAN && (
+                      <button className="btn-accent" onClick={() => openNew(topic!)}>
+                        첫 문헌 기록
+                      </button>
+                    )}
                   </div>
-                </SortableContext>
-              </DndContext>
-              <button className="lore-add-sec" onClick={addSec}>
-                <Plus size={15} />
-                소주제 추가
-              </button>
-            </div>
+                ) : (
+                  <ul className="lore-vol-list">
+                    {inTopic.map((e) => {
+                      const sel = viewing?.id === e.id && !editing;
+                      return (
+                        <li
+                          key={e.id}
+                          className={
+                            'lore-vol' +
+                            (sel ? ' sel' : '') +
+                            (e.is_active === false ? ' inactive' : '')
+                          }
+                        >
+                          <div className="lore-vol-meta" onClick={() => setViewing(e)}>
+                            <span className="lore-vol-no">제{globalNo(e)}권</span>
+                            <div className="lore-vol-title">{e.title}</div>
+                            {tocOf(e) && <div className="lore-vol-toc">{tocOf(e)}</div>}
+                          </div>
+                          <button
+                            className={'row-bm' + (e.is_active !== false ? ' on' : '')}
+                            onClick={(ev) => {
+                              ev.stopPropagation();
+                              toggleActiveOf(e);
+                            }}
+                            title={e.is_active !== false ? '잠재우기' : '깨우기'}
+                            aria-label={e.is_active !== false ? '잠재우기' : '깨우기'}
+                          >
+                            <Bookmark
+                              size={17}
+                              fill={e.is_active !== false ? 'currentColor' : 'none'}
+                            />
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </aside>
 
-            <div className="editor-actions">
-              {editing.id && (
-                <button
-                  className={'btn-erase' + (armed ? ' armed' : '')}
-                  onClick={() => (armed ? remove() : setArmed(true))}
-                  title={UI.erase}
-                  aria-label={UI.erase}
-                >
-                  <Trash2 size={18} />
-                </button>
-              )}
-              <div className="editor-actions-end">
-                <button onClick={() => setEditing(null)}>{UI.cancel}</button>
-                <button className="primary" onClick={save} disabled={saving}>
-                  {saving ? `${UI.save}하는 중…` : UI.save}
-                </button>
+            {/* 오른쪽: 본문(읽기/편찬/안내) */}
+            <div className="lore-main">
+              <div className="lore-main-head">
+                {hasSel && (
+                  <IconButton label="목차로" className="lore-back-m" onClick={backToVols}>
+                    <ArrowLeft size={18} />
+                  </IconButton>
+                )}
+                <span className="lore-main-head-sp" />
+                {viewing && !editing && (
+                  <>
+                    <IconButton
+                      label={viewing.is_active !== false ? '잠재우기' : '깨우기'}
+                      active={viewing.is_active !== false}
+                      onClick={toggleActive}
+                    >
+                      <Bookmark
+                        size={18}
+                        fill={viewing.is_active !== false ? 'currentColor' : 'none'}
+                      />
+                    </IconButton>
+                    <IconButton label={UI.compile} onClick={() => openEdit(viewing)}>
+                      <Pencil size={17} />
+                    </IconButton>
+                  </>
+                )}
+                <IconButton label={UI.close} onClick={onClose}>
+                  <X size={17} />
+                </IconButton>
+              </div>
+
+              <div className="lore-main-body">
+                {storyId == null || !dbReady || err ? (
+                  <div className="lore-prompt">{warns}</div>
+                ) : editing ? (
+                  // 편찬
+                  <div className="editor lore-edit">
+                    <div className="row2 lore-fields">
+                      <label className="lore-f-area">
+                        영역 *
+                        <Dropdown
+                          value={editing.category || ''}
+                          options={TOPICS.map((t) => ({ value: t.title, label: t.title }))}
+                          onChange={(v) => set('category', v)}
+                          placeholder="영역을 고르십시오."
+                        />
+                      </label>
+                      <label className="lore-f-title">
+                        갈래 *
+                        <input
+                          value={editing.title}
+                          onChange={(e) => set('title', e.target.value)}
+                          placeholder="예: 퍼거스 신성 왕국"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="lore-secs-wrap">
+                      <span className="lore-secs-label">내용 — 소주제</span>
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={onSecDragEnd}
+                      >
+                        <SortableContext
+                          items={secs.map((s) => s.id)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <div className="lore-secs">
+                            {secs.map((s) => (
+                              <SortableSec
+                                key={s.id}
+                                sec={s}
+                                canRemove={secs.length > 1}
+                                onUpdate={updateSec}
+                                onRemove={() => removeSec(s.id)}
+                              />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+                      <button className="lore-add-sec" onClick={addSec}>
+                        <Plus size={15} />
+                        소주제 추가
+                      </button>
+                    </div>
+
+                    <div className="editor-actions">
+                      {editing.id && (
+                        <button
+                          className={'btn-erase' + (armed ? ' armed' : '')}
+                          onClick={() => (armed ? remove() : setArmed(true))}
+                          title={UI.erase}
+                          aria-label={UI.erase}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                      <div className="editor-actions-end">
+                        <button onClick={() => setEditing(null)}>{UI.cancel}</button>
+                        <button className="primary" onClick={save} disabled={saving}>
+                          {saving ? `${UI.save}하는 중…` : UI.save}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : viewing ? (
+                  // 읽기(문헌 한 권)
+                  <article className="lore-doc">
+                    <header className="lore-doc-head">
+                      <div className="lore-doc-meta">
+                        <span className="lore-doc-vol">
+                          제{globalNo(viewing)}권 · {viewing.category}
+                        </span>
+                        <div className="lore-doc-nav">
+                          <button
+                            disabled={!prevE}
+                            onClick={() => prevE && setViewing(prevE)}
+                            aria-label="이전 권"
+                          >
+                            <ChevronLeft size={18} />
+                          </button>
+                          <button
+                            disabled={!nextE}
+                            onClick={() => nextE && setViewing(nextE)}
+                            aria-label="다음 권"
+                          >
+                            <ChevronRight size={18} />
+                          </button>
+                        </div>
+                      </div>
+                      <h1 className="lore-doc-title">{viewing.title}</h1>
+                      {tocOf(viewing) && <p className="lore-doc-toc">{tocOf(viewing)}</p>}
+                    </header>
+                    <div className="lore-doc-body">
+                      {viewing.sections?.length ? (
+                        viewing.sections.map((s, i) => (
+                          <section key={i} className="lore-doc-sec">
+                            {s.subtitle && <h3 className="lore-doc-subtitle">{s.subtitle}</h3>}
+                            {s.content?.trim() && <Markdown text={s.content} />}
+                          </section>
+                        ))
+                      ) : viewing.body?.trim() ? (
+                        <Markdown text={viewing.body} />
+                      ) : (
+                        <p className="dim small">아직 적힌 내용이 없습니다.</p>
+                      )}
+                    </div>
+                  </article>
+                ) : (
+                  // 선택 안내(데스크탑 우측 빈 칸)
+                  <div className="lore-prompt">
+                    <BookOpen size={34} className="lore-prompt-ico" />
+                    <p className="lore-prompt-msg">열람할 문헌을 펼치십시오</p>
+                    <p className="lore-prompt-sub">좌측 목록에서 한 권을 고르거나, 새로 기록할 수 있습니다.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
