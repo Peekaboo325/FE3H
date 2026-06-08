@@ -458,10 +458,10 @@ export default function Characters({
       await refresh();
       // 발급/갱신 알림 — 내용이 실제로 바뀐 경우만(generated_at 제외 비교).
       const 알맹이 = (r: CharReport | null) => (r ? JSON.stringify({ ...r, generated_at: '' }) : '');
-      if (!이전) setReportToast(`${이름}의 기록이 발급되었습니다.`);
+      if (!이전) setReportToast(`${이름}의 보고서가 발급되었습니다.`);
       else if (알맹이(이전) !== 알맹이(data.report))
-        setReportToast(`${이름}의 기록이 갱신되었습니다.`);
-      window.setTimeout(() => setReportToast(null), 2600);
+        setReportToast(`${이름}의 보고서가 갱신되었습니다.`);
+      window.setTimeout(() => setReportToast(null), 1000);
     } catch (e) {
       setReportErr((e as Error).message);
     } finally {

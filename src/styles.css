@@ -1523,6 +1523,9 @@ body::before {
 .icon-btn.on { color: var(--accent); border-color: var(--accent); }
 .icon-btn:disabled { opacity: 0.55; cursor: default; }
 .icon-btn.spinning svg { animation: spin 0.7s linear infinite; }
+/* 보고서 새로고침 버튼은 이미지 위가 아니라 표면 위라 배경을 더 연하게 */
+.report-foot .icon-btn { background: rgba(0, 0, 0, 0.18); }
+.report-foot .icon-btn:hover { background: rgba(0, 0, 0, 0.3); }
 
 /* 보고서 발급/갱신 토스트 — 잠깐 떴다 사라짐 */
 .report-toast {
