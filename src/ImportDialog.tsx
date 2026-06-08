@@ -20,6 +20,7 @@ export default function ImportDialog<T extends { id?: number }>({
   subOf,
   imageOf,
   fxOf,
+  omit,
   onClose,
   onDone,
 }: {
@@ -32,6 +33,7 @@ export default function ImportDialog<T extends { id?: number }>({
   subOf?: (it: T) => string | undefined; // 부가(이명/분류 등)
   imageOf?: (it: T) => string | undefined; // 초상(전체 이미지) — 인물 전용
   fxOf?: (it: T) => string | undefined; // 상태 효과 클래스
+  omit?: string[]; // 반입에서 제외할 칸(예: 보고서·상태 — 유저가 '작성'한 것만 가져오기)
   onClose: () => void;
   onDone: () => void;
 }) {
@@ -81,6 +83,7 @@ export default function ImportDialog<T extends { id?: number }>({
       for (const it of 고른것) {
         const copy: Record<string, unknown> = { ...it };
         delete copy.id; // 새 항목으로(독립 복사)
+        for (const k of omit || []) delete copy[k]; // 유저가 '작성'한 것만 — 보고서·상태 등 제외
         copy.story_id = currentStoryId;
         await fetch(endpoint, {
           method: 'POST',

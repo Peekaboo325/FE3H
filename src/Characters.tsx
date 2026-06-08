@@ -1185,6 +1185,7 @@ export default function Characters({
             subOf={(c) => splitAliases(c.aliases)[0] || c.faction || undefined}
             imageOf={(c) => c.avatar || c.thumbnail || LIST_PLACEHOLDER}
             fxOf={(c) => statusFx(c.life_status)}
+            omit={['analysis', 'is_active', 'sort_order']}
             onClose={() => setImporting(false)}
             onDone={refresh}
           />
