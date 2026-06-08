@@ -1260,6 +1260,18 @@ em, i { font-style: normal; }
   margin: 12px 0 26px;
   padding: 0 16px;
 }
+/* 인용구 따옴표 — 세리프 장식 글리프(금빛·살짝 크게) */
+.report-quote::before,
+.report-quote::after {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.5em;
+  color: var(--accent);
+  opacity: 0.55;
+  vertical-align: -0.28em;
+  line-height: 0;
+}
+.report-quote::before { content: '\201C'; margin-right: 0.08em; }
+.report-quote::after { content: '\201D'; margin-left: 0.08em; }
 .report-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 18px; }
 .report-tag {
   font-size: 12px;

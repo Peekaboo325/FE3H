@@ -148,7 +148,7 @@ function StatRadar({ stats }: { stats: Record<string, number> }) {
 function ReportBody({ report }: { report: CharReport }) {
   return (
     <div className="report-body">
-      {report.quote && <p className="report-quote">“{report.quote}”</p>}
+      {report.quote && <p className="report-quote">{report.quote}</p>}
       {!!report.hashtags?.length && (
         <div className="report-tags">
           {report.hashtags.map((t, i) => (
