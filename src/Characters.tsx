@@ -652,7 +652,7 @@ export default function Characters({
               <div className="head-actions">
                 {chars.length > 0 && (
                   <>
-                    <IconButton label="작성" active onClick={() => setEditing(빈인물())}>
+                    <IconButton label="작성" onClick={() => setEditing(빈인물())}>
                       <UserPlus size={17} />
                     </IconButton>
                     {storyId != null && (

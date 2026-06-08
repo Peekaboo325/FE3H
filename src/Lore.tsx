@@ -384,7 +384,7 @@ export default function LorePanel({
                   {inTopic.length > 0 && <span className="head-count">{inTopic.length}</span>}
                 </h3>
                 {topic !== ORPHAN && (
-                  <IconButton label="작성" active onClick={() => openNew(topic!)}>
+                  <IconButton label="작성" onClick={() => openNew(topic!)}>
                     <BookPlus size={16} />
                   </IconButton>
                 )}
