@@ -1213,7 +1213,7 @@ body::before {
 .report-body { display: flex; flex-direction: column; }
 .report-stats-row {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 400px 1fr;
   gap: 18px;
   align-items: center;
   background: var(--surface-2);
@@ -1229,7 +1229,7 @@ body::before {
 }
 
 /* 팔각형 레이더 그래프 */
-.stat-radar { width: 100%; max-width: 220px; height: auto; display: block; margin: 0 auto; }
+.stat-radar { width: 100%; max-width: 400px; height: auto; display: block; margin: 0 auto; }
 .radar-ring { fill: none; stroke: var(--border); stroke-width: 1; }
 .radar-axis { stroke: var(--border); stroke-width: 1; }
 .radar-area {
@@ -1238,7 +1238,7 @@ body::before {
   stroke-width: 1.5;
   stroke-linejoin: round;
 }
-.radar-label { fill: var(--text-dim); font-size: 11px; font-weight: 600; }
+.radar-label { fill: var(--text-dim); font-size: 8px; font-weight: 600; }
 
 /* 대표 인용구 + 해시태그 */
 .report-quote {
