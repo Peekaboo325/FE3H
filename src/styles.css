@@ -807,7 +807,7 @@ em, i { font-style: normal; }
 }
 .lore-side-head {
   display: flex; align-items: center; gap: 6px;
-  padding: 14px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  padding: 12px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
 .lore-side-title {
   flex: 1; min-width: 0; margin: 0; font-size: 15px; font-weight: 700; color: var(--text);
@@ -843,8 +843,8 @@ em, i { font-style: normal; }
 /* 본문(우측) */
 .lore-main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 .lore-main-head {
-  display: flex; align-items: center; gap: 8px;
-  padding: 12px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; gap: 6px;
+  padding: 12px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
 .lore-main-head-sp { flex: 1; }
 .lore-main-body { flex: 1; overflow-y: auto; min-height: 0; padding: 0; }
