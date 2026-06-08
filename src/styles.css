@@ -631,7 +631,7 @@ em, i { font-style: normal; }
   color: inherit;
   cursor: pointer;
 }
-.bonds-head .view-label { margin: 0; }
+.bonds-head .view-label { margin: 0; padding-bottom: 0; border-bottom: none; }
 .bonds-chev { color: var(--text-dim); flex-shrink: 0; transition: transform 0.25s ease; }
 .bonds-chev.open { transform: rotate(180deg); }
 /* 접힘 애니메이션 (grid-rows 0fr↔1fr) */
@@ -1126,12 +1126,15 @@ em, i { font-style: normal; }
   padding: 14px 16px;
   margin: 0 0 16px;
 }
+/* 섹션 헤더 — 가는 구분선으로 장(章)을 또렷이 (약력·보고서 공통) */
 .view-label {
   font-size: 14px;
   color: var(--accent);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   font-weight: 700;
-  margin-bottom: 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 13px;
 }
 .view-text { font-size: 14px; color: var(--text); line-height: 1.75; }
 
@@ -1171,8 +1174,10 @@ em, i { font-style: normal; }
 .info-card-title {
   font-size: 14px;
   color: var(--accent);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   font-weight: 700;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--border);
   margin-bottom: 12px;
 }
 .info-row { display: flex; gap: 14px; padding: 6px 0; font-size: 14px; }
@@ -1224,13 +1229,8 @@ em, i { font-style: normal; }
   margin-bottom: 16px;
 }
 .report-analysis-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-/* 보고서 섹션 헤더 — 가는 구분선으로 장(章)을 또렷이 */
-.report-body .view-label {
-  padding-bottom: 9px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 13px;
-  letter-spacing: 0.04em;
-}
+/* 능력 그래프존 헤더 — 두 칼럼(레이더+막대) 위에 가로로 */
+.report-stats-head { grid-column: 1 / -1; margin-bottom: 0; }
 /* 카드 자체 margin과 그리드 gap이 겹쳐 간격이 벌어지지 않게 — 간격은 gap만 담당 */
 .report-analysis-row .view-section { margin: 0; }
 @media (max-width: 600px) {

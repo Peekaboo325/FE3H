@@ -158,8 +158,9 @@ function ReportBody({ report }: { report: CharReport }) {
           ))}
         </div>
       )}
-      {/* 레이더 + 막대 그래프 (한 줄) */}
+      {/* 능력 — 레이더 + 막대 그래프 (한 줄) */}
       <div className="report-stats-row">
+        <div className="view-label report-stats-head">능력</div>
         <StatRadar stats={report.stats ?? {}} />
         <div className="report-stats">
           {능력치목록.map(([k, ko]) => (
