@@ -882,12 +882,13 @@ em, i { font-style: normal; }
 /* 편찬 본문 — 코덱스 우측에 들어갈 때 안쪽 여백 */
 .lore-edit { padding: 24px 26px 30px; }
 /* 모바일: 2단을 한 화면씩(목차 ↔ 본문 전환), 전용 버튼 노출 */
-.lore-back-m, .lore-close-m { display: none; }
+/* (.icon-btn의 display를 이기려면 같은 특이도 이상이어야 함 → .icon-btn 동반) */
+.icon-btn.lore-back-m, .icon-btn.lore-close-m { display: none; }
 @media (max-width: 600px) {
   .lore-side { width: 100%; border-right: none; }
   .lore-codex.has-sel .lore-side { display: none; }
   .lore-codex:not(.has-sel) .lore-main { display: none; }
-  .lore-back-m, .lore-close-m { display: inline-flex; }
+  .icon-btn.lore-back-m, .icon-btn.lore-close-m { display: inline-flex; }
   .lore-doc { padding: 22px 4px 48px; }
   .lore-doc-title { font-size: 23px; }
   .lore-edit { padding: 16px 2px 24px; }
