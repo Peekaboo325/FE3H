@@ -38,9 +38,17 @@ export default async function handler(req, res) {
   ]);
   const 설정블록 = buildLoreContext(설정원천);
   const 인물블록 = buildCharacterContext(인물원천);
+  const 화수 = messages.filter((m) => m?.role === 'assistant').length + 1; // 그 턴의 화수(§5)
   const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
+  system.push({
+    type: 'text',
+    text:
+      `[이번 회차 번호 — 확정]\n지금 집필하는 것은 제${화수}화다. ` +
+      `머리글 "## 제N화 · 제목"의 N에는 반드시 ${화수}을(를) 쓴다. ` +
+      `화수를 스스로 세거나 다른 숫자를 쓰지 말 것.`,
+  });
 
   const client = new Anthropic({ apiKey: key });
   res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');

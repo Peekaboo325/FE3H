@@ -58,6 +58,8 @@ export default async function handler(req, res) {
   // 컨텍스트 윈도우: 전체 대화 대신 '줄거리 요약 + 최근 N턴 원문'으로 재구성.
   // + 앵커링: "N화 참고"(회차) / "제N권·(제목) 참조"(문헌)를 지목했으면 골라 주입.
   const 입력문 = 새입력?.role === 'user' ? 새입력.content : '';
+  // 화수는 LLM 추론에 맡기지 않고 확정값을 주입한다(§5). N번째 본문 = 제N화.
+  const 화수 = messages.filter((m) => m?.role === 'assistant').length + 1;
   const 지목 = parseAnchors(입력문);
   const 견문록지목 = parseLoreAnchors(입력문);
   const [{ messages: 대화, summary: 줄거리 }, 참고, 견문록참고] = await Promise.all([
@@ -80,6 +82,13 @@ export default async function handler(req, res) {
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
   if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락
+  system.push({
+    type: 'text',
+    text:
+      `[이번 회차 번호 — 확정]\n지금 집필하는 것은 제${화수}화다. ` +
+      `머리글 "## 제N화 · 제목"의 N에는 반드시 ${화수}을(를) 쓴다. ` +
+      `화수를 스스로 세거나 다른 숫자를 쓰지 말 것.`,
+  });
   if (견문록참고.block) system.push({ type: 'text', text: 견문록참고.block }); // 지목 문헌
   if (참고.block) system.push({ type: 'text', text: 참고.block }); // 지목 회차 = 가장 가까이
 
