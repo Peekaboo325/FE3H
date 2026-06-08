@@ -202,13 +202,16 @@ export default function App() {
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
+      let 받은 = '';
       for (;;) {
         const { value, done } = await reader.read();
         if (done) break;
-        붙이기(decoder.decode(value, { stream: true }));
+        const 조각 = decoder.decode(value, { stream: true });
+        받은 += 조각;
+        붙이기(조각);
       }
-      // 새 턴의 DB id를 받아오기 위해 다시 불러온다(수정·삭제 대상이 되도록).
-      if (storyId) await loadTurnsFor(storyId);
+      // 서버가 오류로 끝냈으면(스트림 끝에 [서고 오류]) 재로딩으로 덮지 않는다 — 부분 본문+사유를 화면에 남긴다.
+      if (storyId && !받은.includes('[서고 오류]')) await loadTurnsFor(storyId);
     } catch (e) {
       붙이기(`\n\n[연결 오류] ${(e as Error).message}`);
     } finally {
