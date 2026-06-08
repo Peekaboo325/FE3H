@@ -11,7 +11,7 @@ import { nameDict } from './nameDict.generated';
 import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
-import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2 } from 'lucide-react';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -242,12 +242,12 @@ function ReportView({
   err: string | null;
   onIssue: () => void;
 }) {
-  // 발급/재작성 중 — (있으면) 현재 보고서, 없으면 골격을 흐리고 위에 스피너로 '작동 중' 피드백.
-  if (reporting) {
+  // 첫 발급 중(보고서 없음) — 골격 흐리고 스피너로 '작동 중'.
+  if (reporting && !report) {
     return (
       <div className="report-locked">
         <div className="report report--ghost" aria-hidden="true">
-          <ReportBody report={report ?? 골격보고서} />
+          <ReportBody report={골격보고서} />
         </div>
         <div className="report-lock-overlay">
           <Spinner label="분석관이 보고서를 작성하는 중…" />
@@ -260,9 +260,14 @@ function ReportView({
       <div className="report">
         <ReportBody report={report} />
         <div className="report-foot">
-          <button className="link-btn" onClick={onIssue}>
-            {UI.regen}
-          </button>
+          <IconButton
+            label={UI.regen}
+            onClick={onIssue}
+            disabled={reporting}
+            className={reporting ? 'spinning' : ''}
+          >
+            <RotateCcw size={17} />
+          </IconButton>
         </div>
         {err && <p className="report-err">{err}</p>}
       </div>
@@ -420,19 +425,24 @@ export default function Characters({
   const [bondsOpen, setBondsOpen] = useState(false); // 인연 카드 펼침/접힘(기본 접힘)
   const [reporting, setReporting] = useState(false); // 보고서 발급 중
   const [reportErr, setReportErr] = useState<string | null>(null);
+  const [reportToast, setReportToast] = useState<string | null>(null); // 발급/갱신 알림
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
   useEffect(() => {
     setTab('약력');
     setBondsOpen(false);
     setReportErr(null);
+    setReportToast(null);
   }, [viewing?.id]); // 다른 인물(id 변경) 열 때만 약력·인연 접힘 초기화
 
-  // 분석 보고서 발급(또는 다시 받기) — Gemini Flash가 약력·맥락을 읽고 짓는다.
+  // 분석 보고서 발급(또는 새로고침/재작성) — Gemini Flash가 약력·맥락을 읽고 짓는다.
   async function 발급() {
     if (!viewing?.id || reporting) return;
+    const 이전 = viewing.analysis ?? null; // 갱신 여부 판단용(이전 보고서)
+    const 이름 = firstName(viewing.name);
     setReporting(true);
     setReportErr(null);
+    setReportToast(null);
     try {
       const res = await fetch('/api/report', {
         method: 'POST',
@@ -446,6 +456,12 @@ export default function Characters({
       }
       setViewing((v) => (v ? { ...v, analysis: data.report } : v));
       await refresh();
+      // 발급/갱신 알림 — 내용이 실제로 바뀐 경우만(generated_at 제외 비교).
+      const 알맹이 = (r: CharReport | null) => (r ? JSON.stringify({ ...r, generated_at: '' }) : '');
+      if (!이전) setReportToast(`${이름}의 기록이 발급되었습니다.`);
+      else if (알맹이(이전) !== 알맹이(data.report))
+        setReportToast(`${이름}의 기록이 갱신되었습니다.`);
+      window.setTimeout(() => setReportToast(null), 2600);
     } catch (e) {
       setReportErr((e as Error).message);
     } finally {
@@ -817,6 +833,7 @@ export default function Characters({
                 <EmptyTab />
               )}
             </div>
+            {reportToast && <div className="report-toast">{reportToast}</div>}
           </div>
         )}
 

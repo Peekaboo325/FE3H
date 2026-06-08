@@ -7,12 +7,14 @@ export default function IconButton({
   onClick,
   label,
   active = false,
+  disabled = false,
   className,
 }: {
   children: ReactNode;
   onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
   label: string; // aria-label + 툴팁(title)
   active?: boolean;
+  disabled?: boolean;
   className?: string;
 }) {
   return (
@@ -20,6 +22,7 @@ export default function IconButton({
       type="button"
       className={'icon-btn' + (active ? ' on' : '') + (className ? ' ' + className : '')}
       onClick={onClick}
+      disabled={disabled}
       title={label}
       aria-label={label}
     >

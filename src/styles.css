@@ -1521,6 +1521,29 @@ body::before {
 
 /* 활성(등장) 북마크 켜짐 */
 .icon-btn.on { color: var(--accent); border-color: var(--accent); }
+.icon-btn:disabled { opacity: 0.55; cursor: default; }
+.icon-btn.spinning svg { animation: spin 0.7s linear infinite; }
+
+/* 보고서 발급/갱신 토스트 — 잠깐 떴다 사라짐 */
+.report-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  z-index: 60;
+  animation: toast-up 0.2s ease;
+}
+@keyframes toast-up {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
 
 /* 커스텀 드롭다운 */
 .dd { position: relative; flex: 1; min-width: 0; }
