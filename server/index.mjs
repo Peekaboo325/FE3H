@@ -207,7 +207,7 @@ app.post('/api/story', async (req, res) => {
   const [{ messages: 대화, summary: 줄거리 }, 참고, 견문록참고] = await Promise.all([
     prepareConversation(storyId, messages),
     지목.length ? buildAnchorContext(storyId, 입력문, 지목) : Promise.resolve({ block: null, episodes: [] }),
-    견문록지목.numbers.length || 견문록지목.titles.length
+    견문록지목.refs.length || 견문록지목.titles.length
       ? buildLoreAnchorContext(storyId, 견문록지목)
       : Promise.resolve({ block: null, items: [] }),
   ]);

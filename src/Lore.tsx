@@ -193,7 +193,8 @@ export default function LorePanel({
     topic === ORPHAN ? !TOPIC_TITLES.includes(e.category || '') : e.category === topic;
   const inTopic = entries.filter(belongs);
   const orphans = entries.filter((e) => !TOPIC_TITLES.includes(e.category || ''));
-  const globalNo = (e: Lore) => entries.findIndex((x) => x.id === e.id) + 1; // 제N권(전체 순서·앵커 정합)
+  // 제N권 = 그 영역 안에서의 순번(앵커 '세력 제N권'과 일치)
+  const volNo = (e: Lore) => inTopic.findIndex((x) => x.id === e.id) + 1;
 
   // 이전/다음 권(현재 영역 안에서)
   const vIdx = viewing ? inTopic.findIndex((e) => e.id === viewing.id) : -1;
@@ -416,7 +417,7 @@ export default function LorePanel({
                           }
                         >
                           <div className="lore-vol-meta" onClick={() => setViewing(e)}>
-                            <span className="lore-vol-no">제{globalNo(e)}권</span>
+                            <span className="lore-vol-no">제{volNo(e)}권</span>
                             <div className="lore-vol-title">{e.title}</div>
                             {tocOf(e) && <div className="lore-vol-toc">{tocOf(e)}</div>}
                           </div>
@@ -553,7 +554,7 @@ export default function LorePanel({
                     <header className="lore-doc-head">
                       <div className="lore-doc-meta">
                         <span className="lore-doc-vol">
-                          제{globalNo(viewing)}권 · {viewing.category}
+                          제{volNo(viewing)}권 · {viewing.category}
                         </span>
                         <div className="lore-doc-nav">
                           <button
