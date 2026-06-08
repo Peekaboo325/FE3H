@@ -840,6 +840,7 @@ em, i { font-style: normal; }
 .lore-vol {
   display: flex; align-items: center; gap: 4px;
   border-radius: 8px; position: relative; padding-right: 2px;
+  user-select: none; -webkit-user-select: none; /* 드래그 중 텍스트 선택 방지 */
 }
 .lore-vol:hover { background: var(--hover); }
 .lore-vol.sel { background: var(--surface-2); }

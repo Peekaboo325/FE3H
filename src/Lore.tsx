@@ -127,6 +127,59 @@ function SortableSec({
   );
 }
 
+// ── 목차 사이드바: 문헌 한 권(드래그 정렬) ────────────────────────────────
+function SortableVol({
+  e,
+  no,
+  sel,
+  onView,
+  onToggle,
+}: {
+  e: Lore;
+  no: number;
+  sel: boolean;
+  onView: () => void;
+  onToggle: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: e.id!,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+    zIndex: isDragging ? 2 : undefined,
+  };
+  const active = e.is_active !== false;
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={'lore-vol' + (sel ? ' sel' : '') + (active ? '' : ' inactive')}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="lore-vol-meta" onClick={onView}>
+        <span className="lore-vol-no">제{no}권</span>
+        <div className="lore-vol-title">{e.title}</div>
+        {tocOf(e) && <div className="lore-vol-toc">{tocOf(e)}</div>}
+      </div>
+      <button
+        className={'row-bm' + (active ? ' on' : '')}
+        onClick={(ev) => {
+          ev.stopPropagation();
+          onToggle();
+        }}
+        onPointerDown={(ev) => ev.stopPropagation()}
+        title={active ? '잠재우기' : '깨우기'}
+        aria-label={active ? '잠재우기' : '깨우기'}
+      >
+        <Bookmark size={17} fill={active ? 'currentColor' : 'none'} />
+      </button>
+    </li>
+  );
+}
+
 export default function LorePanel({
   storyId,
   onClose,
@@ -143,6 +196,9 @@ export default function LorePanel({
   const [importing, setImporting] = useState(false);
   const [armed, setArmed] = useState(false);
   useEffect(() => setArmed(false), [editing]);
+  // 목차 드래그 정렬용 로컬 순서(서버 목록과 동기화)
+  const [items, setItems] = useState<Lore[]>([]);
+  useEffect(() => setItems(entries), [entries]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -191,9 +247,36 @@ export default function LorePanel({
   const belongs = (e: Lore) =>
     topic === ORPHAN ? !TOPIC_TITLES.includes(e.category || '') : e.category === topic;
   const inTopic = entries.filter(belongs);
+  const localInTopic = items.filter(belongs); // 드래그 중 즉시 반영용(영역 안 순서)
   const orphans = entries.filter((e) => !TOPIC_TITLES.includes(e.category || ''));
   // 제N권 = 그 영역 안에서의 순번(앵커 '세력 제N권'과 일치)
   const volNo = (e: Lore) => inTopic.findIndex((x) => x.id === e.id) + 1;
+
+  // 목차 드래그 정렬 — 영역 안에서만 순서를 바꾸고, 전체 sort_order 정합은 유지한다.
+  async function onVolDragEnd(ev: DragEndEvent) {
+    const { active, over } = ev;
+    if (!over || active.id === over.id) return;
+    const sub = items.filter(belongs);
+    const oldI = sub.findIndex((x) => x.id === active.id);
+    const newI = sub.findIndex((x) => x.id === over.id);
+    if (oldI < 0 || newI < 0) return;
+    const newSub = arrayMove(sub, oldI, newI);
+    let k = 0;
+    const nextFull = items.map((x) => (belongs(x) ? newSub[k++] : x)); // 영역 자리에 새 순서를 끼워 전체 재구성
+    setItems(nextFull); // 낙관적 즉시 반영
+    // 전체 인덱스를 sort_order로 — 바뀐 것만 저장(다른 영역 상대순서는 보존)
+    const changed = nextFull.map((x, i) => ({ x, i })).filter(({ x, i }) => x.sort_order !== i);
+    await Promise.all(
+      changed.map(({ x, i }) =>
+        fetch('/api/lore', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ entry: { ...x, sort_order: i, story_id: storyId } }),
+        }),
+      ),
+    );
+    await refresh();
+  }
 
   // 이전/다음 권(현재 영역 안에서)
   const vIdx = viewing ? inTopic.findIndex((e) => e.id === viewing.id) : -1;
@@ -395,41 +478,29 @@ export default function LorePanel({
                     )}
                   </div>
                 ) : (
-                  <ul className="lore-vol-list">
-                    {inTopic.map((e) => {
-                      const sel = viewing?.id === e.id && !editing;
-                      return (
-                        <li
-                          key={e.id}
-                          className={
-                            'lore-vol' +
-                            (sel ? ' sel' : '') +
-                            (e.is_active === false ? ' inactive' : '')
-                          }
-                        >
-                          <div className="lore-vol-meta" onClick={() => setViewing(e)}>
-                            <span className="lore-vol-no">제{volNo(e)}권</span>
-                            <div className="lore-vol-title">{e.title}</div>
-                            {tocOf(e) && <div className="lore-vol-toc">{tocOf(e)}</div>}
-                          </div>
-                          <button
-                            className={'row-bm' + (e.is_active !== false ? ' on' : '')}
-                            onClick={(ev) => {
-                              ev.stopPropagation();
-                              toggleActiveOf(e);
-                            }}
-                            title={e.is_active !== false ? '잠재우기' : '깨우기'}
-                            aria-label={e.is_active !== false ? '잠재우기' : '깨우기'}
-                          >
-                            <Bookmark
-                              size={17}
-                              fill={e.is_active !== false ? 'currentColor' : 'none'}
-                            />
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={onVolDragEnd}
+                  >
+                    <SortableContext
+                      items={localInTopic.map((e) => e.id!)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <ul className="lore-vol-list">
+                        {localInTopic.map((e, i) => (
+                          <SortableVol
+                            key={e.id}
+                            e={e}
+                            no={i + 1}
+                            sel={viewing?.id === e.id && !editing}
+                            onView={() => setViewing(e)}
+                            onToggle={() => toggleActiveOf(e)}
+                          />
+                        ))}
+                      </ul>
+                    </SortableContext>
+                  </DndContext>
                 )}
               </div>
               {/* 작성 = 하단 원형 플로팅 */}

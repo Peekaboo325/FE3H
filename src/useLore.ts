@@ -10,6 +10,7 @@ export type Lore = {
   body?: string; // 섹션의 평문 거울(주입·검색용). sections가 진짜 출처.
   sections?: LoreSection[];
   is_active?: boolean;
+  sort_order?: number;
 };
 
 // 현재 이야기의 견문록 목록 — 공용 캐시 훅 위의 얇은 래퍼.
