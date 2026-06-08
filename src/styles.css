@@ -1209,21 +1209,27 @@ body::before {
 }
 .report-lock-overlay .list-btn { flex: 0 0 auto; max-width: 220px; }
 
-/* 2단 레이아웃 — 왼쪽 능력치(레이더+막대) / 오른쪽 분석 */
-.report-grid {
+/* 보고서 본문 — 멘트·해시태그(전폭) → 레이더+막대(한 줄) → 성격+무의식(한 줄) → 평판 */
+.report-body { display: flex; flex-direction: column; }
+.report-stats-row {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 22px;
-  align-items: start;
+  grid-template-columns: 220px 1fr;
+  gap: 18px;
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
-.report-side { min-width: 0; }
-.report-main { min-width: 0; }
+.report-analysis-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media (max-width: 600px) {
-  .report-grid { grid-template-columns: 1fr; gap: 18px; }
+  .report-stats-row { grid-template-columns: 1fr; gap: 14px; }
+  .report-analysis-row { grid-template-columns: 1fr; }
 }
 
 /* 팔각형 레이더 그래프 */
-.stat-radar { width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto 14px; }
+.stat-radar { width: 100%; max-width: 220px; height: auto; display: block; margin: 0 auto; }
 .radar-ring { fill: none; stroke: var(--border); stroke-width: 1; }
 .radar-axis { stroke: var(--border); stroke-width: 1; }
 .radar-area {
@@ -1254,24 +1260,24 @@ body::before {
   padding: 3px 10px;
 }
 
-/* 능력치 막대 */
-.report-stats {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  margin: 0 0 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-}
+/* 능력치 막대 — [항목 … 평가(10px) 수치] / [게이지바] */
+.report-stats { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .stat-row { display: flex; flex-direction: column; gap: 5px; }
-.stat-head { display: flex; justify-content: space-between; align-items: baseline; }
-.stat-label { font-size: 13px; color: var(--text); font-weight: 600; }
-.stat-num { font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.stat-head { display: flex; align-items: baseline; gap: 8px; }
+.stat-label { font-size: 13px; color: var(--text); font-weight: 600; flex-shrink: 0; }
+.stat-cmt {
+  flex: 1;
+  min-width: 0;
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat-num { font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .stat-track { height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; }
 .stat-fill { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
-.stat-cmt { font-size: 12px; color: var(--text-dim); }
 
 /* 평판 6종 */
 .rep-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }

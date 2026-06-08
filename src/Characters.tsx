@@ -94,12 +94,12 @@ function StatBar({ label, value, comment }: { label: string; value: number; comm
     <div className="stat-row">
       <div className="stat-head">
         <span className="stat-label">{label}</span>
+        {comment && <span className="stat-cmt">{comment}</span>}
         <span className="stat-num">{value}</span>
       </div>
       <span className="stat-track">
         <span className="stat-fill" style={{ width: `${value}%` }} />
       </span>
-      {comment && <span className="stat-cmt">{comment}</span>}
     </div>
   );
 }
@@ -147,18 +147,19 @@ function StatRadar({ stats }: { stats: Record<string, number> }) {
 // 보고서 본문 렌더(발급본·골격 공용) — 2단: 왼쪽 능력치(인용구·해시태그·레이더·막대) / 오른쪽 분석.
 function ReportBody({ report }: { report: CharReport }) {
   return (
-    <div className="report-grid">
-      <div className="report-side">
-        {report.quote && <p className="report-quote">“{report.quote}”</p>}
-        {!!report.hashtags?.length && (
-          <div className="report-tags">
-            {report.hashtags.map((t, i) => (
-              <span key={i} className="report-tag">
-                #{t}
-              </span>
-            ))}
-          </div>
-        )}
+    <div className="report-body">
+      {report.quote && <p className="report-quote">“{report.quote}”</p>}
+      {!!report.hashtags?.length && (
+        <div className="report-tags">
+          {report.hashtags.map((t, i) => (
+            <span key={i} className="report-tag">
+              #{t}
+            </span>
+          ))}
+        </div>
+      )}
+      {/* 레이더 + 막대 그래프 (한 줄) */}
+      <div className="report-stats-row">
         <StatRadar stats={report.stats ?? {}} />
         <div className="report-stats">
           {능력치목록.map(([k, ko]) => (
@@ -171,23 +172,24 @@ function ReportBody({ report }: { report: CharReport }) {
           ))}
         </div>
       </div>
-      <div className="report-main">
+      {/* 성격 분석 + 무의식 분석 (한 줄) */}
+      <div className="report-analysis-row">
         {report.personality && <ViewSection label="성격 분석" text={report.personality} />}
         {report.unconscious && <ViewSection label="무의식 분석" text={report.unconscious} />}
-        {!!report.reputation?.length && (
-          <div className="view-section">
-            <div className="view-label">평판</div>
-            <ul className="rep-list">
-              {report.reputation.map((r, i) => (
-                <li key={i} className="rep-item">
-                  <div className="rep-src">{r.source}</div>
-                  <div className="rep-cmt">{r.comment}</div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
+      {!!report.reputation?.length && (
+        <div className="view-section">
+          <div className="view-label">평판</div>
+          <ul className="rep-list">
+            {report.reputation.map((r, i) => (
+              <li key={i} className="rep-item">
+                <div className="rep-src">{r.source}</div>
+                <div className="rep-cmt">{r.comment}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
