@@ -755,13 +755,14 @@ em, i { font-style: normal; }
   font-size: clamp(11px, 6cqi, 15px);
   font-weight: 700;
   color: var(--text);
-  line-height: 1.25;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
-.list-row-sub { font-size: 11px; color: var(--text-dim); margin-top: -3px; }
+/* 줄높이를 글자에 바짝(1.15) — 서브 line-box의 빈 꼬리를 없애 제목+서브가 실제로 수직 가운데에 오게 */
+.list-row-sub { font-size: 11px; color: var(--text-dim); line-height: 1.15; margin-top: 2px; }
 .list-row-right {
   position: absolute;
   right: 14px;
@@ -782,10 +783,8 @@ em, i { font-style: normal; }
 .list-row--plain .list-row-name { text-shadow: none; }
 .list-row--plain .list-row-right { position: static; transform: none; margin-left: 10px; }
 
-/* 대륙 문헌 대주제 배너 — 일러스트 빈 슬롯(파일 넣기 전), 우측 권수+진입 화살 */
-.lore-slot {
-  background: linear-gradient(115deg, color-mix(in srgb, var(--accent) 14%, var(--surface-2)), var(--surface-2));
-}
+/* 대륙 문헌 대주제 배너 — 일반 행보다 키 큼(80), 우측 권수+진입 화살 */
+.lore-topics .list-row { height: 80px; }
 .lore-right { display: inline-flex; align-items: center; gap: 6px; color: var(--text-dim); }
 .lore-count { font-size: 12px; letter-spacing: normal; }
 .lore-orphan { opacity: 0.85; }
