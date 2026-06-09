@@ -39,7 +39,8 @@ import { buildCharacterContext } from '../lib/charContext.mjs';
 import { runReport } from '../lib/report.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
-import { loadTurnsForSummary } from '../lib/db.mjs';
+import { loadTurnsForSummary, getTurnContent, setTurnSummary } from '../lib/db.mjs';
+import { summarizeEpisode } from '../lib/summarize.mjs';
 import { ensureEpisodeSummaries, buildChronicle } from '../lib/chronicle.mjs';
 import {
   parseAnchors,
@@ -115,6 +116,30 @@ app.get('/api/chronicle', async (req, res) => {
     res.json({ dbReady: dbReady(), ready: hasSummaryCol, chronicle: buildChronicle(turns) });
   } catch (e) {
     res.json({ dbReady: dbReady(), ready: false, chronicle: [], error: e?.message || String(e) });
+  }
+});
+// 한 화 다시 요약(연대 문헌 '다시 기록') — 잘리거나 갱신하고 싶을 때.
+app.post('/api/chronicle', async (req, res) => {
+  const id = Number(req.body?.turn_id);
+  if (!id) {
+    res.status(400).json({ ok: false, error: '화를 특정할 수 없습니다.' });
+    return;
+  }
+  try {
+    const content = await getTurnContent(id);
+    if (!content) {
+      res.json({ ok: false, error: '그 화의 본문을 찾지 못했습니다.' });
+      return;
+    }
+    const summary = await summarizeEpisode(content);
+    if (!summary) {
+      res.json({ ok: false, error: '기록의 샘이 잠시 붐벼 다시 적지 못했습니다.' });
+      return;
+    }
+    await setTurnSummary(id, summary);
+    res.json({ ok: true, summary });
+  } catch (e) {
+    res.json({ ok: false, error: e?.message || String(e) });
   }
 });
 

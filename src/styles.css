@@ -535,7 +535,23 @@ em, i { font-style: normal; }
   line-height: 1.85;
   white-space: pre-wrap;
 }
-.chronicle-view-foot { display: flex; justify-content: flex-end; margin-top: 22px; }
+.chronicle-view-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 22px; }
+.chronicle-redo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.chronicle-redo:hover { color: var(--text); background: var(--hover); }
+.chronicle-redo:disabled { opacity: 0.6; cursor: default; }
+.chronicle-redo svg { flex-shrink: 0; }
 .chronicle-jump {
   display: inline-flex;
   align-items: center;

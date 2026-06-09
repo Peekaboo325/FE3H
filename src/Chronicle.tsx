@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, ArrowLeft, BookOpen } from 'lucide-react';
+import { X, ArrowLeft, BookOpen, RotateCcw } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
@@ -22,6 +22,30 @@ export default function Chronicle({
   const [ready, setReady] = useState(true);
   const [dbOk, setDbOk] = useState(true);
   const [selected, setSelected] = useState<Entry | null>(null);
+  const [redoing, setRedoing] = useState(false); // '다시 기록' 진행 중
+
+  // 그 화를 다시 요약해 갈무리한다(잘린 요약·갱신 대응).
+  const 다시기록 = async () => {
+    if (selected?.id == null) return;
+    setRedoing(true);
+    try {
+      const r = await fetch('/api/chronicle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ turn_id: selected.id }),
+      });
+      const d = await r.json();
+      if (d.ok && typeof d.summary === 'string') {
+        setSelected({ ...selected, summary: d.summary });
+        setList((prev) => prev.map((e) => (e.id === selected.id ? { ...e, summary: d.summary } : e)));
+      } else {
+        alert(d.error || '다시 적지 못했습니다.');
+      }
+    } catch {
+      alert('다시 적지 못했습니다.');
+    }
+    setRedoing(false);
+  };
 
   useEffect(() => {
     let alive = true;
@@ -81,12 +105,18 @@ export default function Chronicle({
               ) : (
                 <p className="dim small">아직 기록되지 않은 장입니다.</p>
               )}
-              {selected.id != null && onJump && (
+              {selected.id != null && (
                 <div className="chronicle-view-foot">
-                  <button className="chronicle-jump" onClick={() => onJump(selected.id as number)}>
-                    <BookOpen size={15} />
-                    그 화로 가기
+                  <button className="chronicle-redo" onClick={다시기록} disabled={redoing}>
+                    <RotateCcw size={15} />
+                    {redoing ? '기록하는 중…' : '다시 기록'}
                   </button>
+                  {onJump && (
+                    <button className="chronicle-jump" onClick={() => onJump(selected.id as number)}>
+                      <BookOpen size={15} />
+                      그 화로 가기
+                    </button>
+                  )}
                 </div>
               )}
             </div>
