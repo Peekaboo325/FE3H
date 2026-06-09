@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, ArrowLeft, BookOpen, RotateCcw } from 'lucide-react';
+import { X, ArrowLeft } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
@@ -108,13 +108,11 @@ export default function Chronicle({
               {selected.id != null && (
                 <div className="chronicle-view-foot">
                   <button className="chronicle-redo" onClick={다시기록} disabled={redoing}>
-                    <RotateCcw size={15} />
                     {redoing ? '기록하는 중…' : '다시 기록'}
                   </button>
                   {onJump && (
                     <button className="chronicle-jump" onClick={() => onJump(selected.id as number)}>
-                      <BookOpen size={15} />
-                      그 화로 가기
+                      이동
                     </button>
                   )}
                 </div>
