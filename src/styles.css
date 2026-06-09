@@ -1894,7 +1894,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   min-width: 0;
   padding: 0;
   border: 1px solid #6a4a44;
-  border-radius: 8px;
+  border-radius: 999px; /* 둥근 사각 → 알약(원형). 아이콘 버튼 스타일은 그대로 */
   background: var(--surface-2);
   color: var(--danger);
   cursor: pointer;
