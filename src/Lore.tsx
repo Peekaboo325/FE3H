@@ -21,7 +21,6 @@ import IconButton from './IconButton';
 import Spinner from './Spinner';
 import Dropdown from './Dropdown';
 import Markdown from './Markdown';
-import Ornament from './Ornament';
 import {
   DndContext,
   closestCenter,
@@ -664,12 +663,7 @@ export default function LorePanel({
                       {viewing.sections?.length ? (
                         viewing.sections.map((s, i) => (
                           <section key={i} className="lore-doc-sec">
-                            {s.subtitle && (
-                              <h3 className="lore-doc-subtitle">
-                                <Ornament className="lore-ornament" size={15} />
-                                {s.subtitle}
-                              </h3>
-                            )}
+                            {s.subtitle && <h3 className="lore-doc-subtitle">{s.subtitle}</h3>}
                             {s.content?.trim() && <Markdown text={s.content} />}
                           </section>
                         ))

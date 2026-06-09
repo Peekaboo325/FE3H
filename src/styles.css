@@ -1023,7 +1023,6 @@ em, i { font-style: normal; }
   font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: 0.01em;
   margin: 0 0 14px;
 }
-.lore-ornament { flex-shrink: 0; color: var(--accent); display: block; }
 /* 문헌 불릿은 전역 `.md-list`(금빛 마름모)를 그대로 따른다 — 별도 override 없음 */
 /* 우측 빈 칸 안내(데스크탑) */
 .lore-prompt {
@@ -1493,11 +1492,24 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   letter-spacing: 0.04em;
   font-weight: 700;
   padding-bottom: 9px;
-  border-bottom: 1px solid var(--border);
   margin-bottom: 13px;
+  /* 평평한 회색 구분선 → 금빛 장식선(좌→우 페이드) */
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, transparent), transparent) 1;
 }
-/* 글 섹션 제목(성향·전법·비고·인연) 앞 나침반 문양 — currentColor(=금빛)로 */
-.view-ornament { flex-shrink: 0; display: block; }
+/* 모든 섹션 제목(신원·용모·능력·평판·성향·전법·비고·인연 + 견문록 소주제) 앞 나침반 문양.
+   공용 SVG를 mask로 찍고 currentColor(=금빛)로 칠한다 → 한 곳에서 전부 적용(보고서·편집 포함). */
+.view-label::before,
+.info-card-title::before,
+.lore-doc-subtitle::before {
+  content: '';
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+  background-color: currentColor;
+  -webkit-mask: url('/assets/ornament.svg') center / contain no-repeat;
+  mask: url('/assets/ornament.svg') center / contain no-repeat;
+}
 .view-text { font-size: 14px; color: var(--text); line-height: 1.75; }
 
 /* 마크다운(성향·전법·비고) */
@@ -1535,13 +1547,17 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   padding: 14px 16px;
 }
 .info-card-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: 14px;
   color: var(--accent);
   letter-spacing: 0.04em;
   font-weight: 700;
   padding-bottom: 9px;
-  border-bottom: 1px solid var(--border);
   margin-bottom: 12px;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, transparent), transparent) 1;
 }
 .info-row { display: flex; gap: 14px; padding: 6px 0; font-size: 14px; }
 .info-row-label { flex: 0 0 56px; color: var(--text-dim); }
