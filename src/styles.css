@@ -944,11 +944,13 @@ em, i { font-style: normal; }
 }
 .lore-side-head {
   display: flex; align-items: center; gap: 6px;
-  padding: 12px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  padding: 12px 14px 6px; flex-shrink: 0;
 }
-.lore-side-title {
-  flex: 1; min-width: 0; margin: 0; font-size: 15px; font-weight: 700; color: var(--text);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+/* 영역명 = 헤더에서 내려와 목록 위 가운데 정렬 */
+.lore-area-title {
+  flex-shrink: 0; margin: 0; padding: 2px 14px 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: var(--text);
 }
 .lore-vols { flex: 1; overflow-y: auto; min-height: 0; padding: 6px 6px 84px; }
 .lore-vol-list { list-style: none; margin: 0; padding: 0; }
