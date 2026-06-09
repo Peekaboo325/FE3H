@@ -76,11 +76,6 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
             <Spinner />
           ) : (
             <>
-              <p className="guidance-note">
-                여기 적어 두신 지침은 모든 이야기의 본문을 풀어낼 때 함께 얹힙니다. 박제된 규약에
-                더해, 기록자께서 바라시는 결을 일러두십시오. 보기: 수치(키·나이)는 본문에 드러내지
-                않기, 전투는 짧고 건조하게.
-              </p>
               <textarea
                 className="guidance-area"
                 value={text}

@@ -506,7 +506,6 @@ em, i { font-style: normal; }
 .chronicle-summary { font-size: 13px; color: var(--text-dim); line-height: 1.75; white-space: pre-wrap; }
 
 /* 기록 지침 — 전역 유저 커스텀 프롬프트 편집 패널 */
-.guidance-note { font-size: 13px; color: var(--text-dim); line-height: 1.7; margin: 4px 0 12px; }
 .guidance-area {
   width: 100%;
   min-height: 44vh;
