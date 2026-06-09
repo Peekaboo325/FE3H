@@ -458,14 +458,14 @@ em, i { font-style: normal; }
   padding: 20px 22px 26px;
   box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
-.modal-head { display: flex; justify-content: space-between; align-items: center; }
-.modal-head h2 { margin: 0; font-size: 20px; letter-spacing: normal; }
-/* 인물 목록 헤더 — 인물 수·작성/반입을 한 줄로, 아래 구분선 */
-.modal--list .modal-head {
+/* 모달 헤더 표준 — 제목(좌)+X(우), 아래 구분선. 모든 모달 공통(연대 문헌·기록 지침·천각의 박동·반입·목록형). */
+.modal-head {
+  display: flex; justify-content: space-between; align-items: center;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 16px;
 }
+.modal-head h2 { margin: 0; font-size: 20px; letter-spacing: normal; }
 .head-count {
   margin-left: 10px;
   font-size: 13px;
