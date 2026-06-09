@@ -588,7 +588,6 @@ em, i { font-style: normal; }
 .guidance-area {
   width: 100%;
   min-height: 44vh;
-  margin-top: 16px; /* 머리글과 글칸 사이 숨통 — 설명문 없이도 붙지 않게 */
   box-sizing: border-box;
   padding: 12px 14px;
   border: 1px solid var(--border);
@@ -938,7 +937,7 @@ em, i { font-style: normal; }
   padding: 12px 14px; flex-shrink: 0;
   border-bottom: 1px solid var(--border);
 }
-.lore-vols { flex: 1; overflow-y: auto; min-height: 0; padding: 6px 6px 84px; }
+.lore-vols { flex: 1; overflow-y: auto; min-height: 0; padding: 16px 6px 84px; } /* 상단 16 = 입구/다른 모달과 콘텐츠 시작 높이 일치 */
 .lore-vol-list { list-style: none; margin: 0; padding: 0; }
 .lore-vol {
   display: flex; align-items: center; gap: 4px;
