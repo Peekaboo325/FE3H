@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
 import { UI } from './strings';
-import IconButton from './IconButton';
+import Modal from './Modal';
 import Button from './Button';
 import Spinner from './Spinner';
 
@@ -61,15 +60,7 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="modal-bg" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-head">
-          <h2>기록 지침</h2>
-          <IconButton label={UI.close} onClick={onClose}>
-            <X size={17} />
-          </IconButton>
-        </div>
-
+    <Modal onClose={onClose} title="기록 지침">
         {!dbOk && <p className="warn">기록의 샘이 닿지 않아 지침을 펼칠 수 없습니다.</p>}
 
         <div className="modal-body">
@@ -91,7 +82,6 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
             </>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

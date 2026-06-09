@@ -3,6 +3,7 @@ import { Check, X, Pencil, Copy, Trash2, MoreHorizontal } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
 import { confirmAsk, alertAsk } from './dialog';
 import { UI } from './strings';
+import Modal from './Modal';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
 
@@ -146,15 +147,7 @@ export default function Stories({
   }
 
   return (
-    <div className="modal-bg" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-head">
-          <h2>천각의 박동</h2>
-          <IconButton label={UI.close} onClick={onClose}>
-            <X size={17} />
-          </IconButton>
-        </div>
-
+    <Modal onClose={onClose} title="천각의 박동">
         {!dbReady && (
           <p className="warn">기록의 샘이 닿지 않아 운명의 장을 기록하거나 갈무리할 수 없습니다.</p>
         )}
@@ -261,7 +254,6 @@ export default function Stories({
             </ul>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

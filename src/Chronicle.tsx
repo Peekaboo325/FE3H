@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { X, ArrowLeft } from 'lucide-react';
 import { UI } from './strings';
-import IconButton from './IconButton';
+import Modal from './Modal';
 import Button from './Button';
 import Spinner from './Spinner';
 
@@ -70,24 +69,12 @@ export default function Chronicle({
   }, [storyId]);
 
   return (
-    <div className="modal-bg" onClick={onClose}>
-      <div className="modal modal--chronicle" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-head">
-          {selected ? (
-            <div className="modal-head-l">
-              <IconButton label="뒤로" onClick={() => setSelected(null)}>
-                <ArrowLeft size={17} />
-              </IconButton>
-              <h2>연대 문헌</h2>
-            </div>
-          ) : (
-            <h2>연대 문헌</h2>
-          )}
-          <IconButton label={UI.close} onClick={onClose}>
-            <X size={17} />
-          </IconButton>
-        </div>
-
+    <Modal
+      onClose={onClose}
+      className="modal--chronicle"
+      title="연대 문헌"
+      onBack={selected ? () => setSelected(null) : undefined}
+    >
         {!dbOk && <p className="warn">기록의 샘이 닿지 않아 연대 문헌을 펼칠 수 없습니다.</p>}
         {dbOk && !ready && (
           <p className="warn">
@@ -134,7 +121,6 @@ export default function Chronicle({
             </ul>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

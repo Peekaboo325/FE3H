@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import Dropdown from './Dropdown';
-import { Check, X } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { UI } from './strings';
-import IconButton from './IconButton';
+import Modal from './Modal';
 import ListRow from './ListRow';
 import Spinner from './Spinner';
 
@@ -101,15 +101,7 @@ export default function ImportDialog<T extends { id?: number }>({
   }
 
   return (
-    <div className="modal-bg" onClick={onClose}>
-      <div className="modal modal--import" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-head">
-          <h2>{title}</h2>
-          <IconButton label={UI.close} onClick={onClose}>
-            <X size={17} />
-          </IconButton>
-        </div>
-
+    <Modal onClose={onClose} className="modal--import" title={title}>
         <div className="modal-body import-body">
           <Dropdown
             value={sourceId != null ? String(sourceId) : ''}
@@ -155,7 +147,6 @@ export default function ImportDialog<T extends { id?: number }>({
             </>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
