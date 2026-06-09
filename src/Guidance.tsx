@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
+import Button from './Button';
 import Spinner from './Spinner';
 
 // 기록 지침 — 기록자(유저)가 직접 적어 모든 이야기의 본문에 함께 얹는 전역 집필 지침.
@@ -83,9 +84,9 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
               />
               <div className="guidance-foot">
                 {saved && <span className="guidance-saved">기록되었습니다.</span>}
-                <button className="guidance-save" onClick={기록} disabled={saving}>
-                  {saving ? `${UI.save}하는 중…` : UI.save}
-                </button>
+                <Button variant="primary" loading={saving} onClick={기록}>
+                  {UI.save}
+                </Button>
               </div>
             </>
           )}

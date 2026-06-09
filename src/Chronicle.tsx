@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, ArrowLeft } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
+import Button from './Button';
 import Spinner from './Spinner';
 
 type Entry = { id: number | null; ep: number; title: string; summary: string | null };
@@ -107,14 +108,10 @@ export default function Chronicle({
               )}
               {selected.id != null && (
                 <div className="chronicle-view-foot">
-                  <button className="chronicle-redo" onClick={다시기록} disabled={redoing}>
-                    {redoing ? <span className="spinner" /> : UI.regen}
-                  </button>
-                  {onJump && (
-                    <button className="chronicle-jump" onClick={() => onJump(selected.id as number)}>
-                      이동
-                    </button>
-                  )}
+                  <Button loading={redoing} onClick={다시기록}>
+                    {UI.regen}
+                  </Button>
+                  {onJump && <Button onClick={() => onJump(selected.id as number)}>이동</Button>}
                 </div>
               )}
             </div>
