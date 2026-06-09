@@ -270,7 +270,7 @@ body::before {
   100% { opacity: 0; transform: translate(-50%, -8px); }
 }
 
-.turn { margin: 18px 0; }
+.turn { margin: 18px 0; scroll-margin-top: 18px; } /* scroll-margin: '그 화로 가기' 점프 시 헤더에 안 가리게 */
 /* 프롬프트(내 지시) = 조용한 칩. 칩은 우측에 두되, 안의 글자는 좌측 정렬.
    아래 여백을 넉넉히 — 다음 화 머리글이 이 칸에 붙어 보이지 않게 떼어 놓는다. */
 .turn.user { text-align: right; margin-bottom: 60px; }
@@ -501,9 +501,56 @@ em, i { font-style: normal; }
 
 /* 연대 문헌 — 화별 줄거리 목록(읽기 전용) */
 .chronicle-list { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-direction: column; gap: 14px; }
-.chronicle-row { padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
+.chronicle-row {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.chronicle-row:hover { border-color: var(--accent); background: var(--hover); }
 .chronicle-title { font-size: 15px; color: var(--text); margin-bottom: 6px; letter-spacing: 0.02em; }
 .chronicle-summary { font-size: 13px; color: var(--text-dim); line-height: 1.75; white-space: pre-wrap; }
+/* 목록에선 미리보기로 2줄까지만(전문은 상세 뷰에서) */
+.chronicle-summary.clamp2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+}
+
+/* 연대 문헌 상세 뷰 — 한 화의 제목+요약 전문, 그리고 '그 화로 가기' */
+.modal-head-l { display: flex; align-items: center; gap: 8px; }
+.chronicle-view { margin-top: 14px; }
+.chronicle-view-title { font-size: 18px; color: var(--text); margin: 0 0 14px; letter-spacing: 0.02em; }
+.chronicle-view-body {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.85;
+  white-space: pre-wrap;
+}
+.chronicle-view-foot { display: flex; justify-content: flex-end; margin-top: 22px; }
+.chronicle-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.chronicle-jump:hover { border-color: var(--accent); background: var(--hover); }
+.chronicle-jump svg { flex-shrink: 0; }
 
 /* 기록 지침 — 전역 유저 커스텀 프롬프트 편집 패널 */
 .guidance-area {

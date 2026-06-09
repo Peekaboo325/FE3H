@@ -60,6 +60,7 @@ export default function App() {
     window.setTimeout(() => setRecallToast((cur) => (cur?.id === id ? null : cur)), 3200);
   }
   const [visibleCount, setVisibleCount] = useState(WINDOW); // 지금 펼쳐 둔 칸 수
+  const [pendingJump, setPendingJump] = useState<number | null>(null); // 연대 문헌에서 '그 화로 가기'
   const [mode, setMode] = useState<'read' | 'write'>(
     () => (localStorage.getItem('fe3h.mode') === 'read' ? 'read' : 'write'),
   );
@@ -145,6 +146,25 @@ export default function App() {
   useEffect(() => {
     끝.current?.scrollIntoView({ behavior: 'smooth' });
   }, [turns, busy]);
+
+  // 연대 문헌 '그 화로 가기' — 창을 넓혀 그 화가 그려지면 그곳으로 스크롤.
+  useEffect(() => {
+    if (pendingJump == null) return;
+    const el = document.querySelector(`[data-turn-id="${pendingJump}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setPendingJump(null);
+    }
+  }, [pendingJump, visibleCount, turns]);
+
+  // 연대 문헌에서 지목한 화를 본문에서 펼쳐 보여준다(필요하면 창을 넓힘).
+  function jumpToTurn(turnId: number) {
+    const idx = turns.findIndex((t) => t.id === turnId);
+    if (idx < 0) return;
+    setVisibleCount((v) => Math.max(v, turns.length - idx)); // 그 화가 보이는 창 안에 들도록
+    setShowChronicle(false);
+    setPendingJump(turnId); // 위 effect가 렌더 후 스크롤
+  }
 
   // 편집박스 높이를 내용 분량에 맞춰 자동 조절(짧으면 작게, 길면 커지되 70vh 상한).
   useEffect(() => {
@@ -413,7 +433,9 @@ export default function App() {
       )}
       {showChars && <Characters storyId={storyId} onClose={() => setShowChars(false)} />}
       {showLore && <LorePanel storyId={storyId} onClose={() => setShowLore(false)} />}
-      {showChronicle && <Chronicle storyId={storyId} onClose={() => setShowChronicle(false)} />}
+      {showChronicle && (
+        <Chronicle storyId={storyId} onClose={() => setShowChronicle(false)} onJump={jumpToTurn} />
+      )}
       {showGuidance && <Guidance onClose={() => setShowGuidance(false)} />}
 
       <main className="scroll">
@@ -435,7 +457,11 @@ export default function App() {
           if (mode === 'read' && t.role === 'user') return null; // 읽기 모드: 프롬프트 숨김
           const editing = editingTurn != null && t.id === editingTurn;
           return (
-            <div key={t.id ?? 'tmp-' + i} className={t.role === 'user' ? 'turn user' : 'turn story'}>
+            <div
+              key={t.id ?? 'tmp-' + i}
+              data-turn-id={t.id ?? undefined}
+              className={t.role === 'user' ? 'turn user' : 'turn story'}
+            >
               {editing ? (
                 <div className="turn-edit">
                   <textarea
