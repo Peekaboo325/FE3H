@@ -1023,10 +1023,7 @@ em, i { font-style: normal; }
   font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: 0.01em;
   margin: 0 0 14px;
 }
-.lore-fleur {
-  flex-shrink: 0; color: var(--accent); font-size: 17px; line-height: 1;
-  font-variant-emoji: text; /* 컬러 이모지 아닌 텍스트 문양으로 */
-}
+.lore-ornament { flex-shrink: 0; color: var(--accent); display: block; }
 /* 문헌 불릿 = 금빛 마름모(개조식 '덤프' 느낌 완화 · 문헌 존에만) */
 .lore-doc-body .md-list { margin: 0 0 14px; }
 .lore-doc-body .md-list li { padding-left: 20px; margin-bottom: 9px; }

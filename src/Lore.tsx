@@ -21,6 +21,7 @@ import IconButton from './IconButton';
 import Spinner from './Spinner';
 import Dropdown from './Dropdown';
 import Markdown from './Markdown';
+import Ornament from './Ornament';
 import {
   DndContext,
   closestCenter,
@@ -665,9 +666,7 @@ export default function LorePanel({
                           <section key={i} className="lore-doc-sec">
                             {s.subtitle && (
                               <h3 className="lore-doc-subtitle">
-                                <span className="lore-fleur" aria-hidden>
-                                  {'⚜︎'}
-                                </span>
+                                <Ornament className="lore-ornament" size={15} />
                                 {s.subtitle}
                               </h3>
                             )}
