@@ -427,6 +427,7 @@ export default function Characters({
   const [cropping, setCropping] = useState(false); // 초상에서 얼굴 따기
   const [tab, setTab] = useState<string>('약력'); // 인물 뷰 탭
   const [bondsOpen, setBondsOpen] = useState(false); // 인연 카드 펼침/접힘(기본 접힘)
+  const [editBondsOpen, setEditBondsOpen] = useState(false); // 편집 모드 인연도 기본 접힘
   const [reporting, setReporting] = useState(false); // 보고서 발급 중
   const [reportErr, setReportErr] = useState<string | null>(null);
   const [reportToast, setReportToast] = useState<string | null>(null); // 발급/갱신 알림
@@ -435,6 +436,7 @@ export default function Characters({
   useEffect(() => {
     setTab('약력');
     setBondsOpen(false);
+    setEditBondsOpen(false);
     setReportErr(null);
     setReportToast(null);
   }, [viewing?.id]); // 다른 인물(id 변경) 열 때만 약력·인연 접힘 초기화
@@ -1086,7 +1088,12 @@ export default function Characters({
               </div>
 
               <div className="view-section">
-                <div className="view-label">인연</div>
+                <button className="bonds-head" onClick={() => setEditBondsOpen((o) => !o)}>
+                  <span className="view-label">인연</span>
+                  <ChevronDown size={18} className={'bonds-chev' + (editBondsOpen ? ' open' : '')} />
+                </button>
+                <div className={'bonds-wrap' + (editBondsOpen ? ' open' : '')}>
+                  <div className="bonds-inner">
                 {(editing.bonds || []).map((b, i) => (
                   <div className="bond-edit" key={i}>
                     <div className="bond-edit-top">
@@ -1135,10 +1142,12 @@ export default function Characters({
                     </label>
                   </div>
                 ))}
-                <div className="add-foot">
-                  <IconButton label="인연 추가" onClick={addBond}>
-                    <Plus size={17} />
-                  </IconButton>
+                    <div className="add-foot">
+                      <IconButton label="인연 추가" onClick={addBond}>
+                        <Plus size={17} />
+                      </IconButton>
+                    </div>
+                  </div>
                 </div>
               </div>
 
