@@ -302,11 +302,12 @@ em, i { font-style: normal; }
 /* ep-no가 숨겨져 머리글이 첫 자식이 되는 경우에도 위 여백을 지킨다(first-child 영점화 방어) */
 .turn.story > h1:first-child,
 .turn.story > h2:first-child { margin-top: 40px; }
-.turn.story h3 { text-align: center; font-size: 13px; font-weight: 400; color: var(--text-dim); letter-spacing: 0.05em; margin: 0 0 22px; }
-/* 화 머리글 바로 뒤의 장면 구분(⁂)은 군더더기 — 첫 본문이 머리글에 바로 이어지게 숨긴다.
-   (장면 구분은 본문 중간 전환용. 제목 직후엔 거리만 벌려 머리글이 위 칸에 붙어 보이게 했다.) */
+.turn.story h3 { text-align: center; font-size: 13px; font-weight: 400; color: var(--text-dim); letter-spacing: 0.05em; margin: 0 0 14px; }
+/* 화 머리글 바로 뒤의 장면 구분(⁂)은 여백을 줄여 머리글·부제와 한 덩어리(화 머리 장식)로 뭉치게 한다.
+   — ⁂는 그대로 살리되, 제목 직후 큰 간격이 머리글을 위 칸에 붙어 보이게 하던 것을 푼다.
+   (본문 중간 전환의 ⁂는 아래 .scene-break 기본 22px 그대로.) */
 .turn.story h2 + .scene-break,
-.turn.story h3 + .scene-break { display: none; }
+.turn.story h3 + .scene-break { margin: 14px 0; }
 /* 화 번호 표식 — '3화 참고' 앵커링의 기준점(은은하게) */
 .ep-no { font-size: 11px; color: var(--text-faint); letter-spacing: 0.1em; margin-bottom: 6px; }
 /* 본문 속 화 번호는 유저에게 숨긴다 — 답변 제목이 이미 보이므로 중복 노이즈.
