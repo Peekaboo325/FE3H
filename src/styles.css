@@ -539,7 +539,7 @@ em, i { font-style: normal; }
   line-height: 1.85;
   white-space: pre-wrap;
 }
-.chronicle-view-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: auto; padding-top: 22px; }
+.chronicle-view-foot { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: auto; padding-top: 22px; }
 
 /* ── 공용 동작 버튼(.btn = src/Button.tsx) — 버튼 규칙을 한 곳에 ──────────────── */
 .btn {
@@ -1108,6 +1108,8 @@ em, i { font-style: normal; }
 .row-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .icon-btn.danger { color: var(--danger); }
 .icon-btn.danger:hover { color: var(--danger); border-color: var(--danger); }
+/* 투명 슬롯 — 자리만 차지(제목 위치 고정용). 안 보이고 클릭·포커스 안 됨 */
+.icon-btn.hidden-slot { visibility: hidden; pointer-events: none; }
 
 /* ⋯ 더보기 메뉴 — 행마다 버튼 하나로 접고, 누르면 펼친다 */
 .row-menu-wrap { position: relative; }
