@@ -424,6 +424,7 @@ em, i { font-style: normal; }
   align-items: center;
   justify-content: center;
   height: 44px; /* 입력칸 1줄 높이와 동일 */
+  min-width: 76px; /* '전개'↔스피너 전환에도 폭 고정(버튼 크기 안 바뀌게) */
   padding: 0 18px;
   border: none;
   border-radius: 8px;
@@ -546,8 +547,8 @@ em, i { font-style: normal; }
   border-radius: 999px;
   background: var(--surface-2);
   color: var(--text);
-  font: inherit;
   font-size: 14px;
+  line-height: 1.2; /* font:inherit 제거 — 본문 line-height(1.8)를 안 끌어와 통통함 해소(다른 버튼과 동일) */
   cursor: pointer;
 }
 .chronicle-redo:hover,

@@ -566,7 +566,7 @@ export default function App() {
               disabled={busy}
             />
             <button onClick={보내기} disabled={busy || !input.trim()}>
-              {busy ? '집필 중…' : UI.submit}
+              {busy ? <span className="spinner" /> : UI.submit}
             </button>
           </div>
         </footer>
