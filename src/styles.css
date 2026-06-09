@@ -949,12 +949,6 @@ em, i { font-style: normal; }
   padding: 12px 14px; flex-shrink: 0;
   border-bottom: 1px solid var(--border);
 }
-/* 영역명 = 헤더 구분선 아래, 목록 위 가운데 정렬(자체 구분선 없음) */
-.lore-area-title {
-  flex-shrink: 0; margin: 0; padding: 12px 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 700; color: var(--text);
-}
 .lore-vols { flex: 1; overflow-y: auto; min-height: 0; padding: 6px 6px 84px; }
 .lore-vol-list { list-style: none; margin: 0; padding: 0; }
 .lore-vol {

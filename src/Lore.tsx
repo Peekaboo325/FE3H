@@ -462,10 +462,6 @@ export default function LorePanel({
                   <ArrowLeft size={18} />
                 </IconButton>
               </div>
-              <h3 className="lore-area-title">
-                {topic === ORPHAN ? '미분류' : topic}
-                {inTopic.length > 0 && <span className="head-count">{inTopic.length}</span>}
-              </h3>
               <div className="lore-vols">
                 {loading ? (
                   <Spinner />
