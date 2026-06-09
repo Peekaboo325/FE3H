@@ -509,6 +509,7 @@ em, i { font-style: normal; }
 .guidance-area {
   width: 100%;
   min-height: 44vh;
+  margin-top: 16px; /* 머리글과 글칸 사이 숨통 — 설명문 없이도 붙지 않게 */
   box-sizing: border-box;
   padding: 12px 14px;
   border: 1px solid var(--border);
@@ -1011,7 +1012,7 @@ em, i { font-style: normal; }
   right: 0;
   top: calc(100% + 6px);
   z-index: 5;
-  min-width: 132px;
+  min-width: 82px;
   padding: 5px;
   display: flex;
   flex-direction: column;
