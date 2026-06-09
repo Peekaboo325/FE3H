@@ -12,14 +12,12 @@ export default function Modal({
   onClose,
   title,
   onBack,
-  reserveBack = false,
   className,
   children,
 }: {
   onClose: () => void;
   title?: ReactNode; // 있으면 표준 헤더를 그린다(없으면 헤더 없음)
-  onBack?: () => void; // 있으면 헤더에 ← (목록/뒤로)
-  reserveBack?: boolean; // 뒤로가기가 '있다 없다' 하는 모달용 — 없을 때도 ← 자리를 비워둬 제목이 안 밀림
+  onBack?: () => void; // 있으면 헤더 좌측에 ← (목록/뒤로). 제목은 가운데라 ←가 있든 없든 안 밀림.
   className?: string; // .modal 변형
   children: ReactNode;
 }) {
@@ -28,20 +26,19 @@ export default function Modal({
       <div className={'modal' + (className ? ' ' + className : '')} onClick={(e) => e.stopPropagation()}>
         {title != null && (
           <div className="modal-head">
-            {onBack || reserveBack ? (
-              <div className="modal-head-l">
-                {/* onBack 없으면 같은 크기의 투명 슬롯 → 제목 위치 고정(목록↔상세 안 밀림) */}
-                <IconButton label="뒤로" onClick={onBack} className={onBack ? undefined : 'hidden-slot'}>
+            <div className="head-side">
+              {onBack && (
+                <IconButton label="뒤로" onClick={onBack}>
                   <ArrowLeft size={17} />
                 </IconButton>
-                <h2>{title}</h2>
-              </div>
-            ) : (
-              <h2>{title}</h2>
-            )}
-            <IconButton label={UI.close} onClick={onClose}>
-              <X size={17} />
-            </IconButton>
+              )}
+            </div>
+            <h2>{title}</h2>
+            <div className="head-actions">
+              <IconButton label={UI.close} onClick={onClose}>
+                <X size={17} />
+              </IconButton>
+            </div>
           </div>
         )}
         {children}

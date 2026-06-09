@@ -649,10 +649,8 @@ export default function Characters({
         {!viewMode && !editing && (
           <>
             <div className="modal-head">
-              <h2>
-                인물 명부
-                {chars.length > 0 && <span className="head-count">{chars.length}</span>}
-              </h2>
+              <div className="head-side" />
+              <h2>인물 명부</h2>
               <div className="head-actions">
                 {chars.length > 0 && (
                   <>

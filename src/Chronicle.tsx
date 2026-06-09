@@ -73,7 +73,6 @@ export default function Chronicle({
       onClose={onClose}
       className="modal--chronicle"
       title="연대 문헌"
-      reserveBack
       onBack={selected ? () => setSelected(null) : undefined}
     >
         {!dbOk && <p className="warn">기록의 샘이 닿지 않아 연대 문헌을 펼칠 수 없습니다.</p>}
