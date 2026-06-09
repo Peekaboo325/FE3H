@@ -70,7 +70,7 @@ export default function Chronicle({
 
   return (
     <div className="modal-bg" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal--chronicle" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           {selected ? (
             <div className="modal-head-l">
