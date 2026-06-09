@@ -4,6 +4,7 @@ import { alertAsk } from './dialog';
 import { useCharacters, type Character, type Bond, type CharReport } from './useCharacters';
 import { UI } from './strings';
 import IconButton from './IconButton';
+import Button from './Button';
 import Spinner from './Spinner';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
@@ -849,13 +850,13 @@ export default function Characters({
             ) : chars.length === 0 ? (
               <div className="empty-state">
                 <p className="empty-state-msg">아직 명부에 오른 이가 없습니다.</p>
-                <button className="btn-accent" onClick={() => setEditing(빈인물())}>
+                <Button variant="primary" onClick={() => setEditing(빈인물())}>
                   첫 인물 등록
-                </button>
+                </Button>
                 {storyId != null && (
-                  <button className="btn-ghost" onClick={() => setImporting(true)}>
+                  <Button variant="secondary" onClick={() => setImporting(true)}>
                     다른 장에서 {UI.import}
-                  </button>
+                  </Button>
                 )}
               </div>
             ) : (

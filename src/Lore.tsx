@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
+import Button from './Button';
 import Spinner from './Spinner';
 import Dropdown from './Dropdown';
 import Markdown from './Markdown';
@@ -469,9 +470,9 @@ export default function LorePanel({
                   <div className="empty-state">
                     <p className="empty-state-msg">기록된 문헌이 없습니다.</p>
                     {topic !== ORPHAN && (
-                      <button className="btn-accent" onClick={() => openNew(topic!)}>
+                      <Button variant="primary" onClick={() => openNew(topic!)}>
                         첫 문헌 기록
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ) : (
