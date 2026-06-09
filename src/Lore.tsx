@@ -13,6 +13,7 @@ import {
   Bookmark,
   GripVertical,
   Plus,
+  Feather,
   BookOpen,
 } from 'lucide-react';
 import { UI } from './strings';
@@ -508,7 +509,7 @@ export default function LorePanel({
               {/* 작성 = 하단 원형 플로팅 */}
               {topic !== ORPHAN && inTopic.length > 0 && (
                 <button className="lore-fab" onClick={() => openNew(topic!)} title="작성" aria-label="작성">
-                  <Plus size={22} />
+                  <Feather size={18} />
                 </button>
               )}
             </aside>

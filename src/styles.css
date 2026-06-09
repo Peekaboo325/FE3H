@@ -909,18 +909,27 @@ em, i { font-style: normal; }
   background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, var(--surface)), var(--surface) 40%);
 }
 /* 작성 = 목록 하단 원형 플로팅(FAB) */
+/* 작성 FAB = '기록자의 인장' — 어두운 양피지 원반 + 금빛 이중 테두리 + 깃펜, hover 시 은은한 금광 */
 .lore-fab {
   position: absolute;
   right: 16px;
   bottom: max(16px, env(safe-area-inset-bottom));
-  width: 52px; height: 52px; border-radius: 999px;
+  width: 46px; height: 46px; border-radius: 999px;
   display: inline-flex; align-items: center; justify-content: center;
-  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
-  background: var(--accent); color: var(--accent-ink);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  color: var(--accent);
+  background: radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--accent) 16%, var(--surface)), var(--surface) 78%);
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
   cursor: pointer; z-index: 5;
+  transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
 }
-.lore-fab:hover { filter: brightness(1.06); }
+.lore-fab:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 9px 22px rgba(0, 0, 0, 0.5),
+    0 0 14px color-mix(in srgb, var(--accent) 30%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+}
 .lore-side-head {
   display: flex; align-items: center; gap: 6px;
   padding: 12px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
