@@ -47,8 +47,6 @@ const TOPICS = [
   { title: '문장 · 유산', sub: '피에 깃든 문장과 영웅의 유산', img: '/assets/illust/lore-crest.webp' },
 ];
 const TOPIC_TITLES = TOPICS.map((t) => t.title);
-// 영역 일러스트를 그 영역 문헌의 '엠블럼'으로 재활용(고유 그림은 불가 → 영역 공용).
-const emblemOf = (cat?: string) => TOPICS.find((t) => t.title === cat)?.img;
 const ORPHAN = ' 미분류'; // 다섯 영역과 안 맞는 옛 분류를 모으는 자리(센티넬)
 
 const 빈설정 = (category = ''): Lore => ({ title: '', category, sections: [], body: '', is_active: true });
@@ -644,16 +642,9 @@ export default function LorePanel({
                           </button>
                         </div>
                       </div>
-                      <div className="lore-doc-hero">
-                        {emblemOf(viewing.category) && (
-                          <div className="lore-doc-emblem">
-                            <img src={emblemOf(viewing.category)} alt="" />
-                          </div>
-                        )}
-                        <div className="lore-doc-headtext">
-                          <h1 className="lore-doc-title">{viewing.title}</h1>
-                          {tocOf(viewing) && <p className="lore-doc-toc">{tocOf(viewing)}</p>}
-                        </div>
+                      <div className="lore-doc-headtext">
+                        <h1 className="lore-doc-title">{viewing.title}</h1>
+                        {tocOf(viewing) && <p className="lore-doc-toc">{tocOf(viewing)}</p>}
                       </div>
                       <div className="lore-doc-rule">
                         <span className="lore-doc-rule-orn" />

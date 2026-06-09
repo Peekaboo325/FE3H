@@ -589,13 +589,18 @@ em, i { font-style: normal; }
 .guidance-save {
   min-width: 96px;
   padding: 8px 18px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--surface);
-  color: var(--text);
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--accent);
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--accent) 15%, var(--surface)), var(--surface) 82%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
   cursor: pointer;
 }
-.guidance-save:hover { background: var(--hover); }
+.guidance-save:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 24%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent);
+}
 .guidance-save:disabled { opacity: 0.6; cursor: default; }
 
 /* 앱 내부 디제틱 다이얼로그 (브라우저 alert/confirm 대체) — 모달 위에도 뜨도록 z-index 높임 */
@@ -988,17 +993,6 @@ em, i { font-style: normal; }
 .lore-doc-nav button:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
 .lore-doc-nav button:disabled { opacity: 0.25; cursor: default; }
 /* 표제부 = 엠블럼(영역 일러스트) + 제목/목차 */
-.lore-doc-hero { display: flex; align-items: center; gap: 20px; }
-.lore-doc-emblem {
-  position: relative; flex-shrink: 0; width: 86px; height: 108px; border-radius: 9px;
-  overflow: hidden; border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.35);
-}
-.lore-doc-emblem img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.lore-doc-emblem::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(20, 18, 28, 0.1), rgba(20, 18, 28, 0.55));
-}
 .lore-doc-headtext { min-width: 0; }
 .lore-doc-title { font-size: 27px; font-weight: 800; line-height: 1.22; margin: 0; color: var(--text); letter-spacing: -0.01em; }
 .lore-doc-toc { font-size: 12px; color: var(--text-dim); margin: 10px 0 0; line-height: 1.7; }
@@ -1862,22 +1856,29 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .link { border: none; background: none; color: var(--accent); font-size: 12px; cursor: pointer; }
 
 .editor-actions { display: flex; gap: 8px; margin-top: 6px; }
+/* 동작 버튼 = 알약형 인장 결(FAB·추가 버튼과 통일). 취소=차분, 기록=금빛 인장. */
 .editor-actions button {
   padding: 9px 18px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 999px;
   background: var(--surface-2);
   font-size: 14px;
   cursor: pointer;
 }
 .editor-actions .primary {
-  background: var(--accent);
-  color: var(--accent-ink);
-  border-color: var(--accent);
+  color: var(--accent);
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--accent) 15%, var(--surface)), var(--surface) 82%);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
   min-width: 88px; /* 로딩 스피너로 바뀌어도 크기 고정 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+.editor-actions .primary:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 24%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent);
 }
 /* 취소·기록(우측, 동일 너비) — 소각은 좌측 */
 .editor-actions-end { margin-left: auto; display: flex; gap: 8px; }
