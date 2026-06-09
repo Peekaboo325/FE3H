@@ -740,7 +740,14 @@ em, i { font-style: normal; }
   color: inherit;
   cursor: pointer;
 }
-.bonds-head .view-label { margin: 0; padding-bottom: 0; border-bottom: none; }
+.bonds-head .view-label { margin: 0; padding-bottom: 0; border: 0; }
+/* 인연이 펼쳐졌을 때만 다른 섹션처럼 전체폭 금빛 장식선 + 아래 여백 */
+.bonds-head.open {
+  padding-bottom: 9px;
+  margin-bottom: 13px;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, transparent), transparent) 1;
+}
 .bonds-chev { color: var(--text-dim); flex-shrink: 0; transition: transform 0.25s ease; }
 .bonds-chev.open { transform: rotate(180deg); }
 /* 접힘 애니메이션 (grid-rows 0fr↔1fr) */

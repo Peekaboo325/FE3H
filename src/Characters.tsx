@@ -782,7 +782,10 @@ export default function Characters({
                   {viewing.notes && <ViewSection label="비고" text={viewing.notes} />}
                   {(viewing.bonds || []).some((b) => b.name?.trim()) && (
                     <div className="view-section">
-                      <button className="bonds-head" onClick={() => setBondsOpen((o) => !o)}>
+                      <button
+                        className={'bonds-head' + (bondsOpen ? ' open' : '')}
+                        onClick={() => setBondsOpen((o) => !o)}
+                      >
                         <span className="view-label">인연</span>
                         <ChevronDown size={18} className={'bonds-chev' + (bondsOpen ? ' open' : '')} />
                       </button>
@@ -1088,7 +1091,10 @@ export default function Characters({
               </div>
 
               <div className="view-section">
-                <button className="bonds-head" onClick={() => setEditBondsOpen((o) => !o)}>
+                <button
+                  className={'bonds-head' + (editBondsOpen ? ' open' : '')}
+                  onClick={() => setEditBondsOpen((o) => !o)}
+                >
                   <span className="view-label">인연</span>
                   <ChevronDown size={18} className={'bonds-chev' + (editBondsOpen ? ' open' : '')} />
                 </button>
