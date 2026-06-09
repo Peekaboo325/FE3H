@@ -536,28 +536,21 @@ em, i { font-style: normal; }
   white-space: pre-wrap;
 }
 .chronicle-view-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 22px; }
-/* 연대 문헌 푸터 버튼(다시 기록·이동) = 기록 버튼과 동일한 금빛 인장 */
-.chronicle-redo,
+/* 다시 기록 = 보고서 재발급과 동일(원형 새로고침 아이콘 버튼, 회전은 .icon-btn.spinning) */
+.chronicle-view-foot .icon-btn { background: rgba(0, 0, 0, 0.18); }
+.chronicle-view-foot .icon-btn:hover { background: rgba(0, 0, 0, 0.3); }
+/* 이동 = 밋밋한 보조 버튼(인장 효과 없음) */
 .chronicle-jump {
-  min-width: 96px;
   padding: 9px 18px;
+  border: 1px solid var(--border);
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
-  color: var(--accent);
-  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--accent) 15%, var(--surface)), var(--surface) 82%);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
+  background: var(--surface-2);
+  color: var(--text);
   font: inherit;
   font-size: 14px;
-  text-align: center;
   cursor: pointer;
 }
-.chronicle-redo:hover,
-.chronicle-jump:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 24%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent);
-}
-.chronicle-redo:disabled { opacity: 0.6; cursor: default; }
+.chronicle-jump:hover { background: var(--hover); }
 
 /* 기록 지침 — 전역 유저 커스텀 프롬프트 편집 패널 */
 .guidance-area {
