@@ -1003,6 +1003,42 @@ em, i { font-style: normal; }
 .row-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .icon-btn.danger { color: var(--danger); }
 .icon-btn.danger:hover { color: var(--danger); border-color: var(--danger); }
+
+/* ⋯ 더보기 메뉴 — 행마다 버튼 하나로 접고, 누르면 펼친다 */
+.row-menu-wrap { position: relative; }
+.row-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 5;
+  min-width: 132px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+}
+.row-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 11px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.row-menu-item:hover { background: var(--hover); }
+.row-menu-item.danger { color: var(--danger); }
+.row-menu-item:disabled { opacity: 0.5; cursor: default; }
+.row-menu-item svg { flex-shrink: 0; }
 .thumb {
   width: 48px;
   height: 48px;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check, X, Pencil, Copy, Trash2 } from 'lucide-react';
+import { Check, X, Pencil, Copy, Trash2, MoreHorizontal } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
 import { confirmAsk, alertAsk } from './dialog';
 import { UI } from './strings';
@@ -24,6 +24,18 @@ export default function Stories({
   const [copyingId, setCopyingId] = useState<number | null>(null);
   const [renamingId, setRenamingId] = useState<number | null>(null); // 개칭 중인 장
   const [renameText, setRenameText] = useState('');
+  const [menuId, setMenuId] = useState<number | null>(null); // ⋯ 더보기 메뉴 펼친 장
+
+  // 메뉴 바깥을 누르면 닫는다(여는 클릭이 바로 닫지 않게 다음 틱부터 듣는다).
+  useEffect(() => {
+    if (menuId == null) return;
+    const close = () => setMenuId(null);
+    const id = window.setTimeout(() => document.addEventListener('click', close), 0);
+    return () => {
+      window.clearTimeout(id);
+      document.removeEventListener('click', close);
+    };
+  }, [menuId]);
 
   async function load() {
     setLoading(true);
@@ -196,19 +208,52 @@ export default function Stories({
                       </div>
                     </div>
                     <div className="row-actions">
-                      <IconButton label={UI.rename} onClick={() => 개칭시작(s)}>
-                        <Pencil size={16} />
-                      </IconButton>
-                      <IconButton
-                        label={UI.copy}
-                        onClick={() => 복사(s)}
-                        disabled={copyingId === s.id}
-                      >
-                        <Copy size={16} />
-                      </IconButton>
-                      <IconButton label={UI.erase} className="danger" onClick={() => 삭제(s)}>
-                        <Trash2 size={16} />
-                      </IconButton>
+                      <div className="row-menu-wrap">
+                        <IconButton
+                          label="더보기"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuId(menuId === s.id ? null : s.id);
+                          }}
+                        >
+                          <MoreHorizontal size={16} />
+                        </IconButton>
+                        {menuId === s.id && (
+                          <div className="row-menu" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              className="row-menu-item"
+                              onClick={() => {
+                                setMenuId(null);
+                                개칭시작(s);
+                              }}
+                            >
+                              <Pencil size={15} />
+                              {UI.rename}
+                            </button>
+                            <button
+                              className="row-menu-item"
+                              disabled={copyingId === s.id}
+                              onClick={() => {
+                                setMenuId(null);
+                                복사(s);
+                              }}
+                            >
+                              <Copy size={15} />
+                              {UI.copy}
+                            </button>
+                            <button
+                              className="row-menu-item danger"
+                              onClick={() => {
+                                setMenuId(null);
+                                삭제(s);
+                              }}
+                            >
+                              <Trash2 size={15} />
+                              {UI.erase}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </li>
                 ),
