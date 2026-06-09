@@ -41,7 +41,7 @@ import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 import { loadTurnsForSummary, getTurnContent, setTurnSummary } from '../lib/db.mjs';
 import { summarizeEpisode } from '../lib/summarize.mjs';
-import { ensureEpisodeSummaries, buildChronicle } from '../lib/chronicle.mjs';
+import { ensureEpisodeSummaries, buildChronicle, loadSummaryContext } from '../lib/chronicle.mjs';
 import {
   parseAnchors,
   buildAnchorContext,
@@ -112,7 +112,8 @@ app.get('/api/chronicle', async (req, res) => {
   const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
   try {
     const { turns, hasSummaryCol } = await loadTurnsForSummary(storyId);
-    if (hasSummaryCol && storyId) await ensureEpisodeSummaries(turns);
+    if (hasSummaryCol && storyId)
+      await ensureEpisodeSummaries(turns, await loadSummaryContext(storyId));
     res.json({ dbReady: dbReady(), ready: hasSummaryCol, chronicle: buildChronicle(turns) });
   } catch (e) {
     res.json({ dbReady: dbReady(), ready: false, chronicle: [], error: e?.message || String(e) });
@@ -126,12 +127,12 @@ app.post('/api/chronicle', async (req, res) => {
     return;
   }
   try {
-    const content = await getTurnContent(id);
+    const { content, storyId } = await getTurnContent(id);
     if (!content) {
       res.json({ ok: false, error: '그 화의 본문을 찾지 못했습니다.' });
       return;
     }
-    const summary = await summarizeEpisode(content);
+    const summary = await summarizeEpisode(content, await loadSummaryContext(storyId));
     if (!summary) {
       res.json({ ok: false, error: '기록의 샘이 잠시 붐벼 다시 적지 못했습니다.' });
       return;

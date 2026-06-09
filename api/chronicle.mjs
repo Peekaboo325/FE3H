@@ -3,7 +3,7 @@
 //  요약 컬럼이 없으면 ready:false → 제목만 보여주고 안내.
 
 import { loadTurnsForSummary, dbReady, getTurnContent, setTurnSummary } from '../lib/db.mjs';
-import { ensureEpisodeSummaries, buildChronicle } from '../lib/chronicle.mjs';
+import { ensureEpisodeSummaries, buildChronicle, loadSummaryContext } from '../lib/chronicle.mjs';
 import { summarizeEpisode } from '../lib/summarize.mjs';
 
 export const config = { maxDuration: 60 };
@@ -17,12 +17,12 @@ export default async function handler(req, res) {
       return;
     }
     try {
-      const content = await getTurnContent(id);
+      const { content, storyId } = await getTurnContent(id);
       if (!content) {
         res.status(200).json({ ok: false, error: '그 화의 본문을 찾지 못했습니다.' });
         return;
       }
-      const summary = await summarizeEpisode(content);
+      const summary = await summarizeEpisode(content, await loadSummaryContext(storyId));
       if (!summary) {
         res.status(200).json({ ok: false, error: '기록의 샘이 잠시 붐벼 다시 적지 못했습니다.' });
         return;
@@ -38,7 +38,8 @@ export default async function handler(req, res) {
   const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
   try {
     const { turns, hasSummaryCol } = await loadTurnsForSummary(storyId);
-    if (hasSummaryCol && storyId) await ensureEpisodeSummaries(turns); // 빠진 요약 채움
+    if (hasSummaryCol && storyId)
+      await ensureEpisodeSummaries(turns, await loadSummaryContext(storyId)); // 빠진 요약 채움(인물·큰줄기 맥락 주입)
     res.status(200).json({
       dbReady: dbReady(),
       ready: hasSummaryCol,
