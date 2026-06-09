@@ -964,7 +964,7 @@ em, i { font-style: normal; }
   padding: 12px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
 .lore-main-head-sp { flex: 1; }
-.lore-main-body { flex: 1; overflow-y: auto; min-height: 0; padding: 0; }
+.lore-main-body { flex: 1; overflow-y: auto; min-height: 0; padding: 0; scrollbar-gutter: stable both-edges; }
 /* 문헌 한 권(읽기) — 표제·여백을 살린 정갈한 읽기 */
 .lore-doc { max-width: 680px; margin: 0 auto; padding: 34px 32px 56px; }
 .lore-doc-head { margin-bottom: 30px; }
