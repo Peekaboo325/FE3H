@@ -491,7 +491,7 @@ em, i { font-style: normal; }
 }
 .modal--list .modal-body { min-height: 420px; }
 /* 연대 문헌도 다른 모달처럼 최소 높이 확보(내용 적어도 안 쪼그라들게) */
-.modal--chronicle .modal-body { min-height: 420px; }
+.modal--chronicle .modal-body { min-height: 420px; display: flex; flex-direction: column; }
 .warn {
   background: var(--warn-bg);
   border: 1px solid var(--warn-border);
@@ -530,7 +530,8 @@ em, i { font-style: normal; }
 
 /* 연대 문헌 상세 뷰 — 한 화의 제목+요약 전문, 그리고 '그 화로 가기' */
 .modal-head-l { display: flex; align-items: center; gap: 8px; }
-.chronicle-view { margin-top: 14px; }
+/* 상세 뷰가 본문 높이를 채우고, 푸터는 바닥에 고정(margin-top:auto) — 다른 모달처럼 */
+.chronicle-view { margin-top: 14px; flex: 1; display: flex; flex-direction: column; }
 .chronicle-view-title { font-size: 18px; color: var(--text); margin: 0 0 14px; letter-spacing: 0.02em; }
 .chronicle-view-body {
   font-size: 14px;
@@ -539,9 +540,13 @@ em, i { font-style: normal; }
   white-space: pre-wrap;
 }
 /* 푸터 = 재작성·이동 둘 다 동일한 밋밋한 알약, 우측에 모음 */
-.chronicle-view-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+.chronicle-view-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: auto; padding-top: 22px; }
 .chronicle-redo,
 .chronicle-jump {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 84px; /* '재작성'↔스피너 전환에도 크기 고정(버튼 안 흔들리게) */
   padding: 9px 18px;
   border: 1px solid var(--border);
   border-radius: 999px;

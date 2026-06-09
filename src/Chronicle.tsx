@@ -108,7 +108,7 @@ export default function Chronicle({
               {selected.id != null && (
                 <div className="chronicle-view-foot">
                   <button className="chronicle-redo" onClick={다시기록} disabled={redoing}>
-                    {redoing ? `${UI.regen} 중…` : UI.regen}
+                    {redoing ? <span className="spinner" /> : UI.regen}
                   </button>
                   {onJump && (
                     <button className="chronicle-jump" onClick={() => onJump(selected.id as number)}>
