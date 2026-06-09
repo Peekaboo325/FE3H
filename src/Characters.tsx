@@ -10,6 +10,7 @@ import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
 import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
+import Ornament from './Ornament';
 import Dropdown from './Dropdown';
 import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw, Plus } from 'lucide-react';
 import {
@@ -60,7 +61,10 @@ const statusFx = (s?: string) =>
 function ViewSection({ label, text }: { label: string; text: string }) {
   return (
     <div className="view-section">
-      <div className="view-label">{label}</div>
+      <div className="view-label">
+        <Ornament className="view-ornament" size={13} />
+        {label}
+      </div>
       <div className="view-text">
         <Markdown text={text} />
       </div>
@@ -781,7 +785,10 @@ export default function Characters({
                   {(viewing.bonds || []).some((b) => b.name?.trim()) && (
                     <div className="view-section">
                       <button className="bonds-head" onClick={() => setBondsOpen((o) => !o)}>
-                        <span className="view-label">인연</span>
+                        <span className="view-label">
+                          <Ornament className="view-ornament" size={13} />
+                          인연
+                        </span>
                         <ChevronDown size={18} className={'bonds-chev' + (bondsOpen ? ' open' : '')} />
                       </button>
                       <div className={'bonds-wrap' + (bondsOpen ? ' open' : '')}>
