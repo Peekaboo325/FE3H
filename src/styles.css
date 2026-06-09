@@ -535,11 +535,9 @@ em, i { font-style: normal; }
   line-height: 1.85;
   white-space: pre-wrap;
 }
-.chronicle-view-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 22px; }
-/* 다시 기록 = 보고서 재발급과 동일(원형 새로고침 아이콘 버튼, 회전은 .icon-btn.spinning) */
-.chronicle-view-foot .icon-btn { background: rgba(0, 0, 0, 0.18); }
-.chronicle-view-foot .icon-btn:hover { background: rgba(0, 0, 0, 0.3); }
-/* 이동 = 밋밋한 보조 버튼(인장 효과 없음) */
+/* 푸터 = 재작성·이동 둘 다 동일한 밋밋한 알약, 우측에 모음 */
+.chronicle-view-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+.chronicle-redo,
 .chronicle-jump {
   padding: 9px 18px;
   border: 1px solid var(--border);
@@ -550,7 +548,9 @@ em, i { font-style: normal; }
   font-size: 14px;
   cursor: pointer;
 }
+.chronicle-redo:hover,
 .chronicle-jump:hover { background: var(--hover); }
+.chronicle-redo:disabled { opacity: 0.6; cursor: default; }
 
 /* 기록 지침 — 전역 유저 커스텀 프롬프트 편집 패널 */
 .guidance-area {
