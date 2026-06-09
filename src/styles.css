@@ -271,8 +271,9 @@ body::before {
 }
 
 .turn { margin: 18px 0; }
-/* 프롬프트(내 지시) = 조용한 칩. 칩은 우측에 두되, 안의 글자는 좌측 정렬. */
-.turn.user { text-align: right; }
+/* 프롬프트(내 지시) = 조용한 칩. 칩은 우측에 두되, 안의 글자는 좌측 정렬.
+   아래 여백을 넉넉히 — 다음 화 머리글이 이 칸에 붙어 보이지 않게 떼어 놓는다. */
+.turn.user { text-align: right; margin-bottom: 60px; }
 .turn.user .turn-actions { justify-content: flex-end; }
 .prompt-body {
   display: inline-block;
@@ -295,19 +296,9 @@ em, i { font-style: normal; }
 .turn.story > :first-child { margin-top: 0; }
 .turn.story > :last-child { margin-bottom: 0; }
 .turn.story p { margin: 0 0 12px; }
-/* 화 머리글 — 새 화를 여는 표제. 위를 넉넉히 띄워 이전 칸(프롬프트)과 떼고,
-   아래(부제·본문)와는 한 덩어리로 묶이게 한다. */
 .turn.story h1,
-.turn.story h2 { text-align: center; font-size: 19px; letter-spacing: 0.1em; margin: 40px 0 2px; }
-/* ep-no가 숨겨져 머리글이 첫 자식이 되는 경우에도 위 여백을 지킨다(first-child 영점화 방어) */
-.turn.story > h1:first-child,
-.turn.story > h2:first-child { margin-top: 40px; }
+.turn.story h2 { text-align: center; font-size: 19px; letter-spacing: 0.1em; margin: 8px 0 2px; }
 .turn.story h3 { text-align: center; font-size: 13px; font-weight: 400; color: var(--text-dim); letter-spacing: 0.05em; margin: 0 0 14px; }
-/* 화 머리글 바로 뒤의 장면 구분(⁂)은 여백을 줄여 머리글·부제와 한 덩어리(화 머리 장식)로 뭉치게 한다.
-   — ⁂는 그대로 살리되, 제목 직후 큰 간격이 머리글을 위 칸에 붙어 보이게 하던 것을 푼다.
-   (본문 중간 전환의 ⁂는 아래 .scene-break 기본 22px 그대로.) */
-.turn.story h2 + .scene-break,
-.turn.story h3 + .scene-break { margin: 14px 0; }
 /* 화 번호 표식 — '3화 참고' 앵커링의 기준점(은은하게) */
 .ep-no { font-size: 11px; color: var(--text-faint); letter-spacing: 0.1em; margin-bottom: 6px; }
 /* 본문 속 화 번호는 유저에게 숨긴다 — 답변 제목이 이미 보이므로 중복 노이즈.
@@ -315,7 +306,7 @@ em, i { font-style: normal; }
 .turn.story .ep-no { display: none; }
 /* 문헌 권 번호 — '제N권 참조'의 기준점(제목 앞 인라인) — 이건 유지(번호 보여야 지목 가능) */
 .ep-no.jang { display: inline; margin: 0 6px 0 0; }
-.scene-break { text-align: center; color: var(--text-dim); font-size: 15px; letter-spacing: 0.4em; margin: 22px 0; }
+.scene-break { text-align: center; color: var(--text-dim); font-size: 15px; letter-spacing: 0.4em; margin: 10px 0; }
 .turn.story blockquote {
   margin: 0 0 12px;
   padding-left: 12px;
