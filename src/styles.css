@@ -505,6 +505,36 @@ em, i { font-style: normal; }
 .chronicle-title { font-size: 15px; color: var(--text); margin-bottom: 6px; letter-spacing: 0.02em; }
 .chronicle-summary { font-size: 13px; color: var(--text-dim); line-height: 1.75; white-space: pre-wrap; }
 
+/* 기록 지침 — 전역 유저 커스텀 프롬프트 편집 패널 */
+.guidance-note { font-size: 13px; color: var(--text-dim); line-height: 1.7; margin: 4px 0 12px; }
+.guidance-area {
+  width: 100%;
+  min-height: 44vh;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.75;
+  resize: vertical;
+}
+.guidance-foot { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 14px; }
+.guidance-saved { font-size: 12px; color: var(--text-dim); }
+.guidance-save {
+  min-width: 96px;
+  padding: 8px 18px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.guidance-save:hover { background: var(--hover); }
+.guidance-save:disabled { opacity: 0.6; cursor: default; }
+
 /* 앱 내부 디제틱 다이얼로그 (브라우저 alert/confirm 대체) — 모달 위에도 뜨도록 z-index 높임 */
 .dialog-bg {
   position: fixed;

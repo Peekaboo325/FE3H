@@ -1,0 +1,101 @@
+import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+import { UI } from './strings';
+import IconButton from './IconButton';
+import Spinner from './Spinner';
+
+// 기록 지침 — 기록자(유저)가 직접 적어 모든 이야기의 본문에 함께 얹는 전역 집필 지침.
+//  박제된 worldview 규약 위에 실시간으로 얹는 개인 지침서. 저장 즉시 다음 본문부터 반영.
+export default function Guidance({ onClose }: { onClose: () => void }) {
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [dbOk, setDbOk] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const r = await fetch('/api/guidance');
+        const d = await r.json();
+        if (!alive) return;
+        setDbOk(!!d.dbReady);
+        setText(typeof d.text === 'string' ? d.text : '');
+      } catch {
+        /* 무시 */
+      }
+      if (alive) setLoading(false);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const 기록 = async () => {
+    setSaving(true);
+    setSaved(false);
+    try {
+      const r = await fetch('/api/guidance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      } else {
+        alert(
+          d.error
+            ? `기록하지 못했습니다 — ${d.error}\n(settings 표가 없으면 안내된 SQL을 한 번 실행하십시오.)`
+            : '기록하지 못했습니다.',
+        );
+      }
+    } catch {
+      alert('기록하지 못했습니다.');
+    }
+    setSaving(false);
+  };
+
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
+          <h2>기록 지침</h2>
+          <IconButton label={UI.close} onClick={onClose}>
+            <X size={17} />
+          </IconButton>
+        </div>
+
+        {!dbOk && <p className="warn">기록의 샘이 닿지 않아 지침을 펼칠 수 없습니다.</p>}
+
+        <div className="modal-body">
+          {loading ? (
+            <Spinner />
+          ) : (
+            <>
+              <p className="guidance-note">
+                여기 적어 두신 지침은 모든 이야기의 본문을 풀어낼 때 함께 얹힙니다. 박제된 규약에
+                더해, 기록자께서 바라시는 결을 일러두십시오. 보기: 수치(키·나이)는 본문에 드러내지
+                않기, 전투는 짧고 건조하게.
+              </p>
+              <textarea
+                className="guidance-area"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+              />
+              <div className="guidance-foot">
+                {saved && <span className="guidance-saved">기록되었습니다.</span>}
+                <button className="guidance-save" onClick={기록} disabled={saving}>
+                  {saving ? `${UI.save}하는 중…` : UI.save}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

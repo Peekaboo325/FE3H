@@ -11,7 +11,8 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
-import { saveTurn, touchStory, loadCharactersForInjection, loadLoreForInjection } from '../lib/db.mjs';
+import { saveTurn, touchStory, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
+import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
@@ -71,14 +72,17 @@ export default async function handler(req, res) {
   ]);
 
   // 활성 견문록(세계 설정) + 활성 인물을 박제 세계관 뒤에 붙인다(캐싱 유지).
-  const [설정원천, 인물원천] = await Promise.all([
+  const [설정원천, 인물원천, 지침] = await Promise.all([
     loadLoreForInjection(storyId),
     loadCharactersForInjection(storyId),
+    getGuidance().catch(() => ''), // 기록 지침(전역) — 없으면 ''
   ]);
   const 설정블록 = buildLoreContext(설정원천);
   const 인물블록 = buildCharacterContext(인물원천);
+  const 지침블록 = buildGuidanceBlock(지침);
   const 줄거리블록 = buildSummaryBlock(줄거리);
   const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  if (지침블록) system.push({ type: 'text', text: 지침블록 }); // 기록자 추가 지침(박제 세계관 바로 뒤)
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
   if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락

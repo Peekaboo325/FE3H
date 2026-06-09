@@ -31,7 +31,10 @@ import {
   saveLore,
   deleteLore,
   loadLoreForInjection,
+  getGuidance,
+  setGuidance,
 } from '../lib/db.mjs';
+import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { runReport } from '../lib/report.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
@@ -113,6 +116,20 @@ app.get('/api/chronicle', async (req, res) => {
   } catch (e) {
     res.json({ dbReady: dbReady(), ready: false, chronicle: [], error: e?.message || String(e) });
   }
+});
+
+// ── 기록 지침 (전역 유저 커스텀 프롬프트 읽기/기록) ─────────────────────────
+app.get('/api/guidance', async (_req, res) => {
+  try {
+    res.json({ dbReady: dbReady(), text: await getGuidance() });
+  } catch (e) {
+    res.json({ dbReady: dbReady(), text: '', error: e?.message || String(e) });
+  }
+});
+app.post('/api/guidance', async (req, res) => {
+  const text = typeof req.body?.text === 'string' ? req.body.text : '';
+  const r = await setGuidance(text);
+  res.status(r.ok ? 200 : 500).json({ ok: r.ok, error: r.error });
 });
 
 // ── 인물 프로필 (목록/저장/삭제) ──────────────────────────────────────────
@@ -215,14 +232,17 @@ app.post('/api/story', async (req, res) => {
   ]);
 
   // 활성 견문록(세계 설정) + 활성 인물을 박제 세계관 뒤에 붙인다(캐싱 유지).
-  const [설정원천, 인물원천] = await Promise.all([
+  const [설정원천, 인물원천, 지침] = await Promise.all([
     loadLoreForInjection(storyId),
     loadCharactersForInjection(storyId),
+    getGuidance().catch(() => ''), // 기록 지침(전역) — 없으면 ''
   ]);
   const 설정블록 = buildLoreContext(설정원천);
   const 인물블록 = buildCharacterContext(인물원천);
+  const 지침블록 = buildGuidanceBlock(지침);
   const 줄거리블록 = buildSummaryBlock(줄거리);
   const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  if (지침블록) system.push({ type: 'text', text: 지침블록 }); // 기록자 추가 지침(박제 세계관 바로 뒤)
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
   if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락
@@ -293,14 +313,17 @@ app.post('/api/regen', async (req, res) => {
     return;
   }
 
-  const [설정원천, 인물원천] = await Promise.all([
+  const [설정원천, 인물원천, 지침] = await Promise.all([
     loadLoreForInjection(storyId),
     loadCharactersForInjection(storyId),
+    getGuidance().catch(() => ''), // 기록 지침(전역) — 없으면 ''
   ]);
   const 설정블록 = buildLoreContext(설정원천);
   const 인물블록 = buildCharacterContext(인물원천);
+  const 지침블록 = buildGuidanceBlock(지침);
   const 화수 = messages.filter((m) => m?.role === 'assistant').length + 1; // 그 턴의 화수(§5)
   const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  if (지침블록) system.push({ type: 'text', text: 지침블록 }); // 기록자 추가 지침(박제 세계관 바로 뒤)
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
   system.push({

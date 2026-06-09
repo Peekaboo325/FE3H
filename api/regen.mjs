@@ -5,7 +5,8 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
-import { updateTurn, loadCharactersForInjection, loadLoreForInjection } from '../lib/db.mjs';
+import { updateTurn, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
+import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 
@@ -32,14 +33,17 @@ export default async function handler(req, res) {
     return;
   }
 
-  const [설정원천, 인물원천] = await Promise.all([
+  const [설정원천, 인물원천, 지침] = await Promise.all([
     loadLoreForInjection(storyId),
     loadCharactersForInjection(storyId),
+    getGuidance().catch(() => ''), // 기록 지침(전역) — 없으면 ''
   ]);
   const 설정블록 = buildLoreContext(설정원천);
   const 인물블록 = buildCharacterContext(인물원천);
+  const 지침블록 = buildGuidanceBlock(지침);
   const 화수 = messages.filter((m) => m?.role === 'assistant').length + 1; // 그 턴의 화수(§5)
   const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  if (지침블록) system.push({ type: 'text', text: 지침블록 }); // 기록자 추가 지침(박제 세계관 바로 뒤)
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
   system.push({
