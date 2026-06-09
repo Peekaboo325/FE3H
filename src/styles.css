@@ -600,7 +600,6 @@ em, i { font-style: normal; }
   resize: vertical;
 }
 .guidance-foot { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 14px; }
-.guidance-saved { font-size: 12px; color: var(--text-dim); }
 /* 저장 버튼은 공용 <Button variant="primary">(.btn) — 별도 스타일 없음 */
 
 /* 앱 내부 디제틱 다이얼로그 (브라우저 alert/confirm 대체) — 모달 위에도 뜨도록 z-index 높임 */
@@ -1932,8 +1931,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .report-foot .icon-btn { background: rgba(0, 0, 0, 0.18); }
 .report-foot .icon-btn:hover { background: rgba(0, 0, 0, 0.3); }
 
-/* 보고서 발급/갱신 토스트 — 화면 상단에 잠깐 떴다 사라짐 */
-.report-toast {
+/* 공용 토스트(src/Toast.tsx) — 상단 가운데 알약. 보고서 갱신·기록 완료 등 공용. */
+.toast {
   position: fixed;
   left: 50%;
   top: calc(env(safe-area-inset-top) + 24px);
@@ -1945,7 +1944,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   padding: 9px 18px;
   border-radius: 999px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-  z-index: 60;
+  z-index: 80; /* 모달·다이얼로그 위 */
   white-space: nowrap;
   max-width: calc(100vw - 24px);
   animation: toast-down 0.2s ease;

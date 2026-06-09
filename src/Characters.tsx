@@ -6,6 +6,7 @@ import { UI } from './strings';
 import IconButton from './IconButton';
 import Button from './Button';
 import Spinner from './Spinner';
+import Toast from './Toast';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
@@ -836,7 +837,7 @@ export default function Characters({
                 <EmptyTab />
               )}
             </div>
-            {reportToast && <div className="report-toast">{reportToast}</div>}
+            {reportToast && <Toast>{reportToast}</Toast>}
           </div>
         )}
 

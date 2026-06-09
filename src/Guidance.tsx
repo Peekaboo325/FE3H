@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { UI } from './strings';
 import Modal from './Modal';
 import Button from './Button';
+import Toast from './Toast';
 import Spinner from './Spinner';
 
 // 기록 지침 — 기록자(유저)가 직접 적어 모든 이야기의 본문에 함께 얹는 전역 집필 지침.
@@ -74,11 +75,11 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
                 onChange={(e) => setText(e.target.value)}
               />
               <div className="guidance-foot">
-                {saved && <span className="guidance-saved">기록되었습니다.</span>}
                 <Button variant="primary" loading={saving} onClick={기록}>
                   {UI.save}
                 </Button>
               </div>
+              {saved && <Toast>기록되었습니다.</Toast>}
             </>
           )}
         </div>
