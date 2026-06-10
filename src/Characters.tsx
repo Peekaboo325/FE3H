@@ -650,9 +650,8 @@ export default function Characters({
         {!viewMode && !editing && (
           <>
             <div className="modal-head">
-              <div className="head-side" />
-              <h2>인물 명부</h2>
-              <div className="head-actions">
+              {/* 헤더 문법: 왼쪽 = 동작(또는 뒤로), 가운데 = 제목, 오른쪽 = 닫기뿐 */}
+              <div className="head-side">
                 {chars.length > 0 && (
                   <>
                     <IconButton label="작성" onClick={() => setEditing(빈인물())}>
@@ -665,6 +664,9 @@ export default function Characters({
                     )}
                   </>
                 )}
+              </div>
+              <h2>인물 명부</h2>
+              <div className="head-actions">
                 <IconButton label={UI.close} onClick={onClose}>
                   <X size={17} />
                 </IconButton>

@@ -395,14 +395,16 @@ export default function LorePanel({
           // ── 첫 화면 — 다섯 영역 배너(표지) ──────────────────────────────
           <>
             <div className="modal-head">
-              <div className="head-side" />
-              <h2>대륙 문헌</h2>
-              <div className="head-actions">
+              {/* 헤더 문법: 왼쪽 = 동작(또는 뒤로), 가운데 = 제목, 오른쪽 = 닫기뿐 */}
+              <div className="head-side">
                 {storyId != null && (
                   <IconButton label={UI.import} onClick={() => setImporting(true)}>
                     <Download size={17} />
                   </IconButton>
                 )}
+              </div>
+              <h2>대륙 문헌</h2>
+              <div className="head-actions">
                 <IconButton label={UI.close} onClick={onClose}>
                   <X size={17} />
                 </IconButton>
