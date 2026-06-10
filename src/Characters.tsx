@@ -255,7 +255,7 @@ function ReportView({
           <ReportBody report={골격보고서} />
         </div>
         <div className="report-lock-overlay">
-          <Spinner label="분석관이 보고서를 작성하는 중…" />
+          <Spinner />
         </div>
       </div>
     );
@@ -343,7 +343,7 @@ function QuestsView({
           ))}
         </ul>
         <div className="report-lock-overlay">
-          <Spinner label="분석관이 동향을 살피는 중…" />
+          <Spinner />
         </div>
       </div>
     );
@@ -437,7 +437,7 @@ function ItemsView({
           ))}
         </ul>
         <div className="report-lock-overlay">
-          <Spinner label="분석관이 주머니를 뒤지는 중…" />
+          <Spinner />
         </div>
       </div>
     );
