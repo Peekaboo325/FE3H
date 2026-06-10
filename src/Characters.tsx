@@ -1,7 +1,7 @@
 import { useState, useEffect, Fragment, type ReactNode } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
-import { alertAsk } from './dialog';
-import { useCharacters, type Character, type Bond, type CharReport, type QuestItem } from './useCharacters';
+import { alertAsk, confirmAsk } from './dialog';
+import { useCharacters, type Character, type Bond, type CharReport, type QuestItem, type BelongingItem } from './useCharacters';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import Button from './Button';
@@ -13,7 +13,7 @@ import { nameDict } from './nameDict.generated';
 import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
-import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw, Plus } from 'lucide-react';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw, Plus, Search } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -389,6 +389,100 @@ function QuestsView({
   );
 }
 
+// 미발급/탐색중 화면용 소지품 골격 — 흐릿하게 깔리므로 내용은 자리채움.
+const 골격소지품: BelongingItem[] = [
+  { name: '낡은 가죽 장갑', comment: '오래 길든 듯 손 모양이 남아 있다.' },
+  { name: '반쯤 탄 양초', comment: '밤늦게까지 켜둔 듯하다.' },
+  { name: '작은 휴대용 숫돌', comment: '희미한 쇳내가 난다.' },
+];
+
+// 소지품 카드 한 장 — 이름 + 단정하지 않는 한 줄 (+ 소각).
+function ItemCard({ b, onBurn }: { b: BelongingItem; onBurn?: () => void }) {
+  return (
+    <li className="item-card">
+      {onBurn && (
+        <IconButton label={UI.erase} className="item-burn" onClick={onBurn}>
+          <X size={13} />
+        </IconButton>
+      )}
+      <div className="item-name">{b.name}</div>
+      <div className="item-divider" />
+      <p className="item-comment">{b.comment}</p>
+    </li>
+  );
+}
+
+// 소지품 탭 — 탐색할 때마다 물건이 '누적'되는 주머니. 카드 소각은 개별로.
+function ItemsView({
+  report,
+  exploring,
+  err,
+  onExplore,
+  onBurn,
+}: {
+  report?: CharReport | null;
+  exploring: boolean;
+  err: string | null;
+  onExplore: () => void;
+  onBurn: (b: BelongingItem) => void;
+}) {
+  const items = report?.belongings;
+  // 첫 탐색 중(주머니 비어 있음) — 골격 흐리고 스피너로 '작동 중'.
+  if (exploring && !items?.length) {
+    return (
+      <div className="report-locked">
+        <ul className="item-grid report--ghost" aria-hidden="true">
+          {골격소지품.map((b, i) => (
+            <ItemCard key={i} b={b} />
+          ))}
+        </ul>
+        <div className="report-lock-overlay">
+          <Spinner label="분석관이 주머니를 뒤지는 중…" />
+        </div>
+      </div>
+    );
+  }
+  if (items?.length) {
+    return (
+      <div className="report report--quests">
+        <ul className="item-grid">
+          {items.map((b, i) => (
+            <ItemCard key={b.id ?? i} b={b} onBurn={() => onBurn(b)} />
+          ))}
+        </ul>
+        <div className="report-foot">
+          <IconButton
+            label={UI.explore}
+            onClick={onExplore}
+            disabled={exploring}
+            className={exploring ? 'spinning' : ''}
+          >
+            <Search size={17} />
+          </IconButton>
+        </div>
+        {err && <p className="report-err">{err}</p>}
+      </div>
+    );
+  }
+  // 빈 주머니 — 골격 흐리고 위쪽에 안내·탐색 버튼.
+  return (
+    <div className="report-locked">
+      <ul className="item-grid report--ghost" aria-hidden="true">
+        {골격소지품.map((b, i) => (
+          <ItemCard key={i} b={b} />
+        ))}
+      </ul>
+      <div className="report-lock-overlay">
+        <p className="report-lock-msg">아직 뒤져보지 않은 주머니입니다.</p>
+        <button className="list-btn" onClick={onExplore}>
+          소지품 {UI.explore}
+        </button>
+        {err && <p className="report-err">{err}</p>}
+      </div>
+    </div>
+  );
+}
+
 // (괄호) 안 텍스트를 작고 연하게 — 약력 값의 부연 설명 톤. (Markdown 경량 렌더러와 동일 규칙)
 function dimParens(text: string): ReactNode[] {
   return (text ?? '').split(/(\([^)]*\))/g).map((p, i) =>
@@ -528,6 +622,8 @@ export default function Characters({
   const [reportErr, setReportErr] = useState<string | null>(null);
   const [questing, setQuesting] = useState(false); // 임무 장부 발급 중
   const [questErr, setQuestErr] = useState<string | null>(null);
+  const [exploring, setExploring] = useState(false); // 소지품 탐색 중
+  const [itemErr, setItemErr] = useState<string | null>(null);
   const [reportToast, setReportToast] = useState<string | null>(null); // 발급/갱신 알림(보고서·임무 공용)
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
@@ -537,6 +633,7 @@ export default function Characters({
     setEditBondsOpen(false);
     setReportErr(null);
     setQuestErr(null);
+    setItemErr(null);
     setReportToast(null);
   }, [viewing?.id]); // 다른 인물(id 변경) 열 때만 약력·인연 접힘 초기화
 
@@ -601,6 +698,60 @@ export default function Characters({
       setQuestErr((e as Error).message);
     } finally {
       setQuesting(false);
+    }
+  }
+
+  // 소지품 탐색 — Gemini Flash가 물건 3점을 새로 찾아 주머니에 누적한다.
+  async function 탐색() {
+    if (!viewing?.id || exploring) return;
+    const 이름 = firstName(viewing.name);
+    setExploring(true);
+    setItemErr(null);
+    setReportToast(null);
+    try {
+      const res = await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ character_id: viewing.id, story_id: storyId }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setItemErr(data.error || `${UI.explore}에 실패했습니다.`);
+        return;
+      }
+      setViewing((v) => (v ? { ...v, analysis: data.report } : v));
+      await refresh();
+      setReportToast(`${이름}의 주머니에서 새 물건을 찾았습니다.`);
+      window.setTimeout(() => setReportToast(null), 2500);
+    } catch (e) {
+      setItemErr((e as Error).message);
+    } finally {
+      setExploring(false);
+    }
+  }
+
+  // 소지품 소각 — 물건 하나를 목록에서 들어낸다(소각 다이얼로그 경유).
+  async function 물건소각(b: BelongingItem) {
+    if (!viewing?.id || !b.id) return;
+    const yes = await confirmAsk({
+      message: `「${b.name}」을(를) ${UI.erase}하시겠습니까?`,
+      confirmLabel: UI.erase,
+      danger: true,
+    });
+    if (!yes) return;
+    try {
+      const res = await fetch(`/api/items?character_id=${viewing.id}&id=${encodeURIComponent(b.id)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setItemErr(data.error || `${UI.erase}하지 못했습니다.`);
+        return;
+      }
+      setViewing((v) => (v ? { ...v, analysis: data.report } : v));
+      await refresh();
+    } catch (e) {
+      setItemErr((e as Error).message);
     }
   }
 
@@ -968,6 +1119,14 @@ export default function Characters({
                   questing={questing}
                   err={questErr}
                   onIssue={임무발급}
+                />
+              ) : tab === '소지품' ? (
+                <ItemsView
+                  report={viewing.analysis}
+                  exploring={exploring}
+                  err={itemErr}
+                  onExplore={탐색}
+                  onBurn={물건소각}
                 />
               ) : (
                 <EmptyTab />

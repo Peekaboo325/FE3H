@@ -39,6 +39,7 @@ import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { runReport } from '../lib/report.mjs';
 import { runQuests } from '../lib/quests.mjs';
+import { runItems, removeItem } from '../lib/items.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 import { loadTurnsForSummary, getTurnContent, setTurnSummary } from '../lib/db.mjs';
@@ -216,6 +217,33 @@ app.post('/api/quests', async (req, res) => {
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
   try {
     const r = await runQuests({ characterId, storyId });
+    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+// ── 소지품 탐색·소각 (Gemini Flash) ──────────────────────────────────────
+app.post('/api/items', async (req, res) => {
+  if (!process.env.GEMINI_API_KEY) {
+    res.status(400).json({ error: '분석관과의 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).' });
+    return;
+  }
+  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
+  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
+  try {
+    const r = await runItems({ characterId, storyId });
+    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+app.delete('/api/items', async (req, res) => {
+  const characterId = req.query?.character_id ? Number(req.query.character_id) : null;
+  const itemId = req.query?.id || null;
+  try {
+    const r = await removeItem({ characterId, itemId });
     res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
   } catch (e) {
     res.status(500).json({ error: e?.message || String(e) });

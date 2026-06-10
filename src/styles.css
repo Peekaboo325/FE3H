@@ -1988,6 +1988,44 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .quest-reward-label { letter-spacing: 3px; flex-shrink: 0; }
 .quest-reward-value { margin-left: auto; text-align: right; }
 
+/* 소지품 — 인물 '소지품' 탭. 탐색마다 누적되는 텍스트 카드(emoji 없음) */
+.item-grid {
+  list-style: none;
+  margin: 0 0 16px; /* 마지막 카드→버튼 간격 = 보고서·임무와 동일(16+4=20px) */
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+.item-card {
+  position: relative;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+.item-name { font-weight: 700; font-size: 14px; }
+.item-divider { width: 22px; height: 1px; background: var(--border); }
+.item-comment { margin: 0; font-size: 12px; line-height: 1.55; color: var(--text-faint); }
+/* 카드 구석의 작은 소각 — 공용 IconButton에 크기만 줄여 얹는 변형 */
+.icon-btn.item-burn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  min-width: 0;
+  background: none;
+  color: var(--text-faint);
+  opacity: 0.55;
+}
+.icon-btn.item-burn:hover { opacity: 1; background: rgba(0, 0, 0, 0.25); }
+
 /* 공용 토스트(src/Toast.tsx) — 상단 가운데 알약. 보고서 갱신·기록 완료 등 공용. */
 .toast {
   position: fixed;
