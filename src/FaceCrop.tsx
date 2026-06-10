@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { UI } from './strings';
 import IconButton from './IconButton';
+import useEscClose from './useEscClose';
 
 // 초상(thumbnail)에서 얼굴 영역을 네모로 집어 둥근 명부 썸네일(avatar)을 만든다.
 // - 외부 라이브러리 없이 캔버스로 그 자리에서 크롭(512px·WebP·투명 보존).
@@ -20,6 +21,7 @@ export default function FaceCrop({
   const drag = useRef<{ px: number; py: number; ox: number; oy: number } | null>(null);
   const [disp, setDisp] = useState({ w: 0, h: 0 }); // 화면에 그린 이미지 크기
   const [sel, setSel] = useState({ x: 0, y: 0, s: 0 }); // 선택 네모(화면 좌표)
+  useEscClose(onCancel); // ESC = 취소(맨 위 겹일 때만 — 아래 인물 편집은 안 닫힘)
 
   // 이미지를 읽어 자연 크기 → 화면 표시 크기 계산, 초기 네모를 얼굴 위치쯤에 둠
   useEffect(() => {

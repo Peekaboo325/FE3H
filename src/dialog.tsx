@@ -3,6 +3,7 @@
 // 루트에 <DialogHost/> 하나만 띄워 두면 어디서 부르든 그 위에 그려진다.
 
 import { useEffect, useState } from 'react';
+import useEscClose from './useEscClose';
 import { UI } from './strings';
 
 type ConfirmOpts = {
@@ -48,17 +49,17 @@ export function DialogHost() {
 
   const req = current;
 
-  // 열려 있는 동안: Enter=확정, Esc=취소.
+  // 열려 있는 동안: Enter=확정. (ESC=취소는 공용 스택 훅이 — 아래 모달과 같이 닫히지 않게.)
   useEffect(() => {
     if (!req) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Enter') 닫기(true);
-      if (e.key === 'Escape') 닫기(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [req]);
+  useEscClose(() => 닫기(false), !!req);
 
   if (!req) return null;
 

@@ -13,6 +13,7 @@ import { nameDict } from './nameDict.generated';
 import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
+import useEscClose from './useEscClose';
 import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw, Plus, Search } from 'lucide-react';
 import {
   DndContext,
@@ -680,6 +681,13 @@ export default function Characters({
   const [itemErr, setItemErr] = useState<string | null>(null);
   const [armedItemId, setArmedItemId] = useState<string | null>(null); // 소지품 소각 두 번 누르기 대상
   useEffect(() => setArmedItemId(null), [tab]); // 탭을 옮기면 활성 해제
+  // ESC = 그 화면의 뒤로/취소(없으면 닫기) — 편집 중 실수로 패널 전체가 닫히지 않게 한 겹씩.
+  //  (크롭·반입·다이얼로그가 떠 있을 땐 그쪽이 스택 맨 위라 여긴 안 불린다.)
+  useEscClose(() => {
+    if (editing) setEditing(null);
+    else if (viewing) setViewing(null);
+    else onClose();
+  });
   // 바깥을 누르면 활성 해제 — 여는 클릭이 바로 해제하지 않게 다음 틱부터 듣는다(천각의 박동 메뉴와 동일 패턴).
   useEffect(() => {
     if (armedItemId == null) return;

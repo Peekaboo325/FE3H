@@ -17,6 +17,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { UI } from './strings';
+import useEscClose from './useEscClose';
 import IconButton from './IconButton';
 import Button from './Button';
 import Spinner from './Spinner';
@@ -201,6 +202,13 @@ export default function LorePanel({
   // 목차 드래그 정렬용 로컬 순서(서버 목록과 동기화)
   const [items, setItems] = useState<Lore[]>([]);
   useEffect(() => setItems(entries), [entries]);
+  // ESC = 그 화면의 뒤로/취소(없으면 닫기) — 편찬 중 실수로 코덱스 전체가 닫히지 않게 한 겹씩.
+  useEscClose(() => {
+    if (editing) setEditing(null);
+    else if (viewing) setViewing(null);
+    else if (topic) setTopic(null);
+    else onClose();
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),

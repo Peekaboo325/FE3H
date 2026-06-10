@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { X, ArrowLeft } from 'lucide-react';
 import IconButton from './IconButton';
+import useEscClose from './useEscClose';
 import { UI } from './strings';
 
 // 공용 모달 셸 — 백드롭(바깥 클릭=닫기) + 박스 + 표준 헤더(제목 + (뒤로) + X + 아래 구분선).
@@ -21,6 +22,7 @@ export default function Modal({
   className?: string; // .modal 변형
   children: ReactNode;
 }) {
+  useEscClose(onClose); // ESC = 닫기(맨 위 겹일 때만)
   return (
     <div className="modal-bg" onClick={onClose}>
       <div className={'modal' + (className ? ' ' + className : '')} onClick={(e) => e.stopPropagation()}>
