@@ -116,7 +116,7 @@ export default function Stories({
   async function 환원(s: Story) {
     const yes = await confirmAsk({
       message: `「${s.title}」 이 장을 ${UI.revert}하시겠습니까?`,
-      detail: `본문과 연대 문헌이 모두 비워지고 백지 장만 남습니다. 인물 명부와 대륙 문헌은 남으나, 비워진 기록은 다시 불러올 수 없습니다.`,
+      detail: `본문과 연대 문헌이 모두 비워지고 백지 장만 남습니다. 인물 명부와 대륙 문헌은 남으나, 환원된 기록은 다시 불러올 수 없습니다.`,
       confirmLabel: UI.revert,
       danger: true,
     });
