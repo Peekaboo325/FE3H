@@ -473,7 +473,7 @@ function ItemsView({
         ))}
       </ul>
       <div className="report-lock-overlay">
-        <p className="report-lock-msg">아직 뒤져보지 않은 주머니입니다.</p>
+        <p className="report-lock-msg">아직 확인하지 않은 소지품입니다.</p>
         <button className="list-btn" onClick={onExplore}>
           소지품 {UI.explore}
         </button>
