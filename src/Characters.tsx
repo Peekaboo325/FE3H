@@ -1,6 +1,6 @@
 import { useState, useEffect, Fragment, type ReactNode } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
-import { alertAsk, confirmAsk } from './dialog';
+import { alertAsk } from './dialog';
 import { useCharacters, type Character, type Bond, type CharReport, type QuestItem, type BelongingItem } from './useCharacters';
 import { UI } from './strings';
 import IconButton from './IconButton';
@@ -396,15 +396,10 @@ const 골격소지품: BelongingItem[] = [
   { name: '작은 휴대용 숫돌', comment: '희미한 쇳내가 난다.' },
 ];
 
-// 소지품 카드 한 장 — 이름 + 단정하지 않는 한 줄 (+ 소각).
-function ItemCard({ b, onBurn }: { b: BelongingItem; onBurn?: () => void }) {
+// 소지품 카드 한 장 — 이름 + 단정하지 않는 한 줄 (골격용·정렬 없음).
+function ItemCard({ b }: { b: BelongingItem }) {
   return (
     <li className="item-card">
-      {onBurn && (
-        <IconButton label={UI.erase} className="item-burn" onClick={onBurn}>
-          <X size={13} />
-        </IconButton>
-      )}
       <div className="item-name">{b.name}</div>
       <div className="item-divider" />
       <p className="item-comment">{b.comment}</p>
@@ -412,21 +407,68 @@ function ItemCard({ b, onBurn }: { b: BelongingItem; onBurn?: () => void }) {
   );
 }
 
-// 소지품 탭 — 탐색할 때마다 물건이 '누적'되는 주머니. 카드 소각은 개별로.
+// 드래그로 정렬 가능한 소지품 카드 + 두 번 누르기 소각(첫 클릭=활성·붉게, 둘째=실행).
+function SortableItemCard({
+  b,
+  armed,
+  onBurn,
+}: {
+  b: BelongingItem;
+  armed: boolean;
+  onBurn: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: b.id!,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.35 : undefined,
+    zIndex: isDragging ? 5 : undefined,
+  };
+  return (
+    <li ref={setNodeRef} style={style} className="item-card" {...attributes} {...listeners}>
+      <IconButton
+        label={UI.erase}
+        className={'item-burn' + (armed ? ' armed' : '')}
+        onClick={onBurn}
+      >
+        <X size={13} />
+      </IconButton>
+      <div className="item-name">{b.name}</div>
+      <div className="item-divider" />
+      <p className="item-comment">{b.comment}</p>
+    </li>
+  );
+}
+
+// 소지품 탭 — 탐색할 때마다 물건이 '누적'되는 주머니. 드래그 정렬 + 개별 소각(두 번 누르기).
 function ItemsView({
   report,
   exploring,
   err,
+  armedId,
   onExplore,
   onBurn,
+  onReorder,
 }: {
   report?: CharReport | null;
   exploring: boolean;
   err: string | null;
+  armedId: string | null;
   onExplore: () => void;
   onBurn: (b: BelongingItem) => void;
+  onReorder: (activeId: string, overId: string) => void;
 }) {
   const items = report?.belongings;
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
+  const onDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (over && active.id !== over.id) onReorder(String(active.id), String(over.id));
+  };
   // 첫 탐색 중(주머니 비어 있음) — 골격 흐리고 스피너로 '작동 중'.
   if (exploring && !items?.length) {
     return (
@@ -445,11 +487,20 @@ function ItemsView({
   if (items?.length) {
     return (
       <div className="report report--quests">
-        <ul className="item-grid">
-          {items.map((b, i) => (
-            <ItemCard key={b.id ?? i} b={b} onBurn={() => onBurn(b)} />
-          ))}
-        </ul>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={items.map((b) => b.id!)} strategy={rectSortingStrategy}>
+            <ul className="item-grid">
+              {items.map((b, i) => (
+                <SortableItemCard
+                  key={b.id ?? i}
+                  b={b}
+                  armed={armedId != null && armedId === b.id}
+                  onBurn={() => onBurn(b)}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
         <div className="report-foot">
           <IconButton
             label={UI.explore}
@@ -624,6 +675,8 @@ export default function Characters({
   const [questErr, setQuestErr] = useState<string | null>(null);
   const [exploring, setExploring] = useState(false); // 소지품 탐색 중
   const [itemErr, setItemErr] = useState<string | null>(null);
+  const [armedItemId, setArmedItemId] = useState<string | null>(null); // 소지품 소각 두 번 누르기 대상
+  useEffect(() => setArmedItemId(null), [tab]); // 탭을 옮기면 활성 해제
   const [reportToast, setReportToast] = useState<string | null>(null); // 발급/갱신 알림(보고서·임무 공용)
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
@@ -634,6 +687,7 @@ export default function Characters({
     setReportErr(null);
     setQuestErr(null);
     setItemErr(null);
+    setArmedItemId(null);
     setReportToast(null);
   }, [viewing?.id]); // 다른 인물(id 변경) 열 때만 약력·인연 접힘 초기화
 
@@ -730,15 +784,14 @@ export default function Characters({
     }
   }
 
-  // 소지품 소각 — 물건 하나를 목록에서 들어낸다(소각 다이얼로그 경유).
+  // 소지품 소각 — 두 번 누르기(앱 공통 메커니즘): 첫 클릭=활성(붉게), 둘째 클릭=실행.
   async function 물건소각(b: BelongingItem) {
     if (!viewing?.id || !b.id) return;
-    const yes = await confirmAsk({
-      message: `「${b.name}」을(를) ${UI.erase}하시겠습니까?`,
-      confirmLabel: UI.erase,
-      danger: true,
-    });
-    if (!yes) return;
+    if (armedItemId !== b.id) {
+      setArmedItemId(b.id);
+      return;
+    }
+    setArmedItemId(null);
     try {
       const res = await fetch(`/api/items?character_id=${viewing.id}&id=${encodeURIComponent(b.id)}`, {
         method: 'DELETE',
@@ -749,6 +802,36 @@ export default function Characters({
         return;
       }
       setViewing((v) => (v ? { ...v, analysis: data.report } : v));
+      await refresh();
+    } catch (e) {
+      setItemErr((e as Error).message);
+    }
+  }
+
+  // 소지품 드래그 정렬 — 화면 먼저 바꾸고(낙관적), 순서를 서버에 새긴다.
+  async function 물건정렬(activeId: string, overId: string) {
+    if (!viewing?.id) return;
+    const list = viewing.analysis?.belongings;
+    if (!list?.length) return;
+    const from = list.findIndex((b) => b.id === activeId);
+    const to = list.findIndex((b) => b.id === overId);
+    if (from < 0 || to < 0) return;
+    const next = arrayMove(list, from, to);
+    setViewing((v) =>
+      v ? { ...v, analysis: { ...(v.analysis || {}), belongings: next } } : v,
+    );
+    setArmedItemId(null);
+    try {
+      const res = await fetch('/api/items', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ character_id: viewing.id, order: next.map((b) => b.id) }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setItemErr(data.error || '정렬을 기록하지 못했습니다.');
+        return;
+      }
       await refresh();
     } catch (e) {
       setItemErr((e as Error).message);
@@ -1125,8 +1208,10 @@ export default function Characters({
                   report={viewing.analysis}
                   exploring={exploring}
                   err={itemErr}
+                  armedId={armedItemId}
                   onExplore={탐색}
                   onBurn={물건소각}
+                  onReorder={물건정렬}
                 />
               ) : (
                 <EmptyTab />

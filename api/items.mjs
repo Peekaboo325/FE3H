@@ -1,8 +1,9 @@
-// /api/items — 소지품 탐색·소각 (Gemini Flash).
+// /api/items — 소지품 탐색·소각·정렬 (Gemini Flash).
 //   POST {character_id, story_id}      → 물건 3점을 새로 찾아 누적, 갱신된 analysis 전체 반환
 //   DELETE ?character_id=1&id=iabc     → 물건 하나 소각
+//   PUT {character_id, order:[id…]}    → 드래그 정렬 저장
 
-import { runItems, removeItem } from '../lib/items.mjs';
+import { runItems, removeItem, reorderItems } from '../lib/items.mjs';
 import { dbReady } from '../lib/db.mjs';
 
 export default async function handler(req, res) {
@@ -18,6 +19,13 @@ export default async function handler(req, res) {
       const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
       const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
       const r = await runItems({ characterId, storyId });
+      res.status(r.error ? 500 : 200).end(JSON.stringify({ dbReady: dbReady(), ...r }));
+      return;
+    }
+    if (req.method === 'PUT') {
+      const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
+      const order = Array.isArray(req.body?.order) ? req.body.order : null;
+      const r = await reorderItems({ characterId, order });
       res.status(r.error ? 500 : 200).end(JSON.stringify({ dbReady: dbReady(), ...r }));
       return;
     }

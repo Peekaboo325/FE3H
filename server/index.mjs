@@ -39,7 +39,7 @@ import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { runReport } from '../lib/report.mjs';
 import { runQuests } from '../lib/quests.mjs';
-import { runItems, removeItem } from '../lib/items.mjs';
+import { runItems, removeItem, reorderItems } from '../lib/items.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 import { loadTurnsForSummary, getTurnContent, setTurnSummary } from '../lib/db.mjs';
@@ -233,6 +233,17 @@ app.post('/api/items', async (req, res) => {
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
   try {
     const r = await runItems({ characterId, storyId });
+    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+app.put('/api/items', async (req, res) => {
+  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
+  const order = Array.isArray(req.body?.order) ? req.body.order : null;
+  try {
+    const r = await reorderItems({ characterId, order });
     res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
   } catch (e) {
     res.status(500).json({ error: e?.message || String(e) });
