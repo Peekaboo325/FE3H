@@ -1987,13 +1987,13 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .quest-reward-label { letter-spacing: 3px; flex-shrink: 0; }
 .quest-reward-value { margin-left: auto; text-align: right; }
 
-/* 소지품 — 인물 '소지품' 탭. 탐색마다 누적되는 텍스트 카드(emoji 없음) */
+/* 소지품 — 인물 '소지품' 탭. 탐색마다 누적되는 카드(그림 + 이름 + 한 줄) */
 .item-grid {
   list-style: none;
   margin: 0 0 16px; /* 마지막 카드→버튼 간격 = 보고서·임무와 동일(16+4=20px) */
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 10px;
 }
 .item-card {
@@ -2001,16 +2001,30 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 18px 14px 16px;
+  padding: 16px 14px 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 8px;
+  gap: 7px;
   touch-action: manipulation; /* 터치 드래그 정렬과 클릭 공존 */
 }
-/* 소각이 평소 숨어 있으니 여백은 줄바꿈 안 날 만큼만 — 가운데 정렬 유지 */
-.item-name { font-weight: 700; font-size: 14px; padding: 0 10px; }
+/* 그림 자리 — 정사각 앵커(legacy 인벤토리 문법). 그림 없으면 은은한 빈 액자. */
+.item-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1px;
+}
+.item-icon img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.item-icon--empty {
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  opacity: 0.5;
+}
+.item-name { font-weight: 700; font-size: 14px; padding: 0 6px; }
 .item-divider { width: 22px; height: 1px; background: var(--border); }
 .item-comment { margin: 0; font-size: 12px; line-height: 1.55; color: var(--text-faint); }
 /* 카드 구석의 소각 — 평소엔 숨김(데스크탑 hover에 등장), 테두리·원 배경 없는 유령 X.

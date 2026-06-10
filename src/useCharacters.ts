@@ -8,11 +8,12 @@ export type Bond = {
   status?: 'alive' | 'deceased' | 'unknown';
 };
 
-// 소지품 한 점 — 탐색할 때마다 누적되는 주머니 속 물건(이름 + 단정하지 않는 한 줄).
+// 소지품 한 점 — 탐색할 때마다 누적되는 주머니 속 물건(이름 + 단정하지 않는 한 줄 + 그림 키).
 export type BelongingItem = {
   id?: string; // 소각·식별용 안정 키(서버가 발급)
   name: string;
   comment: string;
+  icon?: string; // 그림 key(lib/itemIcons.mjs) — 경로는 /assets/illust/items/<icon>.webp
 };
 
 // 임무 한 건 — 인물이 스스로 세우는 계획(1인칭 독백)과 그 뒤에 남는 것(보상).

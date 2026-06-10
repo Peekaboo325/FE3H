@@ -397,10 +397,24 @@ const 골격소지품: BelongingItem[] = [
   { name: '작은 휴대용 숫돌', comment: '희미한 쇳내가 난다.' },
 ];
 
-// 소지품 카드 한 장 — 이름 + 단정하지 않는 한 줄 (골격용·정렬 없음).
+// 물건 그림 — icon key로 /assets/illust/items/<key>.webp. 그림이 아직 없으면(404) 빈 액자로.
+//  파일을 폴더에 떨구면 코드 수정 없이 자동으로 떠오른다(경로가 key에서 파생되므로).
+function ItemIcon({ icon }: { icon?: string }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [icon]); // 다른 물건으로 바뀌면 다시 시도
+  const src = icon && !failed ? `/assets/illust/items/${icon}.webp` : null;
+  return (
+    <div className={'item-icon' + (src ? '' : ' item-icon--empty')}>
+      {src && <img src={src} alt="" draggable={false} onError={() => setFailed(true)} />}
+    </div>
+  );
+}
+
+// 소지품 카드 한 장 — 그림 + 이름 + 단정하지 않는 한 줄 (골격용·정렬 없음).
 function ItemCard({ b }: { b: BelongingItem }) {
   return (
     <li className="item-card">
+      <ItemIcon icon={b.icon} />
       <div className="item-name">{b.name}</div>
       <div className="item-divider" />
       <p className="item-comment">{b.comment}</p>
@@ -439,6 +453,7 @@ function SortableItemCard({
       >
         <X size={13} />
       </IconButton>
+      <ItemIcon icon={b.icon} />
       <div className="item-name">{b.name}</div>
       <div className="item-divider" />
       <p className="item-comment">{b.comment}</p>
