@@ -21,4 +21,5 @@ export const UI = {
   rename: '개칭', //  이름 바꾸기
   submit: '전개', //  보내기
   regen: '재작성', // 재생성(다시 받기)
+  revert: '환원', // 초기화·비우기 — 장은 남기고 본문·연대 문헌만 백지로
 } as const;

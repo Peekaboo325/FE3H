@@ -2,8 +2,9 @@
 //   GET ?story_id=123  → 그 이야기의 본문(턴) 목록 (+ dbReady/error)
 //   POST {id, content} → 한 턴 내용 수정
 //   DELETE ?id=123     → 한 턴 삭제
+//   DELETE ?story_id=7 → 그 장의 본문 전체 비우기(환원 — 연대 문헌도 함께 사라짐)
 
-import { loadTurns, updateTurn, deleteTurn, dbReady } from '../lib/db.mjs';
+import { loadTurns, updateTurn, deleteTurn, clearTurns, dbReady } from '../lib/db.mjs';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -25,6 +26,12 @@ export default async function handler(req, res) {
       return;
     }
     if (req.method === 'DELETE') {
+      const storyId = req.query?.story_id ?? req.body?.story_id;
+      if (storyId) {
+        const r = await clearTurns(Number(storyId)); // 환원
+        res.status(r.error ? 500 : 200).end(JSON.stringify(r));
+        return;
+      }
       const id = req.query?.id ?? req.body?.id;
       const r = await deleteTurn(Number(id));
       res.status(r.error ? 500 : 200).end(JSON.stringify(r));

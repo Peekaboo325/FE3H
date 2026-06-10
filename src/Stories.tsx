@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check, X, Pencil, Copy, Trash2, MoreHorizontal } from 'lucide-react';
+import { Check, X, Pencil, Copy, Trash2, Eraser, MoreHorizontal } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
 import { confirmAsk, alertAsk } from './dialog';
 import { UI } from './strings';
@@ -110,6 +110,25 @@ export default function Stories({
     }
     await load();
     if (s.id === currentStoryId && d.story) onSwitch(d.story.id, d.story.title); // 헤더 제목 갱신
+  }
+
+  // 환원 — 장은 남기고 본문(전 회차)·연대 문헌만 백지로. 인물 명부·대륙 문헌은 그대로.
+  async function 환원(s: Story) {
+    const yes = await confirmAsk({
+      message: `「${s.title}」 이 장을 ${UI.revert}하시겠습니까?`,
+      detail: `본문과 연대 문헌이 모두 비워지고 백지 장만 남습니다. 인물 명부와 대륙 문헌은 남으나, 비워진 기록은 다시 불러올 수 없습니다.`,
+      confirmLabel: UI.revert,
+      danger: true,
+    });
+    if (!yes) return;
+    const r = await fetch(`/api/turns?story_id=${s.id}`, { method: 'DELETE' });
+    const d = await r.json();
+    if (!r.ok || d.error) {
+      await alertAsk({ message: `${UI.revert}하지 못했습니다.`, detail: d.error || undefined });
+      return;
+    }
+    // 지금 펼쳐둔 장을 환원했다면 백지가 된 장을 새로 펼친다.
+    if (s.id === currentStoryId) onSwitch(s.id, s.title);
   }
 
   async function 삭제(s: Story) {
@@ -233,6 +252,16 @@ export default function Stories({
                             >
                               <Copy size={15} />
                               {UI.copy}
+                            </button>
+                            <button
+                              className="row-menu-item danger"
+                              onClick={() => {
+                                setMenuId(null);
+                                환원(s);
+                              }}
+                            >
+                              <Eraser size={15} />
+                              {UI.revert}
                             </button>
                             <button
                               className="row-menu-item danger"

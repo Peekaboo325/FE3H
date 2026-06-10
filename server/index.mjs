@@ -16,6 +16,7 @@ import {
   saveTurn,
   updateTurn,
   deleteTurn,
+  clearTurns,
   dbReady,
   listStories,
   createStory,
@@ -81,6 +82,12 @@ app.post('/api/turns', async (req, res) => {
 });
 
 app.delete('/api/turns', async (req, res) => {
+  const storyId = req.query?.story_id ?? req.body?.story_id;
+  if (storyId) {
+    const r = await clearTurns(Number(storyId)); // 환원 — 장의 본문 전체 비우기
+    res.status(r.error ? 500 : 200).json(r);
+    return;
+  }
   const id = req.query?.id ?? req.body?.id;
   const r = await deleteTurn(Number(id));
   res.status(r.error ? 500 : 200).json(r);
