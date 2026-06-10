@@ -2009,11 +2009,12 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   gap: 8px;
   touch-action: manipulation; /* 터치 드래그 정렬과 클릭 공존 */
 }
-/* 좌우 대칭 여백으로 구석 소각 버튼 자리를 비움 — 가운데 정렬은 유지 */
-.item-name { font-weight: 700; font-size: 14px; padding: 0 22px; }
+/* 소각이 평소 숨어 있으니 여백은 줄바꿈 안 날 만큼만 — 가운데 정렬 유지 */
+.item-name { font-weight: 700; font-size: 14px; padding: 0 10px; }
 .item-divider { width: 22px; height: 1px; background: var(--border); }
 .item-comment { margin: 0; font-size: 12px; line-height: 1.55; color: var(--text-faint); }
-/* 카드 구석의 작은 소각 — 공용 IconButton에 크기만 줄여 얹는 변형 */
+/* 카드 구석의 소각 — 평소엔 숨김(데스크탑 hover에 등장), 테두리·원 배경 없는 유령 X.
+   활성(두 번 누르기 첫 클릭) = 붉은 X. 터치 기기는 은은하게 상시 노출. */
 .icon-btn.item-burn {
   position: absolute;
   top: 6px;
@@ -2021,13 +2022,21 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   width: 22px;
   height: 22px;
   min-width: 0;
+  padding: 0;
+  border: none;
   background: none;
+  backdrop-filter: none;
   color: var(--text-faint);
-  opacity: 0.55;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
 }
-.icon-btn.item-burn:hover { opacity: 1; background: rgba(0, 0, 0, 0.25); }
-/* 두 번 누르기 활성 상태 — 편집 소각(.btn-erase.armed)과 같은 경고색 */
-.icon-btn.item-burn.armed { opacity: 1; background: var(--danger); color: var(--accent-ink); }
+.item-card:hover .icon-btn.item-burn,
+.icon-btn.item-burn:focus-visible { opacity: 0.7; }
+.item-card:hover .icon-btn.item-burn:hover { opacity: 1; }
+.icon-btn.item-burn.armed { opacity: 1; color: var(--danger); }
+@media (hover: none) {
+  .icon-btn.item-burn { opacity: 0.45; }
+}
 
 /* 공용 토스트(src/Toast.tsx) — 상단 가운데 알약. 보고서 갱신·기록 완료 등 공용. */
 .toast {
