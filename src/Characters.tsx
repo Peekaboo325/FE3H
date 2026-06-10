@@ -431,7 +431,10 @@ function SortableItemCard({
       <IconButton
         label={UI.erase}
         className={'item-burn' + (armed ? ' armed' : '')}
-        onClick={onBurn}
+        onClick={(e) => {
+          e.stopPropagation(); // 바깥 클릭=해제 리스너가 이 클릭을 '바깥'으로 오인하지 않게
+          onBurn();
+        }}
       >
         <X size={13} />
       </IconButton>
@@ -677,6 +680,16 @@ export default function Characters({
   const [itemErr, setItemErr] = useState<string | null>(null);
   const [armedItemId, setArmedItemId] = useState<string | null>(null); // 소지품 소각 두 번 누르기 대상
   useEffect(() => setArmedItemId(null), [tab]); // 탭을 옮기면 활성 해제
+  // 바깥을 누르면 활성 해제 — 여는 클릭이 바로 해제하지 않게 다음 틱부터 듣는다(천각의 박동 메뉴와 동일 패턴).
+  useEffect(() => {
+    if (armedItemId == null) return;
+    const close = () => setArmedItemId(null);
+    const id = window.setTimeout(() => document.addEventListener('click', close), 0);
+    return () => {
+      window.clearTimeout(id);
+      document.removeEventListener('click', close);
+    };
+  }, [armedItemId]);
   const [reportToast, setReportToast] = useState<string | null>(null); // 발급/갱신 알림(보고서·임무 공용)
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
