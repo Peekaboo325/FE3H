@@ -397,15 +397,23 @@ const 골격소지품: BelongingItem[] = [
   { name: '작은 휴대용 숫돌', comment: '희미한 쇳내가 난다.' },
 ];
 
-// 물건 그림 — icon key로 /assets/illust/items/<key>.webp. 그림이 아직 없으면(404) 빈 액자로.
+// 물건 그림 — icon key로 /assets/illust/items/<key>.webp. 그림이 없거나 못 읽으면 공용 문양(fallback.webp).
 //  파일을 폴더에 떨구면 코드 수정 없이 자동으로 떠오른다(경로가 key에서 파생되므로).
 function ItemIcon({ icon }: { icon?: string }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [icon]); // 다른 물건으로 바뀌면 다시 시도
-  const src = icon && !failed ? `/assets/illust/items/${icon}.webp` : null;
+  const key = icon && !failed ? icon : 'fallback';
   return (
-    <div className={'item-icon' + (src ? '' : ' item-icon--empty')}>
-      {src && <img src={src} alt="" draggable={false} onError={() => setFailed(true)} />}
+    <div className="item-icon">
+      <img
+        src={`/assets/illust/items/${key}.webp`}
+        alt=""
+        draggable={false}
+        onError={(e) => {
+          if (key !== 'fallback') setFailed(true);
+          else e.currentTarget.style.visibility = 'hidden'; // 폴백마저 없으면 조용히 빈 칸
+        }}
+      />
     </div>
   );
 }
