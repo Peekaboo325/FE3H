@@ -39,16 +39,6 @@ for (const 파일 of 박제문서) {
 
 const SYSTEM = `${머리말}\n\n${조각.join('\n\n---\n\n')}`;
 
-const libDir = path.resolve(process.cwd(), 'lib');
-fs.mkdirSync(libDir, { recursive: true });
-const out =
-  '// ⚠️ 자동 생성 파일 — 직접 손대지 마십시오.\n' +
-  "// worldview/ 의 박제 문서가 바뀌면 'npm run bake' 로 다시 만듭니다.\n" +
-  `export const SYSTEM = ${JSON.stringify(SYSTEM)};\n`;
-fs.writeFileSync(path.join(libDir, 'worldview.mjs'), out, 'utf-8');
-
-console.log(`[bake] 세계관 박제 ${SYSTEM.length.toLocaleString()}자 → lib/worldview.mjs`);
-
 // ─── 고유명사 사전 → {정발 표기(한글) → 원어(영문)} 맵 (영문명 자동 매칭용) ───
 const dict = {};
 try {
@@ -67,6 +57,18 @@ try {
 } catch {
   console.warn('[bake] 고유명사 사전을 못 찾음 (이름 맵 건너뜀)');
 }
+
+const libDir = path.resolve(process.cwd(), 'lib');
+fs.mkdirSync(libDir, { recursive: true });
+const out =
+  '// ⚠️ 자동 생성 파일 — 직접 손대지 마십시오.\n' +
+  "// worldview/ 의 박제 문서가 바뀌면 'npm run bake' 로 다시 만듭니다.\n" +
+  `export const SYSTEM = ${JSON.stringify(SYSTEM)};\n` +
+  '// 정발 표기 목록(한글 키만) — 임무(quests) 보상 풍미용. SYSTEM과 달리 가벼운 명단이다.\n' +
+  `export const NAMES = ${JSON.stringify(Object.keys(dict))};\n`;
+fs.writeFileSync(path.join(libDir, 'worldview.mjs'), out, 'utf-8');
+
+console.log(`[bake] 세계관 박제 ${SYSTEM.length.toLocaleString()}자 → lib/worldview.mjs`);
 
 const nameOut =
   '// ⚠️ 자동 생성 파일 — 직접 손대지 마십시오.\n' +

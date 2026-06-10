@@ -1,7 +1,7 @@
 import { useState, useEffect, Fragment, type ReactNode } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
 import { alertAsk } from './dialog';
-import { useCharacters, type Character, type Bond, type CharReport } from './useCharacters';
+import { useCharacters, type Character, type Bond, type CharReport, type QuestItem } from './useCharacters';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import Button from './Button';
@@ -295,6 +295,100 @@ function ReportView({
   );
 }
 
+// 미발급/발급중 화면용 임무 골격 — 흐릿하게 깔리므로 내용은 자리채움.
+const 골격임무: QuestItem[] = [
+  { type: '의무', name: '국경의 동태 확인', description: '소문이 사실인지 이 눈으로 확인해보자.', reward: '갓 들어온 전갈 한 통' },
+  { type: '교류', name: '오랜 벗과의 대국', description: '요즘 통 보이지 않던데, 차나 한잔 청해야겠어.', reward: '식어버린 홍차의 향' },
+  { type: '돌발', name: '새벽 단련', description: '잠이 오지 않는 밤엔 검이라도 휘두르는 게 좋겠군.', reward: '손바닥의 물집' },
+];
+
+// 임무 카드 한 장 — 유형 칩 + 제목 / 1인칭 독백 / 보상 줄.
+function QuestCard({ q }: { q: QuestItem }) {
+  return (
+    <li className="quest-card">
+      <div className="quest-head">
+        <span className="quest-type">{q.type}</span>
+        <span className="quest-name">{q.name}</span>
+      </div>
+      <p className="quest-desc">“{q.description}”</p>
+      <div className="quest-reward">
+        <span className="quest-reward-label dim">보상</span>
+        <span className="quest-reward-value">{q.reward}</span>
+      </div>
+    </li>
+  );
+}
+
+// 임무 탭 — 발급본이 있으면 그대로, 없으면(또는 발급 중) 골격을 흐리고 위에 안내·버튼.
+//  보고서 탭(ReportView)과 같은 문법: 인물이 '스스로 꾸미는 계획'의 장부라 구경거리다.
+function QuestsView({
+  report,
+  questing,
+  err,
+  onIssue,
+}: {
+  report?: CharReport | null;
+  questing: boolean;
+  err: string | null;
+  onIssue: () => void;
+}) {
+  const quests = report?.quests;
+  // 첫 발급 중(장부 없음) — 골격 흐리고 스피너로 '작동 중'.
+  if (questing && !quests?.length) {
+    return (
+      <div className="report-locked">
+        <ul className="quest-list report--ghost" aria-hidden="true">
+          {골격임무.map((q, i) => (
+            <QuestCard key={i} q={q} />
+          ))}
+        </ul>
+        <div className="report-lock-overlay">
+          <Spinner label="분석관이 동향을 살피는 중…" />
+        </div>
+      </div>
+    );
+  }
+  if (quests?.length) {
+    return (
+      <div className="report">
+        <ul className="quest-list">
+          {quests.map((q, i) => (
+            <QuestCard key={i} q={q} />
+          ))}
+        </ul>
+        <div className="report-foot">
+          <IconButton
+            label={UI.regen}
+            onClick={onIssue}
+            disabled={questing}
+            className={questing ? 'spinning' : ''}
+          >
+            <RotateCcw size={17} />
+          </IconButton>
+        </div>
+        {err && <p className="report-err">{err}</p>}
+      </div>
+    );
+  }
+  // 미발급 — 골격 흐리고 위쪽에 안내·발급 버튼.
+  return (
+    <div className="report-locked">
+      <ul className="quest-list report--ghost" aria-hidden="true">
+        {골격임무.map((q, i) => (
+          <QuestCard key={i} q={q} />
+        ))}
+      </ul>
+      <div className="report-lock-overlay">
+        <p className="report-lock-msg">아직 발급되지 않은 임무 장부입니다.</p>
+        <button className="list-btn" onClick={onIssue}>
+          임무 장부 발급
+        </button>
+        {err && <p className="report-err">{err}</p>}
+      </div>
+    </div>
+  );
+}
+
 // (괄호) 안 텍스트를 작고 연하게 — 약력 값의 부연 설명 톤. (Markdown 경량 렌더러와 동일 규칙)
 function dimParens(text: string): ReactNode[] {
   return (text ?? '').split(/(\([^)]*\))/g).map((p, i) =>
@@ -432,7 +526,9 @@ export default function Characters({
   const [editBondsOpen, setEditBondsOpen] = useState(false); // 편집 모드 인연도 기본 접힘
   const [reporting, setReporting] = useState(false); // 보고서 발급 중
   const [reportErr, setReportErr] = useState<string | null>(null);
-  const [reportToast, setReportToast] = useState<string | null>(null); // 발급/갱신 알림
+  const [questing, setQuesting] = useState(false); // 임무 장부 발급 중
+  const [questErr, setQuestErr] = useState<string | null>(null);
+  const [reportToast, setReportToast] = useState<string | null>(null); // 발급/갱신 알림(보고서·임무 공용)
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
   useEffect(() => {
@@ -440,6 +536,7 @@ export default function Characters({
     setBondsOpen(false);
     setEditBondsOpen(false);
     setReportErr(null);
+    setQuestErr(null);
     setReportToast(null);
   }, [viewing?.id]); // 다른 인물(id 변경) 열 때만 약력·인연 접힘 초기화
 
@@ -474,6 +571,36 @@ export default function Characters({
       setReportErr((e as Error).message);
     } finally {
       setReporting(false);
+    }
+  }
+
+  // 임무 장부 발급(또는 재작성) — Gemini Flash가 약력·맥락을 읽고 '인물이 스스로 꾸미는 계획'을 짓는다.
+  async function 임무발급() {
+    if (!viewing?.id || questing) return;
+    const 이전 = viewing.analysis?.quests?.length ? viewing.analysis.quests : null;
+    const 이름 = firstName(viewing.name);
+    setQuesting(true);
+    setQuestErr(null);
+    setReportToast(null);
+    try {
+      const res = await fetch('/api/quests', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ character_id: viewing.id, story_id: storyId }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setQuestErr(data.error || '발급에 실패했습니다.');
+        return;
+      }
+      setViewing((v) => (v ? { ...v, analysis: data.report } : v));
+      await refresh();
+      setReportToast(`${이름}의 임무 장부가 ${이전 ? '갱신' : '발급'}되었습니다.`);
+      window.setTimeout(() => setReportToast(null), 2500);
+    } catch (e) {
+      setQuestErr((e as Error).message);
+    } finally {
+      setQuesting(false);
     }
   }
 
@@ -834,6 +961,13 @@ export default function Characters({
                   reporting={reporting}
                   err={reportErr}
                   onIssue={발급}
+                />
+              ) : tab === '임무' ? (
+                <QuestsView
+                  report={viewing.analysis}
+                  questing={questing}
+                  err={questErr}
+                  onIssue={임무발급}
                 />
               ) : (
                 <EmptyTab />

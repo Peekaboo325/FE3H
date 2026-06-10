@@ -1931,6 +1931,60 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .report-foot .icon-btn { background: rgba(0, 0, 0, 0.18); }
 .report-foot .icon-btn:hover { background: rgba(0, 0, 0, 0.3); }
 
+/* 임무 장부 — 인물 '임무' 탭. 카드 = 유형 칩 + 제목 / 1인칭 독백 / 보상 줄 */
+.quest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.quest-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.quest-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+  min-width: 0;
+}
+.quest-type {
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: var(--accent);
+  border: 1px solid currentColor;
+  background: rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+}
+.quest-name {
+  font-weight: 700;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.quest-desc {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+.quest-reward {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 9px;
+  font-size: 12px;
+}
+.quest-reward-label { letter-spacing: 3px; flex-shrink: 0; }
+.quest-reward-value { margin-left: auto; text-align: right; }
+
 /* 공용 토스트(src/Toast.tsx) — 상단 가운데 알약. 보고서 갱신·기록 완료 등 공용. */
 .toast {
   position: fixed;

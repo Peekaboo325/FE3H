@@ -8,6 +8,14 @@ export type Bond = {
   status?: 'alive' | 'deceased' | 'unknown';
 };
 
+// 임무 한 건 — 인물이 스스로 세우는 계획(1인칭 독백)과 그 뒤에 남는 것(보상).
+export type QuestItem = {
+  type: string; // 의무·야망·교류·휴식·돌발
+  name: string;
+  description: string;
+  reward: string;
+};
+
 // 분석 보고서 — LLM(Gemini Flash)이 약력·맥락을 읽고 발급한다.
 export type CharReport = {
   quote?: string;
@@ -18,6 +26,8 @@ export type CharReport = {
   unconscious?: string; // 무의식 분석
   reputation?: { source: string; comment: string }[]; // 평판 6종 (타인의 시선)
   generated_at?: string; // 발급 시각(ISO)
+  quests?: QuestItem[]; // 임무 장부 (임무 탭 — 보고서와 따로 발급)
+  quests_at?: string; // 임무 발급 시각(ISO)
 };
 
 export type Character = {
