@@ -40,12 +40,13 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 // 대륙 문헌의 다섯 영역(닫힌 목록). 분류(category) 칸에 이 제목을 그대로 담아 갈래를 가른다.
+// ⚠️ 일러스트는 옛 주제 분류 시절 그림을 임시로 걸어둠 — 새 그림(영역별 문장) 반입 시 교체.
 const TOPICS = [
-  { title: '세력 · 가문', sub: '대륙을 움직이는 세력과 혈통', img: '/assets/illust/lore-faction.webp' },
-  { title: '지역 · 지리', sub: '대륙의 형세와 도시 및 건축의 모습', img: '/assets/illust/lore-region.webp' },
-  { title: '역사 · 사건', sub: '시대를 가른 선택과 사건의 기록', img: '/assets/illust/lore-history.webp' },
-  { title: '제도 · 문화', sub: '사람들을 묶는 법도와 삶의 관습', img: '/assets/illust/lore-culture.webp' },
-  { title: '문장 · 유산', sub: '피에 깃든 문장과 영웅의 유산', img: '/assets/illust/lore-crest.webp' },
+  { title: '제국', sub: '남녘을 다스리는 검은 독수리의 제위', img: '/assets/illust/lore-faction.webp' },
+  { title: '왕국', sub: '북녘 기사들의 신앙과 충의', img: '/assets/illust/lore-region.webp' },
+  { title: '동맹', sub: '동녘 제후들의 원탁과 책략', img: '/assets/illust/lore-culture.webp' },
+  { title: '교단', sub: '여신의 가르침과 세이로스의 위계', img: '/assets/illust/lore-crest.webp' },
+  { title: '만상', sub: '어느 깃발에도 매이지 않는 만물의 기록', img: '/assets/illust/lore-history.webp' },
 ];
 const TOPIC_TITLES = TOPICS.map((t) => t.title);
 const ORPHAN = ' 미분류'; // 다섯 영역과 안 맞는 옛 분류를 모으는 자리(센티넬)
