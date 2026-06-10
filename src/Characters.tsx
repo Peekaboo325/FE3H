@@ -747,6 +747,7 @@ export default function Characters({
   async function 임무발급() {
     if (!viewing?.id || questing) return;
     const 이전 = viewing.analysis?.quests?.length ? viewing.analysis.quests : null;
+    const 이름 = firstName(viewing.name);
     setQuesting(true);
     try {
       const res = await fetch('/api/quests', {
@@ -761,7 +762,7 @@ export default function Characters({
       }
       setViewing((v) => (v ? { ...v, analysis: data.report } : v));
       await refresh();
-      showToast(이전 ? '임무가 갱신되었습니다.' : '임무가 전달되었습니다.');
+      showToast(`${이름}의 임무가 ${이전 ? '갱신' : '전달'}되었습니다.`);
     } catch {
       showToast(이전 ? '임무를 갱신하지 못했습니다.' : '임무를 전달하지 못했습니다.');
     } finally {
