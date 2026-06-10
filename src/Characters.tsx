@@ -1,12 +1,11 @@
 import { useState, useEffect, Fragment, type ReactNode } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
-import { alertAsk } from './dialog';
+import { showToast } from './toast';
 import { useCharacters, type Character, type Bond, type CharReport, type QuestItem, type BelongingItem } from './useCharacters';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import Button from './Button';
 import Spinner from './Spinner';
-import Toast from './Toast';
 import ImportDialog from './ImportDialog';
 import FaceCrop from './FaceCrop';
 import { nameDict } from './nameDict.generated';
@@ -240,12 +239,10 @@ const 골격보고서: CharReport = {
 function ReportView({
   report,
   reporting,
-  err,
   onIssue,
 }: {
   report?: CharReport | null;
   reporting: boolean;
-  err: string | null;
   onIssue: () => void;
 }) {
   // 첫 발급 중(보고서 없음) — 골격 흐리고 스피너로 '작동 중'.
@@ -275,7 +272,6 @@ function ReportView({
             <RotateCcw size={17} />
           </IconButton>
         </div>
-        {err && <p className="report-err">{err}</p>}
       </div>
     );
   }
@@ -290,7 +286,6 @@ function ReportView({
         <button className="list-btn" onClick={onIssue}>
           분석 보고서 발급
         </button>
-        {err && <p className="report-err">{err}</p>}
       </div>
     </div>
   );
@@ -325,12 +320,10 @@ function QuestCard({ q }: { q: QuestItem }) {
 function QuestsView({
   report,
   questing,
-  err,
   onIssue,
 }: {
   report?: CharReport | null;
   questing: boolean;
-  err: string | null;
   onIssue: () => void;
 }) {
   const quests = report?.quests;
@@ -367,7 +360,6 @@ function QuestsView({
             <RotateCcw size={17} />
           </IconButton>
         </div>
-        {err && <p className="report-err">{err}</p>}
       </div>
     );
   }
@@ -384,7 +376,6 @@ function QuestsView({
         <button className="list-btn" onClick={onIssue}>
           임무 장부 발급
         </button>
-        {err && <p className="report-err">{err}</p>}
       </div>
     </div>
   );
@@ -473,7 +464,6 @@ function SortableItemCard({
 function ItemsView({
   report,
   exploring,
-  err,
   armedId,
   onExplore,
   onBurn,
@@ -481,7 +471,6 @@ function ItemsView({
 }: {
   report?: CharReport | null;
   exploring: boolean;
-  err: string | null;
   armedId: string | null;
   onExplore: () => void;
   onBurn: (b: BelongingItem) => void;
@@ -538,7 +527,6 @@ function ItemsView({
             <Search size={17} />
           </IconButton>
         </div>
-        {err && <p className="report-err">{err}</p>}
       </div>
     );
   }
@@ -555,7 +543,6 @@ function ItemsView({
         <button className="list-btn" onClick={onExplore}>
           소지품 {UI.explore}
         </button>
-        {err && <p className="report-err">{err}</p>}
       </div>
     </div>
   );
@@ -697,11 +684,8 @@ export default function Characters({
   const [bondsOpen, setBondsOpen] = useState(false); // 인연 카드 펼침/접힘(기본 접힘)
   const [editBondsOpen, setEditBondsOpen] = useState(false); // 편집 모드 인연도 기본 접힘
   const [reporting, setReporting] = useState(false); // 보고서 발급 중
-  const [reportErr, setReportErr] = useState<string | null>(null);
   const [questing, setQuesting] = useState(false); // 임무 장부 발급 중
-  const [questErr, setQuestErr] = useState<string | null>(null);
   const [exploring, setExploring] = useState(false); // 소지품 탐색 중
-  const [itemErr, setItemErr] = useState<string | null>(null);
   const [armedItemId, setArmedItemId] = useState<string | null>(null); // 소지품 소각 두 번 누르기 대상
   useEffect(() => setArmedItemId(null), [tab]); // 탭을 옮기면 활성 해제
   // ESC = 그 화면의 뒤로/취소(없으면 닫기) — 편집 중 실수로 패널 전체가 닫히지 않게 한 겹씩.
@@ -721,28 +705,20 @@ export default function Characters({
       document.removeEventListener('click', close);
     };
   }, [armedItemId]);
-  const [reportToast, setReportToast] = useState<string | null>(null); // 발급/갱신 알림(보고서·임무 공용)
   const [armed, setArmed] = useState(false); // 삭제 두 번 누르기: 첫 클릭=활성, 둘째=실행
   useEffect(() => setArmed(false), [editing]); // 다른 인물로 옮기거나 닫으면 해제
   useEffect(() => {
     setTab('약력');
     setBondsOpen(false);
     setEditBondsOpen(false);
-    setReportErr(null);
-    setQuestErr(null);
-    setItemErr(null);
     setArmedItemId(null);
-    setReportToast(null);
   }, [viewing?.id]); // 다른 인물(id 변경) 열 때만 약력·인연 접힘 초기화
 
   // 분석 보고서 발급(또는 새로고침/재작성) — Gemini Flash가 약력·맥락을 읽고 짓는다.
   async function 발급() {
     if (!viewing?.id || reporting) return;
     const 이전 = viewing.analysis ?? null; // 갱신 여부 판단용(이전 보고서)
-    const 이름 = firstName(viewing.name);
     setReporting(true);
-    setReportErr(null);
-    setReportToast(null);
     try {
       const res = await fetch('/api/report', {
         method: 'POST',
@@ -751,19 +727,17 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        setReportErr(data.error || '발급에 실패했습니다.');
+        showToast(이전 ? '보고서를 갱신하지 못했습니다.' : '보고서를 발급하지 못했습니다.');
         return;
       }
       setViewing((v) => (v ? { ...v, analysis: data.report } : v));
       await refresh();
       // 발급/갱신 알림 — 내용이 실제로 바뀐 경우만(generated_at 제외 비교).
       const 알맹이 = (r: CharReport | null) => (r ? JSON.stringify({ ...r, generated_at: '' }) : '');
-      if (!이전) setReportToast(`${이름}의 보고서가 발급되었습니다.`);
-      else if (알맹이(이전) !== 알맹이(data.report))
-        setReportToast(`${이름}의 보고서가 갱신되었습니다.`);
-      window.setTimeout(() => setReportToast(null), 2500);
-    } catch (e) {
-      setReportErr((e as Error).message);
+      if (!이전) showToast('보고서가 발급되었습니다.');
+      else if (알맹이(이전) !== 알맹이(data.report)) showToast('보고서가 갱신되었습니다.');
+    } catch {
+      showToast(이전 ? '보고서를 갱신하지 못했습니다.' : '보고서를 발급하지 못했습니다.');
     } finally {
       setReporting(false);
     }
@@ -773,10 +747,7 @@ export default function Characters({
   async function 임무발급() {
     if (!viewing?.id || questing) return;
     const 이전 = viewing.analysis?.quests?.length ? viewing.analysis.quests : null;
-    const 이름 = firstName(viewing.name);
     setQuesting(true);
-    setQuestErr(null);
-    setReportToast(null);
     try {
       const res = await fetch('/api/quests', {
         method: 'POST',
@@ -785,15 +756,14 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        setQuestErr(data.error || '발급에 실패했습니다.');
+        showToast(이전 ? '임무를 갱신하지 못했습니다.' : '임무를 전달하지 못했습니다.');
         return;
       }
       setViewing((v) => (v ? { ...v, analysis: data.report } : v));
       await refresh();
-      setReportToast(`${이름}의 임무 장부가 ${이전 ? '갱신' : '발급'}되었습니다.`);
-      window.setTimeout(() => setReportToast(null), 2500);
-    } catch (e) {
-      setQuestErr((e as Error).message);
+      showToast(이전 ? '임무가 갱신되었습니다.' : '임무가 전달되었습니다.');
+    } catch {
+      showToast(이전 ? '임무를 갱신하지 못했습니다.' : '임무를 전달하지 못했습니다.');
     } finally {
       setQuesting(false);
     }
@@ -804,8 +774,6 @@ export default function Characters({
     if (!viewing?.id || exploring) return;
     const 이름 = firstName(viewing.name);
     setExploring(true);
-    setItemErr(null);
-    setReportToast(null);
     try {
       const res = await fetch('/api/items', {
         method: 'POST',
@@ -814,15 +782,14 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        setItemErr(data.error || `${UI.explore}에 실패했습니다.`);
+        showToast('소지품을 확인하지 못했습니다.');
         return;
       }
       setViewing((v) => (v ? { ...v, analysis: data.report } : v));
       await refresh();
-      setReportToast(`${이름}의 주머니에서 새 물건을 찾았습니다.`);
-      window.setTimeout(() => setReportToast(null), 2500);
-    } catch (e) {
-      setItemErr((e as Error).message);
+      showToast(`${이름}의 소지품이 새로 확인되었습니다.`);
+    } catch {
+      showToast('소지품을 확인하지 못했습니다.');
     } finally {
       setExploring(false);
     }
@@ -842,13 +809,13 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        setItemErr(data.error || `${UI.erase}하지 못했습니다.`);
+        showToast(`소지품을 ${UI.erase}하지 못했습니다.`);
         return;
       }
       setViewing((v) => (v ? { ...v, analysis: data.report } : v));
       await refresh();
-    } catch (e) {
-      setItemErr((e as Error).message);
+    } catch {
+      showToast(`소지품을 ${UI.erase}하지 못했습니다.`);
     }
   }
 
@@ -873,12 +840,12 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        setItemErr(data.error || '정렬을 기록하지 못했습니다.');
+        showToast('정렬을 완료하지 못했습니다.');
         return;
       }
       await refresh();
-    } catch (e) {
-      setItemErr((e as Error).message);
+    } catch {
+      showToast('정렬을 완료하지 못했습니다.');
     }
   }
 
@@ -892,15 +859,15 @@ export default function Characters({
     try {
       const thumb = await 이미지를_썸네일로(f); // 초상: 큰 히어로용(1400px)
       set('thumbnail', thumb);
-    } catch (err) {
-      await alertAsk({ message: '초상을 올리지 못했습니다.', detail: (err as Error).message });
+    } catch {
+      showToast('초상을 등록하지 못했습니다.');
     }
   }
 
   async function save() {
     if (!editing) return;
     if (!editing.name.trim()) {
-      await alertAsk({ message: '성명은 꼭 필요합니다.' });
+      showToast('인물의 성명을 입력하십시오.');
       return;
     }
     setSaving(true);
@@ -914,7 +881,7 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        await alertAsk({ message: `${UI.save}하지 못했습니다.`, detail: data.error || '알 수 없는 까닭' });
+        showToast(`인물을 ${UI.save}하지 못했습니다.`);
         return;
       }
       await refresh();
@@ -934,7 +901,7 @@ export default function Characters({
     const res = await fetch(`/api/characters?id=${editing.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok || data.error) {
-      await alertAsk({ message: `${UI.erase}하지 못했습니다.`, detail: data.error || undefined });
+      showToast(`인물을 ${UI.erase}하지 못했습니다.`);
       return;
     }
     await refresh();
@@ -1237,21 +1204,18 @@ export default function Characters({
                 <ReportView
                   report={viewing.analysis}
                   reporting={reporting}
-                  err={reportErr}
                   onIssue={발급}
                 />
               ) : tab === '임무' ? (
                 <QuestsView
                   report={viewing.analysis}
                   questing={questing}
-                  err={questErr}
                   onIssue={임무발급}
                 />
               ) : tab === '소지품' ? (
                 <ItemsView
                   report={viewing.analysis}
                   exploring={exploring}
-                  err={itemErr}
                   armedId={armedItemId}
                   onExplore={탐색}
                   onBurn={물건소각}
@@ -1261,7 +1225,6 @@ export default function Characters({
                 <EmptyTab />
               )}
             </div>
-            {reportToast && <Toast>{reportToast}</Toast>}
           </div>
         )}
 

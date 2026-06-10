@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { UI } from './strings';
+import { showToast } from './toast';
 import Modal from './Modal';
 import Button from './Button';
 import Spinner from './Spinner';
@@ -39,10 +40,10 @@ export default function Chronicle({
         setSelected({ ...selected, summary: d.summary });
         setList((prev) => prev.map((e) => (e.id === selected.id ? { ...e, summary: d.summary } : e)));
       } else {
-        alert(d.error || '다시 적지 못했습니다.');
+        showToast(d.error || '재기록에 실패했습니다.');
       }
     } catch {
-      alert('다시 적지 못했습니다.');
+      showToast('재기록에 실패했습니다.');
     }
     setRedoing(false);
   };

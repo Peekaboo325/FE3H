@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Check, X, Pencil, Copy, Trash2, Eraser, MoreHorizontal } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
-import { confirmAsk, alertAsk } from './dialog';
+import { confirmAsk } from './dialog';
+import { showToast } from './toast';
 import { UI } from './strings';
 import Modal from './Modal';
 import IconButton from './IconButton';
@@ -64,7 +65,7 @@ export default function Stories({
     });
     const d = await r.json();
     if (!r.ok || d.error || !d.story) {
-      await alertAsk({ message: '새 이야기를 펼치지 못했습니다.', detail: d.error || undefined });
+      showToast('새 운명의 장을 펼치지 못했습니다.');
       return;
     }
     onSwitch(d.story.id, d.story.title); // 새 이야기로 전환
@@ -80,7 +81,7 @@ export default function Stories({
       });
       const d = await r.json();
       if (!r.ok || d.error) {
-        await alertAsk({ message: `${UI.copy}하지 못했습니다.`, detail: d.error || undefined });
+        showToast(`운명의 장을 ${UI.copy}하지 못했습니다.`);
         return;
       }
       await load();
@@ -105,7 +106,7 @@ export default function Stories({
     });
     const d = await r.json();
     if (!r.ok || d.error) {
-      await alertAsk({ message: `${UI.rename}하지 못했습니다.`, detail: d.error || undefined });
+      showToast(`운명의 장을 ${UI.rename}하지 못했습니다.`);
       return;
     }
     await load();
@@ -124,7 +125,7 @@ export default function Stories({
     const r = await fetch(`/api/turns?story_id=${s.id}`, { method: 'DELETE' });
     const d = await r.json();
     if (!r.ok || d.error) {
-      await alertAsk({ message: `${UI.revert}하지 못했습니다.`, detail: d.error || undefined });
+      showToast(`운명의 장을 ${UI.revert}하지 못했습니다.`);
       return;
     }
     // 지금 펼쳐둔 장을 환원했다면 백지가 된 장을 새로 펼친다.
@@ -142,7 +143,7 @@ export default function Stories({
     const r = await fetch(`/api/stories?id=${s.id}`, { method: 'DELETE' });
     const d = await r.json();
     if (!r.ok || d.error) {
-      await alertAsk({ message: `${UI.erase}하지 못했습니다.`, detail: d.error || undefined });
+      showToast(`운명의 장을 ${UI.erase}하지 못했습니다.`);
       return;
     }
     // 목록 갱신 + 현재 이야기를 지웠으면 다른 이야기로 전환.

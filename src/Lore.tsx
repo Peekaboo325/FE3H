@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLore, type Lore, type LoreSection } from './useLore';
-import { alertAsk } from './dialog';
+import { showToast } from './toast';
 import ImportDialog from './ImportDialog';
 import {
   X,
@@ -296,11 +296,11 @@ export default function LorePanel({
   async function save() {
     if (!editing) return;
     if (!editing.title.trim()) {
-      await alertAsk({ message: '갈래(이름)는 꼭 필요합니다.' });
+      showToast('갈래명을 입력하십시오.');
       return;
     }
     if (!editing.category) {
-      await alertAsk({ message: '영역을 골라 주십시오.' });
+      showToast('영역을 선택하십시오.');
       return;
     }
     const cleanSecs: LoreSection[] = secs
@@ -316,7 +316,7 @@ export default function LorePanel({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        await alertAsk({ message: `${UI.save}하지 못했습니다.`, detail: data.error || '알 수 없는 까닭' });
+        showToast(`문헌을 ${UI.save}하지 못했습니다.`);
         return;
       }
       await refresh();
@@ -338,7 +338,7 @@ export default function LorePanel({
     const res = await fetch(`/api/lore?id=${editing.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok || data.error) {
-      await alertAsk({ message: `${UI.erase}하지 못했습니다.`, detail: data.error || undefined });
+      showToast(`문헌을 ${UI.erase}하지 못했습니다.`);
       return;
     }
     await refresh();

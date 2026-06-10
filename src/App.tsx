@@ -10,7 +10,8 @@ import LoadingIndicator from './Loading';
 import { hasAnchor } from './anchorDetect';
 import { stripMarkdown } from './podraScript';
 import { defaultStoryTitle } from './storyTitle';
-import { alertAsk, DialogHost } from './dialog';
+import { DialogHost } from './dialog';
+import { showToast, ToastHost } from './toast';
 import { UI } from './strings';
 import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon } from 'lucide-react';
 
@@ -51,13 +52,10 @@ export default function App() {
   const [editText, setEditText] = useState('');
   const [armedTurn, setArmedTurn] = useState<number | null>(null); // 삭제 두 번 누르기 대상
   const [pendingRecall, setPendingRecall] = useState(false); // 이번 생성이 '회상'(앵커)인가 → 로딩 톤
-  const [recallToast, setRecallToast] = useState<{ text: string; id: number } | null>(null);
 
   // 되짚었음을 잠깐 알리는 토스트(떴다 사라짐). 본문/DB와 무관, 화면 표시뿐.
   function showRecallToast(r: Recall) {
-    const id = Date.now();
-    setRecallToast({ text: `❧ 되짚은 기록 — ${recallTraceText(r)}`, id });
-    window.setTimeout(() => setRecallToast((cur) => (cur?.id === id ? null : cur)), 3200);
+    showToast(`회상한 기록 - ${recallTraceText(r)}`);
   }
   const [visibleCount, setVisibleCount] = useState(WINDOW); // 지금 펼쳐 둔 칸 수
   const [pendingJump, setPendingJump] = useState<number | null>(null); // 연대 문헌에서 '그 화로 가기'
@@ -337,7 +335,7 @@ export default function App() {
       }
     }
     if (promptIdx < 0) {
-      await alertAsk({ message: '앞선 지시가 없어 다시 받을 수 없습니다.' });
+      showToast('재작성할 앞선 지시가 없습니다.');
       return;
     }
 
@@ -402,11 +400,7 @@ export default function App() {
   return (
     <div className={'page ' + mode}>
       <DialogHost />
-      {recallToast && (
-        <div className="recall-toast" key={recallToast.id}>
-          {recallToast.text}
-        </div>
-      )}
+      <ToastHost />
       <header className="head">
         <button className="hamburger" onClick={() => setMenuOpen(true)} aria-label="메뉴">
           <MenuIcon size={17} />

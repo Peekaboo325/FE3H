@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { UI } from './strings';
+import { showToast } from './toast';
 import Modal from './Modal';
 import Button from './Button';
-import Toast from './Toast';
 import Spinner from './Spinner';
 
 // 기록 지침 — 기록자(유저)가 직접 적어 모든 이야기의 본문에 함께 얹는 전역 집필 지침.
@@ -11,7 +11,6 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [dbOk, setDbOk] = useState(true);
 
   useEffect(() => {
@@ -36,7 +35,6 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
 
   const 기록 = async () => {
     setSaving(true);
-    setSaved(false);
     try {
       const r = await fetch('/api/guidance', {
         method: 'POST',
@@ -44,18 +42,10 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
         body: JSON.stringify({ text }),
       });
       const d = await r.json();
-      if (d.ok) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2500);
-      } else {
-        alert(
-          d.error
-            ? `기록하지 못했습니다 — ${d.error}\n(settings 표가 없으면 안내된 SQL을 한 번 실행하십시오.)`
-            : '기록하지 못했습니다.',
-        );
-      }
+      if (d.ok) showToast('기록되었습니다.');
+      else showToast('지침을 기록하지 못했습니다.');
     } catch {
-      alert('기록하지 못했습니다.');
+      showToast('지침을 기록하지 못했습니다.');
     }
     setSaving(false);
   };
@@ -79,7 +69,6 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
                   {UI.save}
                 </Button>
               </div>
-              {saved && <Toast>기록되었습니다.</Toast>}
             </>
           )}
         </div>
