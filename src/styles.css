@@ -1932,6 +1932,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .report-foot .icon-btn:hover { background: rgba(0, 0, 0, 0.3); }
 
 /* 임무 장부 — 인물 '임무' 탭. 카드 = 유형 칩 + 제목 / 1인칭 독백 / 보상 줄 */
+/* 발급된 임무 화면 — 골격/로딩(.report-locked 360px)과 같은 바닥을 둬 재작성 버튼 위치를 맞춘다. */
+.report--quests { display: flex; flex-direction: column; min-height: 360px; }
+.report--quests .report-foot { margin-top: auto; padding-top: 10px; }
 .quest-list {
   list-style: none;
   margin: 0;

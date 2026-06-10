@@ -350,7 +350,7 @@ function QuestsView({
   }
   if (quests?.length) {
     return (
-      <div className="report">
+      <div className="report report--quests">
         <ul className="quest-list">
           {quests.map((q, i) => (
             <QuestCard key={i} q={q} />
