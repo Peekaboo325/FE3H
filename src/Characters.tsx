@@ -384,20 +384,22 @@ const 골격소지품: BelongingItem[] = [
 ];
 
 // 물건 그림 — icon key로 /assets/illust/items/<key>.webp. 그림이 없거나 못 읽으면 공용 문양(fallback.webp).
-//  파일을 폴더에 떨구면 코드 수정 없이 자동으로 떠오른다(경로가 key에서 파생되므로).
+//  ⚠️ 그림은 오직 icon prop의 함수 — 어떤 내부 상태도 '그 아이콘'에만 묶는다.
+//   · 실패는 '실패한 icon 이름'으로 기억 → 다른 물건(다른 icon)으로 바뀌면 자동 무효(이웃 칸으로 누수 차단).
+//   · <img>에 key={해석된 파일명} → 파일이 바뀌면 DOM을 새로 그린다(재사용 노드의 잔상 차단).
+//   · 명령형 DOM 조작(style 직접 수정) 금지 — React가 못 따라가 잔상이 남는다.
 function ItemIcon({ icon }: { icon?: string }) {
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [icon]); // 다른 물건으로 바뀌면 다시 시도
-  const key = icon && !failed ? icon : 'fallback';
+  const [brokenIcon, setBrokenIcon] = useState<string | null>(null);
+  const resolved = icon && brokenIcon !== icon ? icon : 'fallback';
   return (
     <div className="item-icon">
       <img
-        src={`/assets/illust/items/${key}.webp`}
+        key={resolved}
+        src={`/assets/illust/items/${resolved}.webp`}
         alt=""
         draggable={false}
-        onError={(e) => {
-          if (key !== 'fallback') setFailed(true);
-          else e.currentTarget.style.visibility = 'hidden'; // 폴백마저 없으면 조용히 빈 칸
+        onError={() => {
+          if (resolved !== 'fallback') setBrokenIcon(icon ?? null);
         }}
       />
     </div>
