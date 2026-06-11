@@ -351,13 +351,8 @@ function QuestsView({
           ))}
         </ul>
         <div className="report-foot">
-          <IconButton
-            label={UI.regen}
-            onClick={onIssue}
-            disabled={questing}
-            className={questing ? 'spinning' : ''}
-          >
-            <RotateCcw size={17} />
+          <IconButton label={UI.regen} onClick={onIssue} disabled={questing}>
+            {questing ? <span className="spinner" /> : <Search size={17} />}
           </IconButton>
         </div>
       </div>
@@ -518,13 +513,8 @@ function ItemsView({
           </SortableContext>
         </DndContext>
         <div className="report-foot">
-          <IconButton
-            label={UI.explore}
-            onClick={onExplore}
-            disabled={exploring}
-            className={exploring ? 'spinning' : ''}
-          >
-            <Search size={17} />
+          <IconButton label={UI.explore} onClick={onExplore} disabled={exploring}>
+            {exploring ? <span className="spinner" /> : <Search size={17} />}
           </IconButton>
         </div>
       </div>
