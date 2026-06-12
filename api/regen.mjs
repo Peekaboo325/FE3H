@@ -65,7 +65,7 @@ export default async function handler(req, res) {
       model: MODEL,
       max_tokens: 8000,
       thinking: { type: 'adaptive' },
-      output_config: { effort: 'low' },
+      output_config: { effort: 'medium' }, // 사실 정밀도 실험(2026-06-13, 빌더 승인) — 끊김(60초) 재발 시 low 회귀 또는 Vercel Pro
       system,
       messages,
     });
