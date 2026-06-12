@@ -540,7 +540,9 @@ em, i { font-style: normal; }
 }
 .btn:disabled { cursor: default; }
 .btn-label { display: inline-flex; align-items: center; gap: 7px; } /* 로딩 시 visibility:hidden로 자리만 유지 → 폭 고정 */
-.btn-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+/* 가운데 정렬을 transform 아닌 inset+margin으로 — 회전 애니메이션(transform:rotate)과 안 부딪히게.
+   (translate 정렬을 쓰면 spin이 transform을 덮어써 스피너가 아래로 휘어 보였음) */
+.btn-spinner { position: absolute; inset: 0; margin: auto; }
 /* 차분(기본): 취소·재작성·이동 등 */
 .btn--secondary { background: var(--surface-2); color: var(--text); }
 .btn--secondary:hover:not(:disabled) { background: var(--hover); }
