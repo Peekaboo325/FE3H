@@ -140,9 +140,13 @@ export default function App() {
     };
   }, []);
 
-  // 새 문장이 흘러나올 때마다 맨 아래로 따라간다.
+  // 새 문장이 흘러나올 때마다 맨 아래로 따라간다 — 단, '바닥 근처에 있을 때만'.
+  // 위쪽 화를 수정·소각·재작성하는 중에 화면을 바닥으로 빼앗아 가지 않게(테스트·퇴고 방해 버그 수정).
   useEffect(() => {
-    끝.current?.scrollIntoView({ behavior: 'smooth' });
+    const sc = document.querySelector('main.scroll');
+    if (!sc) return;
+    const 바닥근처 = sc.scrollHeight - sc.scrollTop - sc.clientHeight < 160;
+    if (바닥근처) 끝.current?.scrollIntoView({ behavior: 'smooth' });
   }, [turns, busy]);
 
   // 연대 문헌 '그 화로 가기' — 창을 넓혀 그 화가 그려지면 그곳으로 스크롤.
@@ -201,6 +205,8 @@ export default function App() {
     setInput('');
     setBusy(true);
     setPendingRecall(hasAnchor(입력)); // 앵커가 있으면 로딩을 '회상' 톤으로
+    // 전개는 명시적 행동 — 위에서 읽던 중이었어도 새 화가 시작되는 곳으로 내려간다.
+    requestAnimationFrame(() => 끝.current?.scrollIntoView({ behavior: 'smooth' }));
 
     const messages = 다음.slice(0, -1).map((t) => ({ role: t.role, content: t.content }));
 
