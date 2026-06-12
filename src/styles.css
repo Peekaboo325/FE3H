@@ -194,6 +194,8 @@ body::before {
   flex: 1;
   min-height: 0; /* 입력칸이 커지면 본문 영역이 줄고, 입력바는 위로 자란다 */
   overflow-y: auto; /* 전체 폭 스크롤 → 스크롤바가 창 맨 오른쪽에 */
+  /* 글 고칠 때 커서 줄이 키보드(화면 바닥)에 딱 붙지 않게 — 커서 아래 숨통 */
+  scroll-padding-bottom: 140px;
 }
 .scroll-inner {
   max-width: 720px;
@@ -308,15 +310,15 @@ em, i { font-style: normal; }
 .turn.story th,
 .turn.story td { border: 1px solid var(--border); padding: 4px 8px; }
 
-/* 메시지 인라인 편집 */
+/* 메시지 인라인 편집 — 박스는 내용만큼 통째로 자라고(내부 스크롤 없음), 커서 이동은 바깥 .scroll이 받는다 */
 .turn-edit textarea {
   display: block;
   width: 100%;
   box-sizing: border-box;
   min-height: 2.8em;
-  max-height: 70vh;
-  overflow-y: auto;
-  resize: vertical;
+  overflow-y: hidden;
+  resize: none;
+  scroll-margin-bottom: 140px; /* 포커스로 끌려올 때도 키보드 위 숨통 */
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: 8px;

@@ -168,12 +168,14 @@ export default function App() {
     setPendingJump(turnId); // 위 effect가 렌더 후 스크롤
   }
 
-  // 편집박스 높이를 내용 분량에 맞춰 자동 조절(짧으면 작게, 길면 커지되 70vh 상한).
+  // 편집박스 높이를 내용 분량에 맞춰 자동 조절 — 상한 없이 내용만큼 통째로 자란다.
+  // (상한을 두면 박스 '내부' 스크롤이 생기는데, iOS는 내부 스크롤에서 커서를 키보드에
+  //  딱 붙여 놓아 고치기 힘들다 — 바깥(.scroll) 스크롤로 넘겨야 scroll-padding 숨통이 먹는다)
   useEffect(() => {
     const el = editRef.current;
     if (el) {
       el.style.height = 'auto';
-      el.style.height = Math.min(el.scrollHeight, window.innerHeight * 0.7) + 'px';
+      el.style.height = el.scrollHeight + 'px';
     }
   }, [editText, editingTurn]);
 
