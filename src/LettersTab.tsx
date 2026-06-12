@@ -37,17 +37,6 @@ const 함목록: { key: Box; label: string }[] = [
   { key: 'drafts', label: UI.drafts },
 ];
 
-// 서신 유형의 화면 표기(목록·상세의 작은 칩).
-const 유형표기: Record<string, string> = {
-  letter: '서신',
-  note: '쪽지',
-  official: '공문',
-  invitation: '초대장',
-  petition: '탄원',
-  warning: '경고장',
-  will: '유서',
-};
-
 // 서명 표시 — 라틴(영문 이름)만 흘림체(.script)로. "왕세자 Dimitri" → 한글은 정자, 이름은 흘림.
 function SignatureText({ text }: { text: string }) {
   const parts = (text ?? '').split(/([A-Za-z][A-Za-z .'’-]*[A-Za-z.]|[A-Za-z])/g);
@@ -66,18 +55,19 @@ function SignatureText({ text }: { text: string }) {
   );
 }
 
-// 목록 행에 보일 상대 이름 — 등록 인물(id 있음)은 퍼스트네임, 子·모브는 적힌 그대로.
-function 상대표기(name: string, hasId: boolean) {
-  return hasId ? firstName(name) : name || '?';
-}
-
 export default function LettersTab({
   ownerId,
   storyId,
+  bondNames = [],
 }: {
   ownerId: number;
   storyId: number | null;
+  bondNames?: string[]; // 함 주인의 인연(子) 이름들 — 목록 표기를 퍼스트네임으로 줄이는 판단용
 }) {
+  // 목록 행에 보일 상대 이름 — 사람 이름(등록 인물·인연)은 퍼스트네임만, 모브 직함은 그대로.
+  const 상대표기 = (name: string, hasId: boolean) =>
+    hasId || bondNames.includes(name) ? firstName(name) : name || '?';
+
   const [letters, setLetters] = useState<Letter[]>([]);
   const [loading, setLoading] = useState(true);
   const [box, setBox] = useState<Box>('in');
@@ -245,7 +235,6 @@ export default function LettersTab({
             <h3 className="letter-title">{sel.title}</h3>
           )}
           <div className="letter-meta">
-            <span className="letter-type-chip">{유형표기[sel.type] || '서신'}</span>
             <span>
               {incoming ? '발신' : '수신'} ·{' '}
               {incoming ? sel.sender_name : sel.recipient_name}
@@ -322,11 +311,7 @@ export default function LettersTab({
             return (
               <li key={l.id}>
                 <button className="letter-row" onClick={() => 열람(l)}>
-                  {l.is_sealed ? (
-                    <span className="letter-seal">봉인</span>
-                  ) : (
-                    <span className="letter-type-chip">{유형표기[l.type] || '서신'}</span>
-                  )}
+                  {l.is_sealed && <span className="letter-seal">봉인</span>}
                   <span className="letter-row-title">{l.title}</span>
                   <span className="letter-row-peer">{peer}</span>
                 </button>

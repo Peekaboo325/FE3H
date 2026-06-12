@@ -1199,7 +1199,11 @@ export default function Characters({
                   onReorder={물건정렬}
                 />
               ) : (
-                <LettersTab ownerId={viewing.id!} storyId={storyId} />
+                <LettersTab
+                  ownerId={viewing.id!}
+                  storyId={storyId}
+                  bondNames={(viewing.bonds ?? []).map((b) => b.name).filter(Boolean)}
+                />
               )}
             </div>
           </div>
