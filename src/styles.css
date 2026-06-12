@@ -2124,8 +2124,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .letter-list { list-style: none; margin: 0 0 8px; padding: 0; }
 .letter-row {
   display: flex; align-items: center; gap: 10px; width: 100%;
-  padding: 17px 4px; border: none; border-bottom: 1px solid var(--border);
+  padding: 17px 16px; border: none; border-bottom: 1px solid var(--border);
   background: none; color: var(--text); font-size: 14px; cursor: pointer; text-align: left;
+  border-radius: 10px;
 }
 .letter-row:hover { background: var(--hover); }
 .letter-row-title {
