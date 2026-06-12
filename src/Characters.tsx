@@ -14,15 +14,7 @@ import Markdown from './Markdown';
 import Dropdown from './Dropdown';
 import useEscClose from './useEscClose';
 import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw, Plus, Search } from 'lucide-react';
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
+import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -31,6 +23,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useSortSensors } from './useSortSensors';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -474,10 +467,7 @@ function ItemsView({
   onReorder: (activeId: string, overId: string) => void;
 }) {
   const items = report?.belongings;
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
-  );
+  const sensors = useSortSensors();
   const onDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     if (over && active.id !== over.id) onReorder(String(active.id), String(over.id));
@@ -933,10 +923,7 @@ export default function Characters({
   // 드래그 정렬용 로컬 순서(서버 목록과 동기화) + 마우스·터치 센서
   const [items, setItems] = useState<Character[]>([]);
   useEffect(() => setItems(chars), [chars]);
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
-  );
+  const sensors = useSortSensors();
 
   async function onDragEnd(e: DragEndEvent) {
     const { active, over } = e;

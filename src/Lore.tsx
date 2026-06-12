@@ -23,15 +23,7 @@ import Button from './Button';
 import Spinner from './Spinner';
 import Dropdown from './Dropdown';
 import Markdown from './Markdown';
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
+import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -39,6 +31,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useSortSensors } from './useSortSensors';
 
 // 대륙 문헌의 다섯 영역(닫힌 목록). 분류(category) 칸에 이 제목을 그대로 담아 갈래를 가른다.
 const TOPICS = [
@@ -210,10 +203,7 @@ export default function LorePanel({
     else onClose();
   });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
-  );
+  const sensors = useSortSensors();
 
   function set<K extends keyof Lore>(k: K, v: Lore[K]) {
     setEditing((prev) => (prev ? { ...prev, [k]: v } : prev));

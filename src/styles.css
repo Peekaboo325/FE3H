@@ -716,7 +716,14 @@ em, i { font-style: normal; }
 .bonds-wrap.open { grid-template-rows: 1fr; }
 .bonds-inner { overflow: hidden; }
 .bond-list { margin: 12px 0 0; padding: 0; list-style: none; }
-.bond-row { display: flex; align-items: flex-start; gap: 16px; padding: 16px 0; }
+.bond-row {
+  display: flex; align-items: flex-start; gap: 16px; padding: 16px 0;
+  /* 모바일 '꾹 눌러 끌기'가 스크롤·iOS 길게누르기 메뉴·텍스트선택에 가로채이지 않게 */
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
 .bond-row + .bond-row { border-top: 1px solid var(--border); }
 .bond-left {
   flex: 0 0 75px;
@@ -914,7 +921,9 @@ em, i { font-style: normal; }
 .lore-vol {
   display: flex; align-items: center; gap: 4px;
   border-radius: 8px; position: relative; padding-right: 2px;
-  user-select: none; -webkit-user-select: none; /* 드래그 중 텍스트 선택 방지 */
+  /* 모바일 '꾹 눌러 끌기'가 스크롤·iOS 길게누르기 메뉴·텍스트선택에 가로채이지 않게 */
+  touch-action: manipulation;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
 .lore-vol:hover { background: var(--hover); }
 .lore-vol.sel { background: var(--surface-2); }
@@ -1183,7 +1192,8 @@ em, i { font-style: normal; }
 }
 .char-card {
   cursor: pointer;
-  /* 드래그앤드롭이 iOS 길게누르기 메뉴·텍스트선택에 가로채이지 않게 */
+  /* 모바일 '꾹 눌러 끌기'가 스크롤·iOS 길게누르기 메뉴·텍스트선택에 가로채이지 않게 */
+  touch-action: manipulation;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
@@ -1979,7 +1989,11 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   align-items: center;
   text-align: center;
   gap: 7px;
-  touch-action: manipulation; /* 터치 드래그 정렬과 클릭 공존 */
+  /* 모바일 '꾹 눌러 끌기'가 스크롤·iOS 길게누르기 메뉴·텍스트선택에 가로채이지 않게 */
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 /* 그림 자리 — 정사각 앵커(legacy 인벤토리 문법). 그림 없으면 은은한 빈 액자. */
 .item-icon {
