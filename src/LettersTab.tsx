@@ -138,9 +138,10 @@ export default function LettersTab({
     }
   }
 
-  // 열람 — 봉인된 편지는 여는 순간 개봉(읽음).
+  // 열람 — 봉인된 편지는 여는 순간 개봉(읽음). sel도 함께 풀어야(편집 저장 때 묵은 봉인이
+  // 되살아나 'new'로 보이던 버그) — 목록·상세·DB 세 곳을 같은 상태로 둔다.
   function 열람(l: Letter) {
-    setSel(l);
+    setSel(l.is_sealed ? { ...l, is_sealed: false } : l);
     setEditing(false);
     if (l.is_sealed) {
       setLetters((prev) => prev.map((x) => (x.id === l.id ? { ...x, is_sealed: false } : x)));
