@@ -2104,3 +2104,65 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .dd-opt { padding: 8px 10px; border-radius: 6px; font-size: 14px; color: var(--text); cursor: pointer; }
 .dd-opt:hover { background: var(--surface); }
 .dd-opt.on { color: var(--accent); }
+
+/* ── 서신 탭 — 수신함/발신함/보관함 (설계: docs/서신_설계.md) ─────────────── */
+.letter-boxes { display: flex; gap: 6px; margin-bottom: 12px; }
+.letter-box-btn {
+  flex: 1; padding: 7px 0; border: 1px solid var(--border); border-radius: 999px;
+  background: none; color: var(--text-dim); font-size: 12.5px; cursor: pointer;
+  position: relative;
+}
+.letter-box-btn.on { color: var(--accent); border-color: var(--accent); background: rgba(194, 163, 107, 0.08); }
+.letter-dot { /* 수신함에 봉인(안 읽은) 편지가 있다는 점 */
+  position: absolute; top: 6px; margin-left: 4px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block;
+}
+
+.letter-list { list-style: none; margin: 0 0 8px; padding: 0; }
+.letter-row {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 12px 4px; border: none; border-bottom: 1px solid var(--border);
+  background: none; color: var(--text); font-size: 14px; cursor: pointer; text-align: left;
+}
+.letter-row:hover { background: var(--hover); }
+.letter-row-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.letter-row-peer { flex: 0 0 auto; color: var(--text-dim); font-size: 12px; }
+.letter-seal {
+  flex: 0 0 auto; font-size: 10px; color: var(--accent-ink); background: var(--accent);
+  border-radius: 4px; padding: 2px 6px; letter-spacing: 1px;
+}
+.letter-type-chip {
+  flex: 0 0 auto; font-size: 10px; color: var(--text-dim);
+  border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px;
+}
+
+/* 상세 — 한 통 펼침 */
+.letter-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.letter-tool-right { display: flex; gap: 6px; }
+.letter-paper {
+  background: rgba(0, 0, 0, 0.14); border: 1px solid var(--border); border-radius: 12px;
+  padding: 22px 20px 18px;
+}
+.letter-title { margin: 0 0 8px; font-size: 17px; color: var(--text); }
+.letter-meta {
+  display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-dim);
+  padding-bottom: 12px; margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.letter-body { font-size: 14.5px; line-height: 1.85; }
+.letter-sig { margin-top: 22px; text-align: right; font-size: 14px; color: var(--text); }
+.letter-sig .sig-name { font-size: 27px; line-height: 1; color: var(--accent); margin-left: 6px; }
+
+/* 상세 — 편집 모드(밑줄형 입력, 인물 편집과 같은 결) */
+.letter-title-input, .letter-sig-input {
+  width: 100%; background: none; border: none; border-bottom: 1px solid var(--border);
+  color: var(--text); font-size: 16px; padding: 4px 2px; outline: none;
+}
+.letter-sig-input { font-size: 14px; text-align: right; }
+.letter-title-input:focus, .letter-sig-input:focus, .letter-body-input:focus { border-color: var(--accent); }
+.letter-body-input {
+  width: 100%; min-height: 280px; resize: vertical;
+  background: rgba(0, 0, 0, 0.12); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-size: 14px; line-height: 1.8; padding: 12px; outline: none;
+}
+.letter-edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }

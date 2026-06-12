@@ -24,6 +24,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useSortSensors, sortGuardProps } from './useSortSensors';
+import LettersTab from './LettersTab';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -63,13 +64,8 @@ function ViewSection({ label, text }: { label: string; text: string }) {
   );
 }
 
-// 인물 뷰 탭 (약력=현재 프로필, 나머지는 추후 채움)
+// 인물 뷰 탭 — 5종 전부 가동(서신이 마지막으로 채워졌다).
 const 인물탭 = ['약력', '보고서', '임무', '소지품', '서신'] as const;
-
-// 아직 안 만든 탭의 빈 화면.
-function EmptyTab() {
-  return <p className="empty-tab dim">아직 펼쳐지지 않은 장입니다.</p>;
-}
 
 // 보고서 능력치 8종 (키→라벨). 서버 lib/report.mjs STAT_KEYS와 일치해야 한다.
 const 능력치목록: [string, string][] = [
@@ -1203,7 +1199,7 @@ export default function Characters({
                   onReorder={물건정렬}
                 />
               ) : (
-                <EmptyTab />
+                <LettersTab ownerId={viewing.id!} storyId={storyId} />
               )}
             </div>
           </div>

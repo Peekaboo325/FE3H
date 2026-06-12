@@ -40,6 +40,8 @@ import { buildCharacterContext } from '../lib/charContext.mjs';
 import { runReport } from '../lib/report.mjs';
 import { runQuests } from '../lib/quests.mjs';
 import { runItems, removeItem, reorderItems } from '../lib/items.mjs';
+import { runLetters } from '../lib/letters.mjs';
+import { listLetters, updateLetter, deleteLetter } from '../lib/db.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 import { loadTurnsForSummary, getTurnContent, setTurnSummary } from '../lib/db.mjs';
@@ -255,6 +257,64 @@ app.delete('/api/items', async (req, res) => {
   const itemId = req.query?.id || null;
   try {
     const r = await removeItem({ characterId, itemId });
+    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+// ── 서신 교환소 (Gemini Flash) — 설계 = docs/서신_설계.md ──────────────────
+app.get('/api/letters', async (req, res) => {
+  const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
+  const characterId = req.query?.character_id ? Number(req.query.character_id) : null;
+  try {
+    const r = await listLetters(storyId, characterId);
+    res.status(200).json({ dbReady: dbReady(), ...r });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+app.post('/api/letters', async (req, res) => {
+  if (!process.env.GEMINI_API_KEY) {
+    res.status(400).json({ error: '전령과의 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).' });
+    return;
+  }
+  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
+  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
+  try {
+    const r = await runLetters({ characterId, storyId });
+    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+app.put('/api/letters', async (req, res) => {
+  const id = req.body?.id ? Number(req.body.id) : null;
+  if (!id) {
+    res.status(400).json({ error: '서신 지목이 없습니다.' });
+    return;
+  }
+  const fields = {};
+  for (const k of ['title', 'content', 'signature']) if (req.body?.[k] !== undefined) fields[k] = req.body[k];
+  if (req.body?.unseal) fields.is_sealed = false;
+  try {
+    const r = await updateLetter(id, fields);
+    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+app.delete('/api/letters', async (req, res) => {
+  const id = req.query?.id ? Number(req.query.id) : null;
+  if (!id) {
+    res.status(400).json({ error: '서신 지목이 없습니다.' });
+    return;
+  }
+  try {
+    const r = await deleteLetter(id);
     res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
   } catch (e) {
     res.status(500).json({ error: e?.message || String(e) });
