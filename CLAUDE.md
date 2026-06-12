@@ -59,6 +59,7 @@
 - **새 버튼은 직접 `<button>`+CSS로 짜지 않는다.** 텍스트/동작 버튼 = **`src/Button.tsx`(`<Button>`)**, 아이콘만 = **`src/IconButton.tsx`**. 둘 중 하나를 쓴다.
 - `Button`이 자동으로 보장: **크기 고정**(loading이어도 라벨 자리를 유지하고 스피너만 겹쳐 → 폭 절대 안 변함 — *버튼 크기 변동은 빌더가 가장 싫어함*), 알약 모양, `variant`(primary=금빛 인장 / secondary=차분). 로딩은 `loading` prop, 라벨은 §1대로 `UI`에서.
 - 즉 "내용 바뀌는 버튼(텍스트↔로딩)"은 **고민할 것 없이 `<Button loading>`** — 크기 안 흔들린다. 새 변형이 필요하면 `Button`/`.btn`에 추가하고 그걸 쓴다(개별 버튼에 일회성 CSS 금지).
+- **아이콘을 회전시키지 않는다(확정).** 아이콘 버튼의 로딩 표시는 아이콘에 spin을 거는 게 아니라 **아이콘을 표준 스피너(`<span className="spinner" />`)로 교체**해 보여준다. (회전용 CSS 클래스를 만들지 말 것 — 과거 `.spinning` 철거됨.)
 
 ### 모달 표준 (대책 — '또 새 모달 만들기' 금지)
 - **새 모달은 `.modal-bg`/`.modal-head`를 직접 복붙하지 않는다.** **`src/Modal.tsx`(`<Modal>`)**를 쓴다 — 백드롭(바깥 클릭=닫기)+박스+표준 헤더(제목·(뒤로 `onBack`)·X·아래 구분선)가 자동. 본문은 children(경고문·`.modal-body`·푸터). 변형은 `className`(`modal--list`/`--chronicle`/`--import`…).

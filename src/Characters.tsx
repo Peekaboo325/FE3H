@@ -252,13 +252,8 @@ function ReportView({
       <div className="report">
         <ReportBody report={report} />
         <div className="report-foot">
-          <IconButton
-            label={UI.regen}
-            onClick={onIssue}
-            disabled={reporting}
-            className={reporting ? 'spinning' : ''}
-          >
-            <RotateCcw size={17} />
+          <IconButton label={UI.regen} onClick={onIssue} disabled={reporting}>
+            {reporting ? <span className="spinner" /> : <RotateCcw size={17} />}
           </IconButton>
         </div>
       </div>
