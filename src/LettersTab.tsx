@@ -118,7 +118,11 @@ export default function LettersTab({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        showToast(typeof data.error === 'string' && data.error.length < 60 ? data.error : '서신을 받지 못했습니다.');
+        // 서버 안내는 짧고 '한국어로만 된' 것만 그대로 보여준다 — 기술 문자열(Gemini 429,
+        // relation does not exist…)이 토스트로 새지 않게(§1 디제틱).
+        const err = typeof data.error === 'string' ? data.error : '';
+        const 보여줄만함 = err && err.length < 70 && !/[A-Za-z_]/.test(err);
+        showToast(보여줄만함 ? err : '서신을 받지 못했습니다.');
         return;
       }
       await load();
