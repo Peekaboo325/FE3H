@@ -25,7 +25,7 @@ import {
 
 const MODEL = 'claude-opus-4-8'; // 메인 본문 = Opus 4.8 (CLAUDE.md)
 
-export const config = { maxDuration: 60 };
+export const config = { maxDuration: 300 }; // Vercel Pro — 긴 화도 60초 천장 없이 완결(2026-06-13)
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

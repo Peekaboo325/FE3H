@@ -11,7 +11,7 @@ import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 
 const MODEL = 'claude-opus-4-8';
-export const config = { maxDuration: 60 };
+export const config = { maxDuration: 300 }; // Vercel Pro — 긴 화도 60초 천장 없이 완결(2026-06-13)
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
