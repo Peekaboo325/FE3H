@@ -2154,6 +2154,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   border-bottom: 1px solid var(--border);
 }
 .letter-body { font-size: 14.5px; line-height: 1.85; }
+.letter-body .md-p { margin: 0 0 18px; } /* 편지는 문단 사이 숨이 넉넉해야 읽힌다 */
 .letter-sig { margin-top: 22px; text-align: right; font-size: 14px; color: var(--text); }
 .letter-sig .sig-name { font-size: 27px; line-height: 1; color: var(--accent); margin-left: 6px; }
 
