@@ -23,7 +23,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useSortSensors } from './useSortSensors';
+import { useSortSensors, sortGuardProps } from './useSortSensors';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -431,7 +431,7 @@ function SortableItemCard({
     zIndex: isDragging ? 5 : undefined,
   };
   return (
-    <li ref={setNodeRef} style={style} className="item-card" {...attributes} {...listeners}>
+    <li ref={setNodeRef} style={style} className="item-card" {...sortGuardProps} {...attributes} {...listeners}>
       <IconButton
         label={UI.erase}
         className={'item-burn' + (armed ? ' armed' : '')}
@@ -581,6 +581,7 @@ function SortableCharCard({
       style={style}
       className={'char-card' + (active ? '' : ' inactive')}
       onClick={onOpen}
+      {...sortGuardProps}
       {...attributes}
       {...listeners}
     >
@@ -635,7 +636,7 @@ function SortableBond({
     zIndex: isDragging ? 2 : undefined,
   };
   return (
-    <li ref={setNodeRef} style={style} className="bond-row" {...attributes} {...listeners}>
+    <li ref={setNodeRef} style={style} className="bond-row" {...sortGuardProps} {...attributes} {...listeners}>
       <div className="bond-left">
         <img className="bond-av" src={avatar} alt="" />
         <div className="bond-id">

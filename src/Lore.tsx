@@ -31,7 +31,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useSortSensors } from './useSortSensors';
+import { useSortSensors, sortGuardProps } from './useSortSensors';
 
 // 대륙 문헌의 다섯 영역(닫힌 목록). 분류(category) 칸에 이 제목을 그대로 담아 갈래를 가른다.
 const TOPICS = [
@@ -152,6 +152,7 @@ function SortableVol({
       ref={setNodeRef}
       style={style}
       className={'lore-vol' + (sel ? ' sel' : '') + (active ? '' : ' inactive')}
+      {...sortGuardProps}
       {...attributes}
       {...listeners}
     >
