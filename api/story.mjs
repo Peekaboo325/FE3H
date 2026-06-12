@@ -75,7 +75,7 @@ export default async function handler(req, res) {
   const [설정원천, 인물원천, 지침] = await Promise.all([
     loadLoreForInjection(storyId),
     loadCharactersForInjection(storyId),
-    getGuidance().catch(() => ''), // 기록 지침(전역) — 없으면 ''
+    getGuidance(storyId).catch(() => ''), // 기록 지침(장별) — 없으면 ''
   ]);
   const 설정블록 = buildLoreContext(설정원천);
   const 인물블록 = buildCharacterContext(인물원천);

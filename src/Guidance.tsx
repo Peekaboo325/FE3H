@@ -5,9 +5,16 @@ import Modal from './Modal';
 import Button from './Button';
 import Spinner from './Spinner';
 
-// 기록 지침 — 기록자(유저)가 직접 적어 모든 이야기의 본문에 함께 얹는 전역 집필 지침.
+// 기록 지침 — 기록자(유저)가 직접 적어 '이 장(이야기)'의 본문에 얹는 집필 지침.
 //  박제된 worldview 규약 위에 실시간으로 얹는 개인 지침서. 저장 즉시 다음 본문부터 반영.
-export default function Guidance({ onClose }: { onClose: () => void }) {
+//  ⚠️ 2026-06-13부터 장별 분리(빌더 확정) — 장을 옮기면 그 장의 지침이 따로 펼쳐진다.
+export default function Guidance({
+  storyId,
+  onClose,
+}: {
+  storyId: number | null;
+  onClose: () => void;
+}) {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -18,7 +25,7 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
     (async () => {
       setLoading(true);
       try {
-        const r = await fetch('/api/guidance');
+        const r = await fetch(`/api/guidance?story_id=${storyId ?? ''}`);
         const d = await r.json();
         if (!alive) return;
         setDbOk(!!d.dbReady);
@@ -31,7 +38,7 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [storyId]);
 
   const 기록 = async () => {
     setSaving(true);
@@ -39,7 +46,7 @@ export default function Guidance({ onClose }: { onClose: () => void }) {
       const r = await fetch('/api/guidance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ story_id: storyId, text }),
       });
       const d = await r.json();
       if (d.ok) showToast('기록되었습니다.');

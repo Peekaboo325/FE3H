@@ -155,17 +155,19 @@ app.post('/api/chronicle', async (req, res) => {
   }
 });
 
-// ── 기록 지침 (전역 유저 커스텀 프롬프트 읽기/기록) ─────────────────────────
-app.get('/api/guidance', async (_req, res) => {
+// ── 기록 지침 (장별 유저 커스텀 프롬프트 읽기/기록 — 2026-06-13 장별 분리) ──
+app.get('/api/guidance', async (req, res) => {
+  const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
   try {
-    res.json({ dbReady: dbReady(), text: await getGuidance() });
+    res.json({ dbReady: dbReady(), text: await getGuidance(storyId) });
   } catch (e) {
     res.json({ dbReady: dbReady(), text: '', error: e?.message || String(e) });
   }
 });
 app.post('/api/guidance', async (req, res) => {
+  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
   const text = typeof req.body?.text === 'string' ? req.body.text : '';
-  const r = await setGuidance(text);
+  const r = await setGuidance(storyId, text);
   res.status(r.ok ? 200 : 500).json({ ok: r.ok, error: r.error });
 });
 
@@ -384,7 +386,7 @@ app.post('/api/story', async (req, res) => {
   const [설정원천, 인물원천, 지침] = await Promise.all([
     loadLoreForInjection(storyId),
     loadCharactersForInjection(storyId),
-    getGuidance().catch(() => ''), // 기록 지침(전역) — 없으면 ''
+    getGuidance(storyId).catch(() => ''), // 기록 지침(장별) — 없으면 ''
   ]);
   const 설정블록 = buildLoreContext(설정원천);
   const 인물블록 = buildCharacterContext(인물원천);
@@ -465,7 +467,7 @@ app.post('/api/regen', async (req, res) => {
   const [설정원천, 인물원천, 지침] = await Promise.all([
     loadLoreForInjection(storyId),
     loadCharactersForInjection(storyId),
-    getGuidance().catch(() => ''), // 기록 지침(전역) — 없으면 ''
+    getGuidance(storyId).catch(() => ''), // 기록 지침(장별) — 없으면 ''
   ]);
   const 설정블록 = buildLoreContext(설정원천);
   const 인물블록 = buildCharacterContext(인물원천);

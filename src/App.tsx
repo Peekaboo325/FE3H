@@ -430,7 +430,7 @@ export default function App() {
       {showChronicle && (
         <Chronicle storyId={storyId} onClose={() => setShowChronicle(false)} onJump={jumpToTurn} />
       )}
-      {showGuidance && <Guidance onClose={() => setShowGuidance(false)} />}
+      {showGuidance && <Guidance storyId={storyId} onClose={() => setShowGuidance(false)} />}
 
       <main className="scroll">
         <div className="scroll-inner">
