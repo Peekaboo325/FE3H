@@ -890,7 +890,8 @@ em, i { font-style: normal; }
 }
 /* 작성 = 목록 하단 원형 플로팅(FAB) */
 /* 작성 FAB = '기록자의 인장' — 어두운 양피지 원반 + 금빛 이중 테두리 + 깃펜, hover 시 은은한 금광 */
-.lore-fab {
+.lore-fab,
+.letter-fab {
   position: absolute;
   right: 16px;
   bottom: max(16px, env(safe-area-inset-bottom));
@@ -903,7 +904,8 @@ em, i { font-style: normal; }
   cursor: pointer; z-index: 5;
   transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
 }
-.lore-fab:hover {
+.lore-fab:hover,
+.letter-fab:hover {
   border-color: var(--accent);
   transform: translateY(-1px);
   box-shadow: 0 9px 22px rgba(0, 0, 0, 0.5),
@@ -1286,7 +1288,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .char-view { --hero-h: 280px; --hero-portrait-w: 46%; }
 .top-shield { display: none; } /* 데스크탑 숨김 — 모바일 풀스크린에서만 노치 차폐 */
 /* 인물 뷰 한정으로 모달을 살짝 넓혀 가로 히어로에 여유를 준다(긴 이름 한 줄 + 큰 글씨) */
-.modal.has-hero { max-width: 760px; }
+.modal.has-hero { max-width: 760px; position: relative; } /* 서신 깃펜 인장(FAB)의 닻 */
 .char-hero {
   position: relative;
   display: flex;
@@ -2118,6 +2120,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block;
 }
 
+.letters-tab { padding-bottom: 76px; } /* 하단 깃펜 인장(FAB)에 마지막 행이 가리지 않게 */
 .letter-list { list-style: none; margin: 0 0 8px; padding: 0; }
 .letter-row {
   display: flex; align-items: center; gap: 10px; width: 100%;
@@ -2125,7 +2128,12 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   background: none; color: var(--text); font-size: 14px; cursor: pointer; text-align: left;
 }
 .letter-row:hover { background: var(--hover); }
-.letter-row-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.letter-row-title {
+  /* 제목은 자르지 않고 두 줄까지 안아준다(그 너머만 말줄임) */
+  flex: 1; min-width: 0; overflow: hidden;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  line-height: 1.45;
+}
 .letter-row-peer { flex: 0 0 auto; color: var(--text-dim); font-size: 12px; }
 .letter-seal {
   flex: 0 0 auto; font-size: 10px; color: var(--accent-ink); background: var(--accent);

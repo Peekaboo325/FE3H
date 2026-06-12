@@ -321,11 +321,16 @@ export default function LettersTab({
         </ul>
       )}
 
-      <div className="report-foot">
-        <IconButton label="서신 확인" onClick={확인} disabled={fetching}>
-          {fetching ? <span className="spinner" /> : <Feather size={17} />}
-        </IconButton>
-      </div>
+      {/* 깃펜 인장 — 패널 푸터에 닻 내림(대륙 문헌 작성 인장과 같은 결) */}
+      <button
+        className="letter-fab"
+        onClick={확인}
+        disabled={fetching}
+        title="서신 확인"
+        aria-label="서신 확인"
+      >
+        {fetching ? <span className="spinner" /> : <Feather size={19} />}
+      </button>
     </div>
   );
 }
