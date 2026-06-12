@@ -65,7 +65,9 @@ const out =
   "// worldview/ 의 박제 문서가 바뀌면 'npm run bake' 로 다시 만듭니다.\n" +
   `export const SYSTEM = ${JSON.stringify(SYSTEM)};\n` +
   '// 정발 표기 목록(한글 키만) — 임무(quests) 보상 풍미용. SYSTEM과 달리 가벼운 명단이다.\n' +
-  `export const NAMES = ${JSON.stringify(Object.keys(dict))};\n`;
+  `export const NAMES = ${JSON.stringify(Object.keys(dict))};\n` +
+  '// { 한글 → 영문 } — 서신(letters) 영문 서명 폴백용(명부 미등록 인연도 사전 표기로 서명).\n' +
+  `export const NAME_DICT = ${JSON.stringify(dict)};\n`;
 fs.writeFileSync(path.join(libDir, 'worldview.mjs'), out, 'utf-8');
 
 console.log(`[bake] 세계관 박제 ${SYSTEM.length.toLocaleString()}자 → lib/worldview.mjs`);
