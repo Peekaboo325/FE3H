@@ -27,9 +27,10 @@ export default async function handler(req, res) {
       const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
       const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
       const receiverId = req.body?.receiver_id ? Number(req.body.receiver_id) : null;
-      // receiver_id 있으면 '수신 지정'(유저 지정발신 — 설계서 §13), 없으면 천운 교환소.
-      const r = receiverId
-        ? await runDirectedLetter({ characterId, storyId, receiverId })
+      const receiverName = typeof req.body?.receiver_name === 'string' ? req.body.receiver_name : null;
+      // 수신자 지목(id=등록 인물 / name=미등록 인연·고인) 있으면 '수신 지정'(§13), 없으면 천운.
+      const r = receiverId || receiverName
+        ? await runDirectedLetter({ characterId, storyId, receiverId, receiverName })
         : await runLetters({ characterId, storyId });
       res.status(r.error ? 500 : 200).end(JSON.stringify({ dbReady: dbReady(), ...r }));
       return;

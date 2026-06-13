@@ -1199,23 +1199,33 @@ export default function Characters({
                   storyId={storyId}
                   bondNames={(viewing.bonds ?? []).map((b) => b.name).filter(Boolean)}
                   recipients={(() => {
-                    // 수신 지정 후보 = A의 인연 중 등록 인물(설계서 §13). 잠든·사망도 다 보인다.
-                    const seen = new Set<number>();
-                    const out: { id: number; name: string; gone: boolean; sleeping: boolean }[] = [];
+                    // 수신 지정 후보 = A의 인연 전부(설계서 §13). 잠든·사망도 다 보인다(빌더).
+                    //  등록 인물(명부 카드 있음)=id로, 인연 칸만 있는 고인 등=이름으로 지목.
+                    const seen = new Set<string>();
+                    const out: { id: number | null; name: string; gone: boolean; sleeping: boolean }[] = [];
                     for (const b of viewing.bonds ?? []) {
                       const nm = (b.name || '').trim();
-                      if (!nm) continue;
+                      if (!nm || seen.has(nm)) continue;
+                      seen.add(nm);
                       const c = chars.find(
                         (ch) => ch.id != null && ch.id !== viewing.id && (ch.name || '').trim() === nm,
                       );
-                      if (!c || c.id == null || seen.has(c.id)) continue;
-                      seen.add(c.id);
-                      out.push({
-                        id: c.id,
-                        name: c.name,
-                        gone: c.life_status === 'deceased' || c.life_status === 'unknown',
-                        sleeping: c.is_active === false,
-                      });
+                      if (c && c.id != null) {
+                        out.push({
+                          id: c.id,
+                          name: c.name,
+                          gone: c.life_status === 'deceased' || c.life_status === 'unknown',
+                          sleeping: c.is_active === false,
+                        });
+                      } else {
+                        // 명부에 카드가 없는 인연(고인·미등록 子 등) — 인연 칸의 상태로
+                        out.push({
+                          id: null,
+                          name: nm,
+                          gone: b.status === 'deceased' || b.status === 'unknown',
+                          sleeping: false,
+                        });
+                      }
                     }
                     return out;
                   })()}

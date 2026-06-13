@@ -14,8 +14,9 @@ import Spinner from './Spinner';
 import Markdown from './Markdown';
 import { firstName } from './nameUtils';
 
-// 수신 지정 후보 — A의 인연 중 등록 인물(설계서 §13). 잠든·사망도 다 보인다(빌더 결정).
-export type LetterRecipient = { id: number; name: string; gone: boolean; sleeping: boolean };
+// 수신 지정 후보 — A의 인연(설계서 §13). 잠든·사망도 다 보인다(빌더 결정).
+//  id=등록 인물(명부 카드 있음) / id null=인연 칸만 있는 미등록 상대(고인 등) → 이름으로 지목.
+export type LetterRecipient = { id: number | null; name: string; gone: boolean; sleeping: boolean };
 
 export type Letter = {
   id: number;
@@ -80,6 +81,7 @@ export default function LettersTab({
   const [sel, setSel] = useState<Letter | null>(null);
   const [fetching, setFetching] = useState(false); // 새 서신 생성 중
   const [picking, setPicking] = useState(false); // 수신 지정 — 상대 고르는 중
+  const [pending, setPending] = useState<string | null>(null); // 어느 수신자 행이 생성 중인지(버튼 스피너)
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ title: '', content: '', signature: '' });
   const [saving, setSaving] = useState(false);
@@ -151,12 +153,23 @@ export default function LettersTab({
 
   // 천운 — 교환소를 한 번 돌린다(답장 우선 → 유서 → 신규 발신).
   const 확인 = () => 서신요청({ character_id: ownerId, story_id: storyId });
-  // 수신 지정 — A가 지목된 상대에게 쓴다(§13). 발송/보관은 AI가 판단(침묵 없음).
-  const 지정확인 = (receiverId: number) =>
-    서신요청(
-      { character_id: ownerId, story_id: storyId, receiver_id: receiverId },
-      { directed: true, onDone: () => setPicking(false) },
-    );
+  // 수신 지정 — A가 지목된 상대에게 쓴다(§13). 등록 인물=id, 미등록 인연=이름으로 지목.
+  //  발송/보관은 AI가 판단(침묵 없음). pending으로 그 행 버튼만 스피너.
+  const 행키 = (r: LetterRecipient) => (r.id != null ? 'c' + r.id : 'b' + r.name);
+  async function 지정확인(r: LetterRecipient) {
+    if (fetching) return;
+    setPending(행키(r));
+    try {
+      await 서신요청(
+        r.id != null
+          ? { character_id: ownerId, story_id: storyId, receiver_id: r.id }
+          : { character_id: ownerId, story_id: storyId, receiver_name: r.name },
+        { directed: true, onDone: () => setPicking(false) },
+      );
+    } finally {
+      setPending(null);
+    }
+  }
 
   // 열람 — 봉인된 편지는 여는 순간 개봉(읽음). sel도 함께 풀어야(편집 저장 때 묵은 봉인이
   // 되살아나 'new'로 보이던 버그) — 목록·상세·DB 세 곳을 같은 상태로 둔다.
@@ -375,24 +388,28 @@ export default function LettersTab({
           <div className="letter-pick">
             <p className="letter-pick-hint">누구에게 편지를 띄우시겠습니까.</p>
             <ul className="letter-pick-list">
-              {recipients.map((r) => (
-                <li key={r.id}>
-                  <button
-                    className="letter-pick-row"
-                    disabled={fetching}
-                    onClick={() => 지정확인(r.id)}
-                  >
-                    <span className="letter-pick-name">{firstName(r.name)}</span>
-                    {r.gone ? (
-                      <span className="letter-pick-tag">사망</span>
-                    ) : r.sleeping ? (
-                      <span className="letter-pick-tag dim">잠듦</span>
-                    ) : null}
-                  </button>
-                </li>
-              ))}
+              {recipients.map((r) => {
+                const key = 행키(r);
+                return (
+                  <li key={key}>
+                    <button
+                      className="letter-pick-row"
+                      disabled={fetching}
+                      onClick={() => 지정확인(r)}
+                    >
+                      <span className="letter-pick-name">{firstName(r.name)}</span>
+                      {pending === key ? (
+                        <span className="spinner" />
+                      ) : r.gone ? (
+                        <span className="letter-pick-tag">사망</span>
+                      ) : r.sleeping ? (
+                        <span className="letter-pick-tag dim">잠듦</span>
+                      ) : null}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
-            {fetching && <Spinner />}
           </div>
         </Modal>
       )}
