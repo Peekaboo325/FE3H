@@ -895,7 +895,8 @@ em, i { font-style: normal; }
 /* 작성 = 목록 하단 원형 플로팅(FAB) */
 /* 작성 FAB = '기록자의 인장' — 어두운 양피지 원반 + 금빛 이중 테두리 + 깃펜, hover 시 은은한 금광 */
 .lore-fab,
-.letter-fab {
+.letter-fab,
+.to-bottom-fab {
   position: absolute;
   right: 16px;
   bottom: max(16px, env(safe-area-inset-bottom));
@@ -909,13 +910,22 @@ em, i { font-style: normal; }
   transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
 }
 .lore-fab:hover,
-.letter-fab:hover {
+.letter-fab:hover,
+.to-bottom-fab:hover {
   border-color: var(--accent);
   transform: translateY(-1px);
   box-shadow: 0 9px 22px rgba(0, 0, 0, 0.5),
     0 0 14px color-mix(in srgb, var(--accent) 30%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
 }
+/* '맨 아래로' FAB — 본문 위에 떠서 가장 최근 기록으로. 입력바를 비켜 위에 둔다. */
+.to-bottom-fab {
+  width: 42px; height: 42px; z-index: 6;
+  animation: fab-in 0.18s ease-out;
+}
+.page.write .to-bottom-fab { bottom: calc(env(safe-area-inset-bottom) + 84px); }
+.page.read  .to-bottom-fab { bottom: max(20px, calc(env(safe-area-inset-bottom) + 14px)); }
+@keyframes fab-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 /* 헤더(뒤로가기) 줄 — 아래에 구분선 */
 .lore-side-head {
   display: flex; align-items: center; gap: 6px;

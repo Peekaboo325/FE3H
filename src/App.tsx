@@ -13,7 +13,7 @@ import { defaultStoryTitle } from './storyTitle';
 import { DialogHost } from './dialog';
 import { showToast, ToastHost } from './toast';
 import { UI } from './strings';
-import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon } from 'lucide-react';
+import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon, ChevronsDown } from 'lucide-react';
 
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
 type Story = { id: number; title: string };
@@ -59,6 +59,7 @@ export default function App() {
   }
   const [visibleCount, setVisibleCount] = useState(WINDOW); // 지금 펼쳐 둔 칸 수
   const [pendingJump, setPendingJump] = useState<number | null>(null); // 연대 문헌에서 '그 화로 가기'
+  const [최신로내려가기, set최신로내려가기] = useState(false); // 위로 한참 올라갔을 때만 뜨는 '맨 아래로' FAB
   const [mode, setMode] = useState<'read' | 'write'>(
     () => (localStorage.getItem('fe3h.mode') === 'read' ? 'read' : 'write'),
   );
@@ -148,6 +149,23 @@ export default function App() {
     const 바닥근처 = sc.scrollHeight - sc.scrollTop - sc.clientHeight < 160;
     if (바닥근처) 끝.current?.scrollIntoView({ behavior: 'smooth' });
   }, [turns, busy]);
+
+  // 위로 한참 올라가면 우하단에 '맨 아래로' FAB를 띄운다(바닥 근처면 숨김).
+  useEffect(() => {
+    const sc = document.querySelector('main.scroll');
+    if (!sc) return;
+    const 갱신 = () => {
+      const 남은거리 = sc.scrollHeight - sc.scrollTop - sc.clientHeight;
+      set최신로내려가기(남은거리 > 320);
+    };
+    갱신(); // 진입·내용 변화 시 즉시 반영(앱은 1화 위쪽에서 시작)
+    sc.addEventListener('scroll', 갱신, { passive: true });
+    return () => sc.removeEventListener('scroll', 갱신);
+  }, [turns.length, visibleCount, mode]);
+
+  function 맨아래로() {
+    끝.current?.scrollIntoView({ behavior: 'smooth' });
+  }
 
   // 연대 문헌 '그 화로 가기' — 창을 넓혀 그 화가 그려지면 그곳으로 스크롤.
   useEffect(() => {
@@ -572,6 +590,17 @@ export default function App() {
             </button>
           </div>
         </footer>
+      )}
+
+      {turns.length > 0 && 최신로내려가기 && (
+        <button
+          className="to-bottom-fab"
+          onClick={맨아래로}
+          aria-label="가장 최근 기록으로"
+          title="가장 최근 기록으로"
+        >
+          <ChevronsDown size={22} />
+        </button>
       )}
     </div>
   );
