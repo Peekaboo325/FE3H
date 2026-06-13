@@ -3,15 +3,19 @@
 //  · 봉인(is_sealed) = 아직 안 읽음 — 열람하는 순간 개봉.
 //  · 보관함 = 발신자가 차마 부치지 못한 편지(draft). 열람·소각만 가능, 부치기 없음.
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Feather, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, Feather, Pencil, Send, Trash2 } from 'lucide-react';
 import { UI } from './strings';
 import { showToast } from './toast';
 import { confirmAsk } from './dialog';
 import IconButton from './IconButton';
 import Button from './Button';
+import Modal from './Modal';
 import Spinner from './Spinner';
 import Markdown from './Markdown';
 import { firstName } from './nameUtils';
+
+// 수신 지정 후보 — A의 인연 중 등록 인물(설계서 §13). 잠든·사망도 다 보인다(빌더 결정).
+export type LetterRecipient = { id: number; name: string; gone: boolean; sleeping: boolean };
 
 export type Letter = {
   id: number;
@@ -59,10 +63,12 @@ export default function LettersTab({
   ownerId,
   storyId,
   bondNames = [],
+  recipients = [],
 }: {
   ownerId: number;
   storyId: number | null;
   bondNames?: string[]; // 함 주인의 인연(子) 이름들 — 목록 표기를 퍼스트네임으로 줄이는 판단용
+  recipients?: LetterRecipient[]; // 수신 지정 후보(A의 인연 중 등록 인물)
 }) {
   // 목록 행에 보일 상대 이름 — 사람 이름(등록 인물·인연)은 퍼스트네임만, 모브 직함은 그대로.
   const 상대표기 = (name: string, hasId: boolean) =>
@@ -73,6 +79,7 @@ export default function LettersTab({
   const [box, setBox] = useState<Box>('in');
   const [sel, setSel] = useState<Letter | null>(null);
   const [fetching, setFetching] = useState(false); // 새 서신 생성 중
+  const [picking, setPicking] = useState(false); // 수신 지정 — 상대 고르는 중
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ title: '', content: '', signature: '' });
   const [saving, setSaving] = useState(false);
@@ -106,15 +113,18 @@ export default function LettersTab({
     });
   const 현재함 = 분류(box);
 
-  // 새 서신 — 교환소를 한 번 돌린다(답장 우선 → 유서 → 신규 발신).
-  async function 확인() {
+  // 서신 생성 공통 통로 — 천운(확인)·수신 지정(지정확인) 둘 다 이리로.
+  async function 서신요청(
+    body: Record<string, unknown>,
+    opts: { directed?: boolean; onDone?: () => void } = {},
+  ) {
     if (fetching) return;
     setFetching(true);
     try {
       const res = await fetch('/api/letters', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ character_id: ownerId, story_id: storyId }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
@@ -128,15 +138,25 @@ export default function LettersTab({
       await load();
       if (data.kind === 'will') showToast('유품에서 서신 한 통이 발견되었습니다.');
       else if (data.kind === 'draft') showToast('부치지 못한 서신이 보관함에 남았습니다.');
-      else showToast('새 서신이 당도했습니다.');
+      else showToast(opts.directed ? '서신을 띄웠습니다.' : '새 서신이 당도했습니다.');
       if (data.kind === 'draft') setBox('drafts');
       else setBox(data.added?.[0]?.receiver_id === ownerId ? 'in' : 'out');
+      opts.onDone?.();
     } catch {
       showToast('서신을 받지 못했습니다.');
     } finally {
       setFetching(false);
     }
   }
+
+  // 천운 — 교환소를 한 번 돌린다(답장 우선 → 유서 → 신규 발신).
+  const 확인 = () => 서신요청({ character_id: ownerId, story_id: storyId });
+  // 수신 지정 — A가 지목된 상대에게 쓴다(§13). 발송/보관은 AI가 판단(침묵 없음).
+  const 지정확인 = (receiverId: number) =>
+    서신요청(
+      { character_id: ownerId, story_id: storyId, receiver_id: receiverId },
+      { directed: true, onDone: () => setPicking(false) },
+    );
 
   // 열람 — 봉인된 편지는 여는 순간 개봉(읽음). sel도 함께 풀어야(편집 저장 때 묵은 봉인이
   // 되살아나 'new'로 보이던 버그) — 목록·상세·DB 세 곳을 같은 상태로 둔다.
@@ -326,6 +346,19 @@ export default function LettersTab({
         </ul>
       )}
 
+      {/* 수신 지정 — 깃펜 왼쪽에. 인연(등록 인물)이 있을 때만 */}
+      {recipients.length > 0 && (
+        <button
+          className="letter-fab letter-fab-direct"
+          onClick={() => setPicking(true)}
+          disabled={fetching}
+          title={UI.directSend}
+          aria-label={UI.directSend}
+        >
+          <Send size={17} />
+        </button>
+      )}
+
       {/* 깃펜 인장 — 패널 푸터에 닻 내림(대륙 문헌 작성 인장과 같은 결) */}
       <button
         className="letter-fab"
@@ -336,6 +369,33 @@ export default function LettersTab({
       >
         {fetching ? <span className="spinner" /> : <Feather size={19} />}
       </button>
+
+      {picking && (
+        <Modal title={UI.directSend} onClose={() => setPicking(false)} className="modal--list">
+          <div className="letter-pick">
+            <p className="letter-pick-hint">누구에게 편지를 띄우시겠습니까.</p>
+            <ul className="letter-pick-list">
+              {recipients.map((r) => (
+                <li key={r.id}>
+                  <button
+                    className="letter-pick-row"
+                    disabled={fetching}
+                    onClick={() => 지정확인(r.id)}
+                  >
+                    <span className="letter-pick-name">{firstName(r.name)}</span>
+                    {r.gone ? (
+                      <span className="letter-pick-tag">사망</span>
+                    ) : r.sleeping ? (
+                      <span className="letter-pick-tag dim">잠듦</span>
+                    ) : null}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {fetching && <Spinner />}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

@@ -40,7 +40,7 @@ import { buildCharacterContext } from '../lib/charContext.mjs';
 import { runReport } from '../lib/report.mjs';
 import { runQuests } from '../lib/quests.mjs';
 import { runItems, removeItem, reorderItems } from '../lib/items.mjs';
-import { runLetters } from '../lib/letters.mjs';
+import { runLetters, runDirectedLetter } from '../lib/letters.mjs';
 import { listLetters, updateLetter, deleteLetter } from '../lib/db.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
@@ -284,8 +284,12 @@ app.post('/api/letters', async (req, res) => {
   }
   const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
+  const receiverId = req.body?.receiver_id ? Number(req.body.receiver_id) : null;
   try {
-    const r = await runLetters({ characterId, storyId });
+    // receiver_id 있으면 '수신 지정'(유저 지정발신 — 설계서 §13), 없으면 천운 교환소.
+    const r = receiverId
+      ? await runDirectedLetter({ characterId, storyId, receiverId })
+      : await runLetters({ characterId, storyId });
     res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
   } catch (e) {
     res.status(500).json({ error: e?.message || String(e) });

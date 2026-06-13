@@ -4,7 +4,7 @@
 //   PUT    {id, title?, content?, signature?, unseal?} → 편집 또는 개봉(읽음)
 //   DELETE ?id=3                          → 서신 한 통 소각
 
-import { runLetters } from '../lib/letters.mjs';
+import { runLetters, runDirectedLetter } from '../lib/letters.mjs';
 import { listLetters, updateLetter, deleteLetter, dbReady } from '../lib/db.mjs';
 
 export default async function handler(req, res) {
@@ -26,7 +26,11 @@ export default async function handler(req, res) {
       }
       const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
       const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
-      const r = await runLetters({ characterId, storyId });
+      const receiverId = req.body?.receiver_id ? Number(req.body.receiver_id) : null;
+      // receiver_id 있으면 '수신 지정'(유저 지정발신 — 설계서 §13), 없으면 천운 교환소.
+      const r = receiverId
+        ? await runDirectedLetter({ characterId, storyId, receiverId })
+        : await runLetters({ characterId, storyId });
       res.status(r.error ? 500 : 200).end(JSON.stringify({ dbReady: dbReady(), ...r }));
       return;
     }

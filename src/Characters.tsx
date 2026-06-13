@@ -1198,6 +1198,27 @@ export default function Characters({
                   ownerId={viewing.id!}
                   storyId={storyId}
                   bondNames={(viewing.bonds ?? []).map((b) => b.name).filter(Boolean)}
+                  recipients={(() => {
+                    // 수신 지정 후보 = A의 인연 중 등록 인물(설계서 §13). 잠든·사망도 다 보인다.
+                    const seen = new Set<number>();
+                    const out: { id: number; name: string; gone: boolean; sleeping: boolean }[] = [];
+                    for (const b of viewing.bonds ?? []) {
+                      const nm = (b.name || '').trim();
+                      if (!nm) continue;
+                      const c = chars.find(
+                        (ch) => ch.id != null && ch.id !== viewing.id && (ch.name || '').trim() === nm,
+                      );
+                      if (!c || c.id == null || seen.has(c.id)) continue;
+                      seen.add(c.id);
+                      out.push({
+                        id: c.id,
+                        name: c.name,
+                        gone: c.life_status === 'deceased' || c.life_status === 'unknown',
+                        sleeping: c.is_active === false,
+                      });
+                    }
+                    return out;
+                  })()}
                 />
               )}
             </div>

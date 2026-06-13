@@ -26,4 +26,5 @@ export const UI = {
   inbox: '수신함', //  서신 — 받은 편지
   outbox: '발신함', // 서신 — 보낸 편지
   drafts: '보관함', // 서신 — 부치지 못한 편지(draft)
+  directSend: '수신 지정', // 서신 — 유저가 상대를 지목해 쓰게 함(지정발신·설계서 §13)
 } as const;
