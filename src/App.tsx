@@ -469,7 +469,7 @@ export default function App() {
             onClick={() => setVisibleCount((c) => c + STEP)}
             title="앞선 장면을 더 펼칩니다"
           >
-            ❧ 이전 두루마리 펼치기 <span className="unfurl-rest">· 묵은 장 {start}</span>
+            이전 화 펼치기 <span className="unfurl-rest">{start}</span>
           </button>
         )}
         {turns.slice(start).map((t, vi) => {
