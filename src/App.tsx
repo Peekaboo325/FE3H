@@ -191,10 +191,14 @@ export default function App() {
   //  딱 붙여 놓아 고치기 힘들다 — 바깥(.scroll) 스크롤로 넘겨야 scroll-padding 숨통이 먹는다)
   useEffect(() => {
     const el = editRef.current;
-    if (el) {
-      el.style.height = 'auto';
-      el.style.height = el.scrollHeight + 'px';
-    }
+    if (!el) return;
+    // ⚠️ height='auto'로 재는 순간 칸이 접혀 .scroll 높이가 출렁 → 매 입력(스페이스 등)마다
+    //  스크롤이 튀는 '널뛰기'. 높이를 재기 직전 스크롤 위치를 붙잡아 재고 나서 되돌린다.
+    const sc = document.querySelector('main.scroll');
+    const prev = sc ? sc.scrollTop : 0;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+    if (sc && sc.scrollTop !== prev) sc.scrollTop = prev;
   }, [editText, editingTurn]);
 
   // 입력칸도 분량에 맞춰 자동 높이(처음 1줄 → 줄바꿈 시 늘어남, 40vh 상한).
