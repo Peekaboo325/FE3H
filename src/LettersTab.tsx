@@ -362,7 +362,7 @@ export default function LettersTab({
           title={UI.directSend}
           aria-label={UI.directSend}
         >
-          <User size={23} />
+          <User size={19} />
         </button>
       )}
 
