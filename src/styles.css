@@ -2222,6 +2222,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 
 /* ── 물자 조달 — 점포에서 입하한 물건을 인물 소지품에 조달. 소지품 카드(.item-card) 재사용 ── */
 .modal--supply { max-width: 560px; }
+/* 본문 고정 높이 — 점포 목록(짧음)·진열(9칸)·로딩·빈 진열 모두 같은 높이로(모달 안 출렁임). 넘치면 안에서 스크롤. */
+.supply-body { height: min(540px, 70vh); overflow-y: auto; scrollbar-gutter: stable; }
 .supply-shops { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .supply-shop {
   padding: 20px 14px; border: 1px solid var(--border); border-radius: 12px;

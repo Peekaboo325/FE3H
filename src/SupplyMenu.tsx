@@ -133,6 +133,7 @@ export default function SupplyMenu({
         onBack={curShop ? () => setSel(null) : undefined}
         className="modal--supply"
       >
+        <div className="supply-body">
         {loading ? (
           <Spinner />
         ) : !curShop ? (
@@ -172,6 +173,7 @@ export default function SupplyMenu({
             </div>
           </>
         )}
+        </div>
       </Modal>
 
       {pick && (
