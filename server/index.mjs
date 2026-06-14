@@ -40,7 +40,7 @@ import { buildCharacterContext } from '../lib/charContext.mjs';
 import { runReport } from '../lib/report.mjs';
 import { runQuests } from '../lib/quests.mjs';
 import { runItems, removeItem, reorderItems } from '../lib/items.mjs';
-import { runJournal, removeJournal } from '../lib/journal.mjs';
+import { runJournal, updateJournal, removeJournal } from '../lib/journal.mjs';
 import { runLetters, runDirectedLetter } from '../lib/letters.mjs';
 import { listLetters, updateLetter, deleteLetter } from '../lib/db.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
@@ -277,6 +277,17 @@ app.post('/api/journal', async (req, res) => {
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
   try {
     const r = await runJournal({ characterId, storyId });
+    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+app.put('/api/journal', async (req, res) => {
+  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
+  const entryId = req.body?.id || null;
+  try {
+    const r = await updateJournal({ characterId, entryId, title: req.body?.title, body: req.body?.body });
     res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
   } catch (e) {
     res.status(500).json({ error: e?.message || String(e) });

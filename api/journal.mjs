@@ -2,7 +2,7 @@
 //   POST   {character_id, story_id} → 일지 한 장 술회·누적, 갱신된 analysis 전체 반환
 //   DELETE ?character_id&id         → 일지 한 장 소각
 
-import { runJournal, removeJournal } from '../lib/journal.mjs';
+import { runJournal, updateJournal, removeJournal } from '../lib/journal.mjs';
 import { dbReady } from '../lib/db.mjs';
 
 export default async function handler(req, res) {
@@ -18,6 +18,13 @@ export default async function handler(req, res) {
       const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
       const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
       const r = await runJournal({ characterId, storyId });
+      res.status(r.error ? 500 : 200).end(JSON.stringify({ dbReady: dbReady(), ...r }));
+      return;
+    }
+    if (req.method === 'PUT') {
+      const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
+      const entryId = req.body?.id || null;
+      const r = await updateJournal({ characterId, entryId, title: req.body?.title, body: req.body?.body });
       res.status(r.error ? 500 : 200).end(JSON.stringify({ dbReady: dbReady(), ...r }));
       return;
     }

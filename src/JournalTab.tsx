@@ -1,12 +1,14 @@
 // 일지(日誌) 탭 — 인물의 '사적 연대기'. 서신의 안쪽 짝(밖↔안).
-//  읽는 골격은 연대 문헌(Chronicle)을 닮았다 — 한 줄기로 시간순 쌓이는 목록 → 상세 뷰.
-//  서신에서 빌림: 술회 FAB·스피너·소각. 덜어냄: 수신함/발신함/보관함·봉인·발신수신·서명(흘림체).
-//  날것·수수한 사적 페이지(흘림체·봉인 없음) — 설계 = docs/일지_설계.md.
+//  목록(연대 문헌식 미리보기) → 상세 뷰(서신 뷰어와 동일한 종이 카드·툴바·편집·소각).
+//  서신에서 빌림: 종이 카드·툴바·편집/소각·술회 FAB·스피너. 덜어냄: 발신수신 메타·서명(흘림체).
+//  날것·수수한 사적 페이지 — 설계 = docs/일지_설계.md.
 import { useState } from 'react';
-import { Feather, X, ArrowLeft } from 'lucide-react';
-import IconButton from './IconButton';
-import Spinner from './Spinner';
+import { ArrowLeft, Feather, Pencil, Trash2 } from 'lucide-react';
 import { UI } from './strings';
+import IconButton from './IconButton';
+import Button from './Button';
+import Spinner from './Spinner';
+import Markdown from './Markdown';
 import type { CharReport, JournalEntry } from './useCharacters';
 
 // 미작성/술회 중 화면용 골격 — 흐릿하게 깔리므로 내용은 자리채움.
@@ -28,19 +30,30 @@ function JournalRow({ e, onOpen }: { e: JournalEntry; onOpen: () => void }) {
 export default function JournalTab({
   report,
   journaling,
-  armedId,
   onWrite,
   onBurn,
+  onSave,
 }: {
   report?: CharReport | null;
   journaling: boolean;
-  armedId: string | null;
   onWrite: () => void;
   onBurn: (e: JournalEntry) => void;
+  onSave: (e: JournalEntry, fields: { title: string; body: string }) => Promise<boolean>;
 }) {
   const journals = report?.journals;
   const [openId, setOpenId] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ title: '', body: '' });
+  const [saving, setSaving] = useState(false);
   const open = journals?.find((j) => j.id === openId) || null;
+
+  async function 기록() {
+    if (!open || saving) return;
+    setSaving(true);
+    const ok = await onSave(open, form);
+    setSaving(false);
+    if (ok) setEditing(false);
+  }
 
   // 첫 술회 중(일지 없음) — 골격 흐리고 스피너로 '작동 중'.
   if (journaling && !journals?.length) {
@@ -58,24 +71,70 @@ export default function JournalTab({
     );
   }
 
-  // 상세 뷰 — 뒤로(←) + 소각(두 번 누르기), 제목, 본문(개행 보존).
+  // 상세(한 장 펼침) — 서신 뷰어와 동일한 골격(letter-* 클래스 재사용).
   if (open) {
     return (
-      <div className="journal-detail">
-        <div className="journal-detail-head">
-          <IconButton label={UI.close} onClick={() => setOpenId(null)}>
-            <ArrowLeft size={18} />
-          </IconButton>
+      <div className="letter-view">
+        <div className="letter-toolbar">
           <IconButton
-            label={UI.erase}
-            className={'journal-burn' + (armedId === open.id ? ' armed' : '')}
-            onClick={() => onBurn(open)}
+            label="목록"
+            onClick={() => {
+              setOpenId(null);
+              setEditing(false);
+            }}
           >
-            <X size={16} />
+            <ArrowLeft size={17} />
           </IconButton>
+          <div className="letter-tool-right">
+            {!editing && (
+              <IconButton
+                label={UI.edit}
+                onClick={() => {
+                  setForm({ title: open.title || '', body: open.body });
+                  setEditing(true);
+                }}
+              >
+                <Pencil size={15} />
+              </IconButton>
+            )}
+            <IconButton label={UI.erase} onClick={() => onBurn(open)}>
+              <Trash2 size={15} />
+            </IconButton>
+          </div>
         </div>
-        {open.title && <h3 className="journal-title">{open.title}</h3>}
-        <div className="journal-body">{open.body}</div>
+
+        <div className="letter-paper">
+          {editing ? (
+            <input
+              className="letter-title-input"
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            />
+          ) : (
+            open.title && <h3 className="letter-title">{open.title}</h3>
+          )}
+          <div className="letter-body">
+            {editing ? (
+              <textarea
+                className="letter-body-input"
+                value={form.body}
+                onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
+              />
+            ) : (
+              <Markdown text={open.body} />
+            )}
+          </div>
+          {editing && (
+            <div className="letter-edit-actions">
+              <Button variant="secondary" onClick={() => setEditing(false)}>
+                {UI.cancel}
+              </Button>
+              <Button variant="primary" loading={saving} onClick={기록}>
+                {UI.save}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

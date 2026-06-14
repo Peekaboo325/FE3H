@@ -1,6 +1,7 @@
 import { useState, useEffect, Fragment, type ReactNode } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
 import { showToast } from './toast';
+import { confirmAsk } from './dialog';
 import { useCharacters, type Character, type Bond, type CharReport, type QuestItem, type BelongingItem, type JournalEntry } from './useCharacters';
 import { UI } from './strings';
 import IconButton from './IconButton';
@@ -663,11 +664,7 @@ export default function Characters({
   const [exploring, setExploring] = useState(false); // 소지품 탐색 중
   const [journaling, setJournaling] = useState(false); // 일지 술회 중
   const [armedItemId, setArmedItemId] = useState<string | null>(null); // 소지품 소각 두 번 누르기 대상
-  const [armedJournalId, setArmedJournalId] = useState<string | null>(null); // 일지 소각 두 번 누르기 대상
-  useEffect(() => {
-    setArmedItemId(null);
-    setArmedJournalId(null);
-  }, [tab]); // 탭을 옮기면 활성 해제
+  useEffect(() => setArmedItemId(null), [tab]); // 탭을 옮기면 활성 해제
   // ESC = 그 화면의 뒤로/취소(없으면 닫기) — 편집 중 실수로 패널 전체가 닫히지 않게 한 겹씩.
   //  (크롭·반입·다이얼로그가 떠 있을 땐 그쪽이 스택 맨 위라 여긴 안 불린다.)
   useEscClose(() => {
@@ -857,14 +854,39 @@ export default function Characters({
     }
   }
 
-  // 일지 소각 — 두 번 누르기(앱 공통): 첫 클릭=활성(붉게), 둘째 클릭=실행.
+  // 일지 편집 기록 — 제목·본문을 고쳐 PUT. 성공하면 true(상세 뷰가 편집 모드를 닫는다).
+  async function 일지기록(e: JournalEntry, fields: { title: string; body: string }) {
+    if (!viewing?.id || !e.id) return false;
+    try {
+      const res = await fetch('/api/journal', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ character_id: viewing.id, id: e.id, ...fields }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        showToast('일지를 기록하지 못했습니다.');
+        return false;
+      }
+      setViewing((v) => (v ? { ...v, analysis: data.report } : v));
+      await refresh();
+      return true;
+    } catch {
+      showToast('일지를 기록하지 못했습니다.');
+      return false;
+    }
+  }
+
+  // 일지 소각 — 되돌릴 수 없는 동작이라 확인 다이얼로그(서신 소각과 같은 결).
   async function 일지소각(e: JournalEntry) {
     if (!viewing?.id || !e.id) return;
-    if (armedJournalId !== e.id) {
-      setArmedJournalId(e.id);
-      return;
-    }
-    setArmedJournalId(null);
+    const ok = await confirmAsk({
+      message: `이 일지를 ${UI.erase}하시겠습니까?`,
+      detail: '소각한 일지는 되찾을 수 없습니다.',
+      confirmLabel: UI.erase,
+      danger: true,
+    });
+    if (!ok) return;
     try {
       const res = await fetch(
         `/api/journal?character_id=${viewing.id}&id=${encodeURIComponent(e.id)}`,
@@ -1255,9 +1277,9 @@ export default function Characters({
                 <JournalTab
                   report={viewing.analysis}
                   journaling={journaling}
-                  armedId={armedJournalId}
                   onWrite={일지작성}
                   onBurn={일지소각}
+                  onSave={일지기록}
                 />
               ) : (
                 <LettersTab
