@@ -47,7 +47,7 @@ export default function SupplyMenu({
   const [restocking, setRestocking] = useState(false);
   const [pick, setPick] = useState<BelongingItem | null>(null); // 조달할 물건(인물 고르는 중)
   const [giving, setGiving] = useState(false);
-  const { chars } = useCharacters(storyId);
+  const { chars, refresh } = useCharacters(storyId);
 
   const load = useCallback(async () => {
     try {
@@ -116,6 +116,7 @@ export default function SupplyMenu({
         return;
       }
       setStock((prev) => ({ ...prev, [sel]: Array.isArray(data.stock) ? data.stock : [] }));
+      await refresh(); // 인물 캐시 갱신 — 조달한 물건이 인물 소지품에 바로 보이게(공용 mem 동기화)
       showToast(`${firstName(name)}에게 ${UI.procure}했습니다.`);
       setPick(null);
     } catch {
