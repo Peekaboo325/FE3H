@@ -15,10 +15,10 @@ import type { CharReport, JournalEntry } from './useCharacters';
 const 서수단위 = ['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉'];
 const 서수십 = ['', '열', '스물', '서른', '마흔', '쉰', '예순', '일흔', '여든', '아흔'];
 function 한글서수(n: number): string {
-  if (n < 1 || n > 99) return `${n}번째`;
-  if (n === 1) return '첫번째';
-  if (n === 20) return '스무번째'; // 20만 '스물'→'스무'
-  return 서수십[Math.floor(n / 10)] + 서수단위[n % 10] + '번째';
+  if (n < 1 || n > 99) return `${n} 번째`;
+  if (n === 1) return '첫 번째';
+  if (n === 20) return '스무 번째'; // 20만 '스물'→'스무'
+  return 서수십[Math.floor(n / 10)] + 서수단위[n % 10] + ' 번째';
 }
 const 라벨 = (순번: number) => `${한글서수(순번)} 일지`;
 
