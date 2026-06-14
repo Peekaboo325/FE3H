@@ -177,14 +177,13 @@ export default function SupplyMenu({
       </Modal>
 
       {pick && (
-        <Modal title="누구에게 조달하시겠습니까" onClose={() => setPick(null)} className="modal--list">
+        <Modal title="인물 명부" onClose={() => setPick(null)} className="modal--list">
           <div className="letter-pick">
-            <p className="letter-pick-hint">‘{pick.name}’을(를) 건넬 인물을 고르십시오.</p>
             <ul className="letter-pick-list">
               {chars.map((c) => (
                 <li key={c.id}>
                   <button className="letter-pick-row" disabled={giving} onClick={() => 조달(c.id!, c.name)}>
-                    <span className="letter-pick-name">{firstName(c.name)}</span>
+                    <span className="letter-pick-name">{c.name}</span>
                   </button>
                 </li>
               ))}
