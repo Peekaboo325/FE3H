@@ -30,6 +30,7 @@ export type JournalEntry = {
   title?: string; // (옛 항목 잔존 — 새 일지엔 제목이 없다. 일기는 표제를 달지 않으므로)
   body: string; // 일지 본문(문단은 빈 줄로). 목록은 이 첫머리로 식별
   created_at?: string; // 술회 시각(ISO)
+  through?: number; // 이 일지가 덮은 마지막 회차(turn id) — 다음 일지 포인터의 근거
 };
 
 // 분석 보고서 — LLM(Gemini Flash)이 약력·맥락을 읽고 발급한다.
