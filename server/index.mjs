@@ -437,7 +437,7 @@ app.post('/api/story', async (req, res) => {
       model: MODEL,
       max_tokens: 8000,
       thinking: { type: 'adaptive' },
-      output_config: { effort: 'medium' }, // 사실 정밀도 실험(2026-06-13, 빌더 승인) — 끊김(60초) 재발 시 low 회귀 또는 Vercel Pro
+      output_config: { effort: 'low' }, // 비용 절감으로 low 회귀(2026-06-14). medium은 '사실 정밀도' 실험이었음 — 필요시 재승격
       system,
       messages: 대화,
     });
@@ -514,7 +514,7 @@ app.post('/api/regen', async (req, res) => {
       model: MODEL,
       max_tokens: 8000,
       thinking: { type: 'adaptive' },
-      output_config: { effort: 'medium' }, // 사실 정밀도 실험(2026-06-13, 빌더 승인) — 끊김(60초) 재발 시 low 회귀 또는 Vercel Pro
+      output_config: { effort: 'low' }, // 비용 절감으로 low 회귀(2026-06-14). medium은 '사실 정밀도' 실험이었음 — 필요시 재승격
       system,
       messages,
     });
