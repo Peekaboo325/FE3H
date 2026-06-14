@@ -2242,3 +2242,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   .supply-pick-grid { display: none; }
   .supply-pick-list { display: block; }
 } */
+/* 모바일: 진열(아이템)은 2열, 인물 선택은 3열 */
+@media (max-width: 600px) {
+  .supply-grid { grid-template-columns: repeat(2, 1fr); }
+  .supply-pick-grid { grid-template-columns: repeat(3, 1fr); }
+}
