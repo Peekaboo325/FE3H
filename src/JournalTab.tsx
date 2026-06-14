@@ -117,7 +117,7 @@ export default function JournalTab({
         </div>
 
         <div className="letter-paper">
-          <h3 className="letter-title">{라벨(journals!.length - openIndex)}</h3>
+          <h3 className="letter-title journal-title">{라벨(journals!.length - openIndex)}</h3>
           <div className="letter-body">
             {editing ? (
               <textarea
