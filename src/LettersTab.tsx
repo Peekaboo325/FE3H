@@ -3,7 +3,7 @@
 //  · 봉인(is_sealed) = 아직 안 읽음 — 열람하는 순간 개봉.
 //  · 보관함 = 발신자가 차마 부치지 못한 편지(draft). 열람·소각만 가능, 부치기 없음.
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Feather, Pencil, Send, Trash2 } from 'lucide-react';
+import { ArrowLeft, Feather, Pencil, Trash2, User } from 'lucide-react';
 import { UI } from './strings';
 import { showToast } from './toast';
 import { confirmAsk } from './dialog';
@@ -353,16 +353,16 @@ export default function LettersTab({
         </ul>
       )}
 
-      {/* 수신 지정 — 깃펜 왼쪽에. 인연(등록 인물)이 있을 때만 */}
-      {recipients.length > 0 && (
+      {/* 수신 지정 — 깃펜 왼쪽에. 인연(등록 인물)이 있을 때만.
+          생성 중(fetching)엔 숨긴다 — 진행 스피너는 깃펜 하나에만 남긴다(빌더). */}
+      {recipients.length > 0 && !fetching && (
         <button
           className="letter-fab letter-fab-direct"
           onClick={() => setPicking(true)}
-          disabled={fetching}
           title={UI.directSend}
           aria-label={UI.directSend}
         >
-          {fetching ? <span className="spinner" /> : <Send size={17} />}
+          <User size={19} />
         </button>
       )}
 
