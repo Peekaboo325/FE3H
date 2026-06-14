@@ -107,9 +107,9 @@ export default function JournalTab({
         ))}
       </div>
       <div className="report-lock-overlay">
-        <p className="report-lock-msg">아직 적힌 일지가 없습니다.</p>
+        <p className="report-lock-msg">적힌 일지가 없습니다.</p>
         <button className="list-btn" onClick={onWrite}>
-          오늘 하루를 적다
+          일지 기록
         </button>
       </div>
     </div>

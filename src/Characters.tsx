@@ -267,9 +267,9 @@ function ReportView({
         <ReportBody report={골격보고서} />
       </div>
       <div className="report-lock-overlay">
-        <p className="report-lock-msg">아직 발급되지 않은 보고서입니다.</p>
+        <p className="report-lock-msg">발급되지 않은 보고서입니다.</p>
         <button className="list-btn" onClick={onIssue}>
-          분석 보고서 발급
+          보고서 발급
         </button>
       </div>
     </div>
@@ -352,7 +352,7 @@ function QuestsView({
         ))}
       </ul>
       <div className="report-lock-overlay">
-        <p className="report-lock-msg">아직 발급되지 않은 임무 장부입니다.</p>
+        <p className="report-lock-msg">발급되지 않은 임무 장부입니다.</p>
         <button className="list-btn" onClick={onIssue}>
           임무 장부 발급
         </button>
