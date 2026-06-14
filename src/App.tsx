@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Characters from './Characters';
+import SupplyMenu from './SupplyMenu';
 import LorePanel from './Lore';
 import Chronicle from './Chronicle';
 import Guidance from './Guidance';
@@ -46,6 +47,7 @@ export default function App() {
   const [showLore, setShowLore] = useState(false);
   const [showChronicle, setShowChronicle] = useState(false);
   const [showGuidance, setShowGuidance] = useState(false);
+  const [showSupply, setShowSupply] = useState(false);
   const [showStories, setShowStories] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState<number | null>(null);
@@ -81,6 +83,7 @@ export default function App() {
   // '천각의 박동'(이야기/세이브)은 가장 아래에 둔다.
   const menuItems: MenuItem[] = [
     { label: '인물 명부', onClick: () => setShowChars(true) },
+    { label: '물자 조달', onClick: () => setShowSupply(true) },
     { label: '대륙 문헌', onClick: () => setShowLore(true) },
     { label: '연대 문헌', onClick: () => setShowChronicle(true) },
     { label: '기록 지침', onClick: () => setShowGuidance(true) },
@@ -461,6 +464,7 @@ export default function App() {
         <Stories currentStoryId={storyId} onSwitch={switchStory} onClose={() => setShowStories(false)} />
       )}
       {showChars && <Characters storyId={storyId} onClose={() => setShowChars(false)} />}
+      {showSupply && <SupplyMenu storyId={storyId} onClose={() => setShowSupply(false)} />}
       {showLore && <LorePanel storyId={storyId} onClose={() => setShowLore(false)} />}
       {showChronicle && (
         <Chronicle storyId={storyId} onClose={() => setShowChronicle(false)} onJump={jumpToTurn} />

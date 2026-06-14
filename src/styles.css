@@ -2217,3 +2217,18 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .journal-list { display: flex; flex-direction: column; gap: 8px; }
 /* 상세 머리(순번 라벨) 밑 구분선 — 편지의 메타줄 테두리와 같은 결(일지엔 메타가 없어 라벨에 직접) */
 .journal-title { padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+
+/* ── 물자 조달 — 점포에서 입하한 물건을 인물 소지품에 조달. 소지품 카드(.item-card) 재사용 ── */
+.modal--supply { max-width: 560px; }
+.supply-shops { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.supply-shop {
+  padding: 20px 14px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface-2); color: var(--text); font: inherit; font-size: 15px;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.supply-shop:hover { background: var(--hover); border-color: var(--accent); }
+.supply-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.supply-card { font: inherit; width: 100%; cursor: pointer; }
+.supply-card:hover { border-color: var(--accent); }
+.supply-empty { text-align: center; color: var(--text-dim); padding: 44px 0; }
+.supply-foot { display: flex; justify-content: center; }

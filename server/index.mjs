@@ -46,6 +46,8 @@ import { listLetters, updateLetter, deleteLetter } from '../lib/db.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 import { loadTurnsForSummary, getTurnContent, setTurnSummary } from '../lib/db.mjs';
+import { runRestock, procureItem, SHOPS } from '../lib/supply.mjs';
+import { getSupply } from '../lib/db.mjs';
 import { summarizeEpisode } from '../lib/summarize.mjs';
 import { ensureEpisodeSummaries, buildChronicle, loadSummaryContext } from '../lib/chronicle.mjs';
 import {
@@ -299,6 +301,41 @@ app.delete('/api/journal', async (req, res) => {
   const entryId = req.query?.id || null;
   try {
     const r = await removeJournal({ characterId, entryId });
+    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+// ── 물자 조달 (Gemini Flash) — 설계 = docs/물자조달_설계.md ─────────────────
+app.get('/api/supply', async (req, res) => {
+  const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
+  try {
+    const stock = await getSupply(storyId);
+    res.status(200).json({ dbReady: dbReady(), shops: SHOPS.map((s) => ({ key: s.key, label: s.label })), stock });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+app.post('/api/supply', async (req, res) => {
+  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
+  const shop = req.body?.shop || null;
+  const itemId = req.body?.item_id || null;
+  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
+  try {
+    // 조달(인물 지목) — 콜 없이 DB만.
+    if (itemId && characterId) {
+      const r = await procureItem({ storyId, shop, itemId, characterId });
+      res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
+      return;
+    }
+    // 새로 입하 — Gemini 필요.
+    if (!process.env.GEMINI_API_KEY) {
+      res.status(400).json({ error: '분석관과의 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).' });
+      return;
+    }
+    const r = await runRestock({ storyId, shop });
     res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
   } catch (e) {
     res.status(500).json({ error: e?.message || String(e) });
