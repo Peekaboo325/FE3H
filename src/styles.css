@@ -2235,9 +2235,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .supply-card { font: inherit; width: 100%; cursor: pointer; }
 .supply-card:hover { border-color: var(--accent); }
 .supply-empty { text-align: center; color: var(--text-dim); padding: 44px 0; }
-/* 조달 인물 선택 — PC: 인물 명부 초상 카드 그리드 / 모바일: 터치 목록 */
+/* 조달 인물 선택 — PC·모바일 모두 인물 명부 초상 카드 그리드.
+   (확인용: 모바일 목록 전환을 잠시 끔 — 다시 목록으로 되돌리려면 아래 @media 주석 해제) */
 .supply-pick-list { display: none; }
-@media (max-width: 600px) {
+/* @media (max-width: 600px) {
   .supply-pick-grid { display: none; }
   .supply-pick-list { display: block; }
-}
+} */
