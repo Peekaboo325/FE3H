@@ -64,6 +64,7 @@ export default function App() {
     () => (localStorage.getItem('fe3h.mode') === 'read' ? 'read' : 'write'),
   );
   const 끝 = useRef<HTMLDivElement>(null);
+  const 붙어있기 = useRef(true); // 바닥에 '붙어' 자동으로 따라갈지 — 위로 올라가 읽으면 false(따라가기 멈춤)
   const editRef = useRef<HTMLTextAreaElement>(null);
   const composeRef = useRef<HTMLTextAreaElement>(null);
 
@@ -141,13 +142,12 @@ export default function App() {
     };
   }, []);
 
-  // 새 문장이 흘러나올 때마다 맨 아래로 따라간다 — 단, '바닥 근처에 있을 때만'.
-  // 위쪽 화를 수정·소각·재작성하는 중에 화면을 바닥으로 빼앗아 가지 않게(테스트·퇴고 방해 버그 수정).
+  // 새 문장이 흘러나오는 동안 맨 아래로 따라간다 — 단 '바닥에 붙어 있을 때만'(붙어있기).
+  // 위로 올라가 읽기 시작하면(스크롤 리스너가 붙어있기=false) 그 순간부터 따라가지 않는다 —
+  //  스트리밍 중에도, 완료 시에도 읽던 화면을 빼앗지 않게. behavior 생략=즉시 이동(smooth가
+  //  청크마다 겹쳐 '이리저리' 튀던 것 방지).
   useEffect(() => {
-    const sc = document.querySelector('main.scroll');
-    if (!sc) return;
-    const 바닥근처 = sc.scrollHeight - sc.scrollTop - sc.clientHeight < 160;
-    if (바닥근처) 끝.current?.scrollIntoView({ behavior: 'smooth' });
+    if (붙어있기.current) 끝.current?.scrollIntoView({ block: 'end' });
   }, [turns, busy]);
 
   // 위로 한참 올라가면 우하단에 '맨 아래로' FAB를 띄운다(바닥 근처면 숨김).
@@ -156,6 +156,7 @@ export default function App() {
     if (!sc) return;
     const 갱신 = () => {
       const 남은거리 = sc.scrollHeight - sc.scrollTop - sc.clientHeight;
+      붙어있기.current = 남은거리 < 120; // 바닥 근처면 따라가기 유지, 위로 올라가면 멈춤
       set최신로내려가기(남은거리 > 320);
     };
     갱신(); // 진입·내용 변화 시 즉시 반영(앱은 1화 위쪽에서 시작)
@@ -229,7 +230,8 @@ export default function App() {
     setInput('');
     setBusy(true);
     setPendingRecall(hasAnchor(입력)); // 앵커가 있으면 로딩을 '회상' 톤으로
-    // 전개는 명시적 행동 — 위에서 읽던 중이었어도 새 화가 시작되는 곳으로 내려간다.
+    // 전개는 명시적 행동 — 위에서 읽던 중이었어도 새 화가 시작되는 곳으로 내려가고, 따라가기를 켠다.
+    붙어있기.current = true;
     requestAnimationFrame(() => 끝.current?.scrollIntoView({ behavior: 'smooth' }));
 
     const messages = 다음.slice(0, -1).map((t) => ({ role: t.role, content: t.content }));
@@ -275,7 +277,7 @@ export default function App() {
             const 저장길이 = 끝?.role === 'assistant' ? (끝.content?.trim().length || 0) : -1;
             if (저장길이 >= 본문길이) {
               setTurns(fresh);
-              setVisibleCount(WINDOW);
+              if (붙어있기.current) setVisibleCount(WINDOW); // 바닥에 붙어있을 때만 창 리셋(위 읽는 중이면 화면 안 흔듦)
               break;
             }
           } catch {
