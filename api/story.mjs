@@ -81,16 +81,16 @@ export default async function handler(req, res) {
   const 인물블록 = buildCharacterContext(인물원천);
   const 지침블록 = buildGuidanceBlock(지침);
   const 줄거리블록 = buildSummaryBlock(줄거리);
-  // 캐시 ①: 박제 세계관(불변) — 1시간 TTL. 유저가 5분 넘게 쉬어도 캐시 유지 → write 재과금 차단.
-  const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral', ttl: '1h' } }];
-  if (지침블록) system.push({ type: 'text', text: 지침블록 }); // 기록자 추가 지침(박제 세계관 바로 뒤)
-  if (설정블록) system.push({ type: 'text', text: 설정블록 });
-  if (인물블록) system.push({ type: 'text', text: 인물블록 });
-  // 캐시 ②: 여기까지(세계관+지침+견문록+인물)는 편집 전엔 안 바뀌는 '안정 프리픽스'. 마지막 블록에
-  //  2번째 캐시 경계를 둬 통째로 캐시 → worldview만 캐싱하던 때(적중률 ~1/3)보다 크게 올린다.
-  //  이 아래(줄거리·화수·앵커)는 매 턴 바뀌므로 캐시하지 않는다(프리픽스 뒤라 캐시 안 깸).
-  system[system.length - 1].cache_control = { type: 'ephemeral', ttl: '1h' };
-  if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락
+  // 프롬프트 캐싱 — 안정 블록마다 캐시 경계(1h TTL). 최대 4개 = 세계관/지침/문헌/인물.
+  //  '앞에서부터 일치'라 끝(인물)을 바꿔도 앞 블록 캐시는 안 깨진다 → 인물 토글 = 인물 칸만 재기록.
+  //  순서는 '잘 안 바뀜→자주 바뀜'(세계관→지침→문헌→인물)이라 인물 토글이 뒤를 안 깨뜨림.
+  //  줄거리·화수·앵커는 매 턴 바뀌므로 경계를 두지 않는다(자연히 캐시 안 됨).
+  const 캐시 = { type: 'ephemeral', ttl: '1h' };
+  const system = [{ type: 'text', text: SYSTEM, cache_control: 캐시 }];
+  if (지침블록) system.push({ type: 'text', text: 지침블록, cache_control: 캐시 }); // 기록 지침
+  if (설정블록) system.push({ type: 'text', text: 설정블록, cache_control: 캐시 }); // 대륙 문헌(활성)
+  if (인물블록) system.push({ type: 'text', text: 인물블록, cache_control: 캐시 }); // 인물(활성)
+  if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락(캐시 안 함)
   system.push({
     type: 'text',
     text:
