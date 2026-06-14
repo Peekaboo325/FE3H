@@ -21,6 +21,7 @@ import {
   buildAnchorContext,
   parseLoreAnchors,
   buildLoreAnchorContext,
+  buildCharacterAnchorContext,
 } from '../lib/anchor.mjs';
 
 const MODEL = 'claude-opus-4-8'; // 메인 본문 = Opus 4.8 (CLAUDE.md)
@@ -63,12 +64,15 @@ export default async function handler(req, res) {
   const 화수 = messages.filter((m) => m?.role === 'assistant').length + 1;
   const 지목 = parseAnchors(입력문);
   const 견문록지목 = parseLoreAnchors(입력문);
-  const [{ messages: 대화, summary: 줄거리 }, 참고, 견문록참고] = await Promise.all([
+  const [{ messages: 대화, summary: 줄거리 }, 참고, 견문록참고, 인물참고] = await Promise.all([
     prepareConversation(storyId, messages),
     지목.length ? buildAnchorContext(storyId, 입력문, 지목) : Promise.resolve({ block: null, episodes: [] }),
     견문록지목.refs.length || 견문록지목.titles.length
       ? buildLoreAnchorContext(storyId, 견문록지목)
       : Promise.resolve({ block: null, items: [] }),
+    입력문.includes('등장')
+      ? buildCharacterAnchorContext(storyId, 입력문) // "이름 등장" — 비활성 인물 임시 소환
+      : Promise.resolve({ block: null, chars: [] }),
   ]);
 
   // 활성 견문록(세계 설정) + 활성 인물을 박제 세계관 뒤에 붙인다(캐싱 유지).
@@ -99,6 +103,7 @@ export default async function handler(req, res) {
       `머리글 "## 제N화 · 제목"의 N에는 반드시 ${화수}을(를) 쓴다. ` +
       `화수를 스스로 세거나 다른 숫자를 쓰지 말 것.`,
   });
+  if (인물참고.block) system.push({ type: 'text', text: 인물참고.block }); // 지목 인물 소환(캐시 경계 뒤)
   if (견문록참고.block) system.push({ type: 'text', text: 견문록참고.block }); // 지목 문헌
   if (참고.block) system.push({ type: 'text', text: 참고.block }); // 지목 회차 = 가장 가까이
 
@@ -108,11 +113,12 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('X-Accel-Buffering', 'no');
 
-  // 실제로 되짚은 회차·문헌을 헤더로 — 클라가 그 화에 '확인 자취'를 남긴다(본문 전에 전송).
+  // 실제로 되짚은 회차·문헌·소환 인물을 헤더로 — 클라가 그 화에 '확인 자취'를 남긴다(본문 전에 전송).
   const 자취 = {};
   if (참고.episodes.length) 자취.ep = 참고.episodes;
   if (견문록참고.items.length) 자취.lore = 견문록참고.items;
-  if (자취.ep || 자취.lore) {
+  if (인물참고.chars.length) 자취.char = 인물참고.chars;
+  if (자취.ep || 자취.lore || 자취.char) {
     res.setHeader('x-recall', encodeURIComponent(JSON.stringify(자취)));
   }
 

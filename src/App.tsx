@@ -18,13 +18,14 @@ import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as M
 type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
 type Story = { id: number; title: string };
 // 되짚은 자취 — 서버가 실제로 주입한 회차·문헌(확인 자취용).
-type Recall = { ep?: number[]; lore?: { n: number; t: string }[] };
+type Recall = { ep?: number[]; lore?: { n: number; t: string }[]; char?: string[] };
 
-// 되짚은 자취를 디제틱 한 줄로: "제3화 · 제2권 퍼거스 신성 왕국"
+// 되짚은 자취를 디제틱 한 줄로: "제3화 · 제2권 퍼거스 신성 왕국 · 펠릭스"
 function recallTraceText(r: Recall): string {
   const parts: string[] = [];
   if (r.ep?.length) parts.push(...r.ep.map((n) => `제${n}화`));
   if (r.lore?.length) parts.push(...r.lore.map((l) => `제${l.n}권${l.t ? ' ' + l.t : ''}`));
+  if (r.char?.length) parts.push(...r.char);
   return parts.join(' · ');
 }
 
@@ -302,7 +303,7 @@ export default function App() {
     if (!raw) return null;
     try {
       const r = JSON.parse(decodeURIComponent(raw)) as Recall;
-      return (r.ep?.length || r.lore?.length) ? r : null;
+      return (r.ep?.length || r.lore?.length || r.char?.length) ? r : null;
     } catch {
       return null;
     }
