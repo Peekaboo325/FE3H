@@ -14,6 +14,8 @@ import type { BelongingItem } from './useCharacters';
 type Shop = { key: string; label: string };
 type Stock = Record<string, BelongingItem[]>;
 
+const PORTRAIT = '/assets/illust/avatar-placeholder.webp'; // 인물 카드 기본 초상(Characters와 동일)
+
 // 물건 그림 — 소지품 ItemIcon과 같은 결(없거나 못 읽으면 공용 문양).
 function SupplyIcon({ icon }: { icon?: string }) {
   const [broken, setBroken] = useState<string | null>(null);
@@ -180,7 +182,28 @@ export default function SupplyMenu({
       {pick && (
         <Modal title="인물 명부" onClose={() => setPick(null)} className="modal--list">
           <div className="letter-pick">
-            <ul className="letter-pick-list">
+            {/* PC: 인물 명부와 같은 초상 카드 그리드 */}
+            <ul className="char-grid supply-pick-grid">
+              {chars.map((c) => (
+                <li
+                  key={c.id}
+                  className="char-card"
+                  onClick={() => {
+                    if (!giving) 조달(c.id!, c.name);
+                  }}
+                >
+                  <div className="char-card-img">
+                    <img src={c.thumbnail || c.avatar || PORTRAIT} alt="" draggable={false} />
+                    <div className="char-card-grad" />
+                    <div className="char-card-meta">
+                      <div className="char-card-name">{firstName(c.name)}</div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {/* 모바일: 터치하기 좋은 목록(풀 네임) */}
+            <ul className="letter-pick-list supply-pick-list">
               {chars.map((c) => (
                 <li key={c.id}>
                   <button className="letter-pick-row" disabled={giving} onClick={() => 조달(c.id!, c.name)}>
