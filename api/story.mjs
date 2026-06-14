@@ -81,14 +81,15 @@ export default async function handler(req, res) {
   const 인물블록 = buildCharacterContext(인물원천);
   const 지침블록 = buildGuidanceBlock(지침);
   const 줄거리블록 = buildSummaryBlock(줄거리);
-  // 프롬프트 캐싱 — 안정 블록마다 캐시 경계(1h TTL). 최대 4개 = 세계관/지침/문헌/인물.
+  // 프롬프트 캐싱 — 안정 블록마다 캐시 경계(1h TTL). 최대 4개 = 세계관/문헌/지침/인물.
   //  '앞에서부터 일치'라 끝(인물)을 바꿔도 앞 블록 캐시는 안 깨진다 → 인물 토글 = 인물 칸만 재기록.
-  //  순서는 '잘 안 바뀜→자주 바뀜'(세계관→지침→문헌→인물)이라 인물 토글이 뒤를 안 깨뜨림.
+  //  순서 = '잘 안 바뀜→자주 바뀜'(세계관→문헌→지침→인물). 세계관+문헌을 '세계 사실'로 앞에 묶고,
+  //  지침은 그 위 집필 지시. 가장 자주 만지는 인물이 맨 뒤라 인물 토글이 뒤를 안 깨뜨림.
   //  줄거리·화수·앵커는 매 턴 바뀌므로 경계를 두지 않는다(자연히 캐시 안 됨).
   const 캐시 = { type: 'ephemeral', ttl: '1h' };
   const system = [{ type: 'text', text: SYSTEM, cache_control: 캐시 }];
-  if (지침블록) system.push({ type: 'text', text: 지침블록, cache_control: 캐시 }); // 기록 지침
   if (설정블록) system.push({ type: 'text', text: 설정블록, cache_control: 캐시 }); // 대륙 문헌(활성)
+  if (지침블록) system.push({ type: 'text', text: 지침블록, cache_control: 캐시 }); // 기록 지침
   if (인물블록) system.push({ type: 'text', text: 인물블록, cache_control: 캐시 }); // 인물(활성)
   if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락(캐시 안 함)
   system.push({

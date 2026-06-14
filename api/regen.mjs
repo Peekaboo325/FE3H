@@ -42,12 +42,12 @@ export default async function handler(req, res) {
   const 인물블록 = buildCharacterContext(인물원천);
   const 지침블록 = buildGuidanceBlock(지침);
   const 화수 = messages.filter((m) => m?.role === 'assistant').length + 1; // 그 턴의 화수(§5)
-  // 프롬프트 캐싱 — 블록마다 경계(1h). 세계관/지침/문헌/인물(story와 동일 구조·프리픽스 = 캐시 공유).
+  // 프롬프트 캐싱 — 블록마다 경계(1h). 세계관/문헌/지침/인물(story와 동일 구조·프리픽스 = 캐시 공유).
   //  인물 토글 = 인물 칸만 재기록(앞 블록 캐시 유지). 화수는 매 턴 바뀌므로 경계 없음.
   const 캐시 = { type: 'ephemeral', ttl: '1h' };
   const system = [{ type: 'text', text: SYSTEM, cache_control: 캐시 }];
-  if (지침블록) system.push({ type: 'text', text: 지침블록, cache_control: 캐시 }); // 기록 지침
   if (설정블록) system.push({ type: 'text', text: 설정블록, cache_control: 캐시 }); // 대륙 문헌(활성)
+  if (지침블록) system.push({ type: 'text', text: 지침블록, cache_control: 캐시 }); // 기록 지침
   if (인물블록) system.push({ type: 'text', text: 인물블록, cache_control: 캐시 }); // 인물(활성)
   system.push({
     type: 'text',

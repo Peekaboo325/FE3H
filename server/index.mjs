@@ -397,11 +397,11 @@ app.post('/api/story', async (req, res) => {
   const 인물블록 = buildCharacterContext(인물원천);
   const 지침블록 = buildGuidanceBlock(지침);
   const 줄거리블록 = buildSummaryBlock(줄거리);
-  // 프롬프트 캐싱 — 블록마다 경계(1h). 세계관/지침/문헌/인물. 인물 토글=인물 칸만 재기록.
+  // 프롬프트 캐싱 — 블록마다 경계(1h). 세계관/문헌/지침/인물. 인물 토글=인물 칸만 재기록.
   const 캐시 = { type: 'ephemeral', ttl: '1h' };
   const system = [{ type: 'text', text: SYSTEM, cache_control: 캐시 }];
-  if (지침블록) system.push({ type: 'text', text: 지침블록, cache_control: 캐시 }); // 기록 지침
   if (설정블록) system.push({ type: 'text', text: 설정블록, cache_control: 캐시 }); // 대륙 문헌(활성)
+  if (지침블록) system.push({ type: 'text', text: 지침블록, cache_control: 캐시 }); // 기록 지침
   if (인물블록) system.push({ type: 'text', text: 인물블록, cache_control: 캐시 }); // 인물(활성)
   if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락(캐시 안 함)
   system.push({
@@ -485,11 +485,11 @@ app.post('/api/regen', async (req, res) => {
   const 인물블록 = buildCharacterContext(인물원천);
   const 지침블록 = buildGuidanceBlock(지침);
   const 화수 = messages.filter((m) => m?.role === 'assistant').length + 1; // 그 턴의 화수(§5)
-  // 프롬프트 캐싱 — 블록마다 경계(1h). 세계관/지침/문헌/인물. 화수는 매 턴 바뀌므로 경계 없음.
+  // 프롬프트 캐싱 — 블록마다 경계(1h). 세계관/문헌/지침/인물. 화수는 매 턴 바뀌므로 경계 없음.
   const 캐시 = { type: 'ephemeral', ttl: '1h' };
   const system = [{ type: 'text', text: SYSTEM, cache_control: 캐시 }];
-  if (지침블록) system.push({ type: 'text', text: 지침블록, cache_control: 캐시 }); // 기록 지침
   if (설정블록) system.push({ type: 'text', text: 설정블록, cache_control: 캐시 }); // 대륙 문헌(활성)
+  if (지침블록) system.push({ type: 'text', text: 지침블록, cache_control: 캐시 }); // 기록 지침
   if (인물블록) system.push({ type: 'text', text: 인물블록, cache_control: 캐시 }); // 인물(활성)
   system.push({
     type: 'text',
