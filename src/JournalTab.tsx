@@ -1,7 +1,7 @@
 // 일지(日誌) 탭 — 인물의 '사적 연대기'. 서신의 안쪽 짝(밖↔안).
-//  목록(연대 문헌식 미리보기) → 상세 뷰(서신 뷰어와 동일한 종이 카드·툴바·편집·소각).
-//  서신에서 빌림: 종이 카드·툴바·편집/소각·술회 FAB·스피너. 덜어냄: 발신수신 메타·서명(흘림체).
-//  날것·수수한 사적 페이지 — 설계 = docs/일지_설계.md.
+//  목록(본문 첫머리로 식별) → 상세 뷰(서신 뷰어와 동일한 종이 카드·툴바·편집·소각).
+//  ⚠️ 제목 없음 — 일기는 아무에게도 보이지 않을 글이라 표제를 달지 않는다(날짜도 안 박으니
+//     식별자는 '그 글의 첫머리'. 메모장이 첫 줄을 보여주는 결). 설계 = docs/일지_설계.md.
 import { useState } from 'react';
 import { ArrowLeft, Feather, Pencil, Trash2 } from 'lucide-react';
 import { UI } from './strings';
@@ -11,18 +11,17 @@ import Spinner from './Spinner';
 import Markdown from './Markdown';
 import type { CharReport, JournalEntry } from './useCharacters';
 
-// 미작성/술회 중 화면용 골격 — 흐릿하게 깔리므로 내용은 자리채움.
+// 미작성/술회 중 화면용 골격 — 흐릿하게 깔리므로 내용은 자리채움(제목 없이 본문만).
 const 골격일지: JournalEntry[] = [
-  { title: '여느 날', body: '새벽 종소리에 눈을 떴다. 멀건 죽 한 그릇으로 속을 데우고, 늘 그렇듯 마당을 한 바퀴 돌았다. 별일 없는 하루였다.' },
-  { title: '잠 못 드는 밤', body: '요 며칠 마음이 자꾸 한곳에 머문다. 낮의 소임은 손에 익어 무던히 흘렀는데, 밤이 되니 그 한마디가 다시 떠오른다.' },
+  { body: '새벽 종소리에 눈을 떴다. 멀건 죽 한 그릇으로 속을 데우고, 늘 그렇듯 마당을 한 바퀴 돌았다. 별일 없는 하루였다.' },
+  { body: '요 며칠 마음이 자꾸 한곳에 머문다. 낮의 소임은 손에 익어 무던히 흘렀는데, 밤이 되니 그 한마디가 다시 떠오른다.' },
 ];
 
-// 목록 행 — 제목 + 본문 2줄 미리보기(연대 문헌 클래스 재사용).
+// 목록 행 — 제목 없이 본문 첫머리(3줄)로. 그 글의 첫 마디가 곧 식별자.
 function JournalRow({ e, onOpen }: { e: JournalEntry; onOpen: () => void }) {
   return (
     <button className="chronicle-row" onClick={onOpen}>
-      <div className="chronicle-title">{e.title || '제목 없는 날'}</div>
-      <p className="chronicle-summary clamp2">{e.body}</p>
+      <p className="journal-row-text">{e.body}</p>
     </button>
   );
 }
@@ -38,19 +37,19 @@ export default function JournalTab({
   journaling: boolean;
   onWrite: () => void;
   onBurn: (e: JournalEntry) => void;
-  onSave: (e: JournalEntry, fields: { title: string; body: string }) => Promise<boolean>;
+  onSave: (e: JournalEntry, fields: { body: string }) => Promise<boolean>;
 }) {
   const journals = report?.journals;
   const [openId, setOpenId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ title: '', body: '' });
+  const [body, setBody] = useState('');
   const [saving, setSaving] = useState(false);
   const open = journals?.find((j) => j.id === openId) || null;
 
   async function 기록() {
     if (!open || saving) return;
     setSaving(true);
-    const ok = await onSave(open, form);
+    const ok = await onSave(open, { body });
     setSaving(false);
     if (ok) setEditing(false);
   }
@@ -71,7 +70,7 @@ export default function JournalTab({
     );
   }
 
-  // 상세(한 장 펼침) — 서신 뷰어와 동일한 골격(letter-* 클래스 재사용).
+  // 상세(한 장 펼침) — 서신 뷰어와 동일한 골격(letter-* 클래스 재사용). 단 제목·메타·서명은 없다.
   if (open) {
     return (
       <div className="letter-view">
@@ -90,7 +89,7 @@ export default function JournalTab({
               <IconButton
                 label={UI.edit}
                 onClick={() => {
-                  setForm({ title: open.title || '', body: open.body });
+                  setBody(open.body);
                   setEditing(true);
                 }}
               >
@@ -104,21 +103,12 @@ export default function JournalTab({
         </div>
 
         <div className="letter-paper">
-          {editing ? (
-            <input
-              className="letter-title-input"
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            />
-          ) : (
-            open.title && <h3 className="letter-title">{open.title}</h3>
-          )}
           <div className="letter-body">
             {editing ? (
               <textarea
                 className="letter-body-input"
-                value={form.body}
-                onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
               />
             ) : (
               <Markdown text={open.body} />

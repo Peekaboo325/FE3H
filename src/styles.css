@@ -2216,3 +2216,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .journal { display: flex; flex-direction: column; min-height: 360px; }
 .journal-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .journal .report-foot { margin-top: auto; padding-top: 4px; }
+/* 목록 행 — 제목 없이 본문 첫머리 3줄로 식별(그 글의 첫 마디가 곧 표식) */
+.journal-row-text {
+  margin: 0; font-size: 14px; color: var(--text); line-height: 1.65;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}

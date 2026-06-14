@@ -854,8 +854,8 @@ export default function Characters({
     }
   }
 
-  // 일지 편집 기록 — 제목·본문을 고쳐 PUT. 성공하면 true(상세 뷰가 편집 모드를 닫는다).
-  async function 일지기록(e: JournalEntry, fields: { title: string; body: string }) {
+  // 일지 편집 기록 — 본문을 고쳐 PUT(일기엔 제목이 없다). 성공하면 true(상세 뷰가 편집 모드를 닫는다).
+  async function 일지기록(e: JournalEntry, fields: { body: string }) {
     if (!viewing?.id || !e.id) return false;
     try {
       const res = await fetch('/api/journal', {
