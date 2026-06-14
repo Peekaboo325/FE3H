@@ -24,6 +24,14 @@ export type QuestItem = {
   reward: string;
 };
 
+// 일지 한 장 — 인물 본인이 그날의 끝에서 적는 글(1인칭·날것). 서신의 안쪽 짝.
+export type JournalEntry = {
+  id?: string; // 소각·식별용 안정 키(서버가 발급)
+  title?: string; // 그날을 압축한 짧은 제목
+  body: string; // 일지 본문(문단은 빈 줄로)
+  created_at?: string; // 술회 시각(ISO)
+};
+
 // 분석 보고서 — LLM(Gemini Flash)이 약력·맥락을 읽고 발급한다.
 export type CharReport = {
   quote?: string;
@@ -38,6 +46,9 @@ export type CharReport = {
   quests_at?: string; // 임무 발급 시각(ISO)
   belongings?: BelongingItem[]; // 소지품 (소지품 탭 — 탐색마다 누적)
   belongings_at?: string; // 마지막 탐색 시각(ISO)
+  journals?: JournalEntry[]; // 일지 (일지 탭 — 술회마다 누적, 최신이 위)
+  journals_at?: string; // 마지막 술회 시각(ISO)
+  journals_cursor?: number; // '여기까지 적음' 포인터(마지막으로 덮은 turn id)
 };
 
 export type Character = {

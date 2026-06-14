@@ -1,7 +1,7 @@
 import { useState, useEffect, Fragment, type ReactNode } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
 import { showToast } from './toast';
-import { useCharacters, type Character, type Bond, type CharReport, type QuestItem, type BelongingItem } from './useCharacters';
+import { useCharacters, type Character, type Bond, type CharReport, type QuestItem, type BelongingItem, type JournalEntry } from './useCharacters';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import Button from './Button';
@@ -25,6 +25,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useSortSensors, sortGuardProps } from './useSortSensors';
 import LettersTab from './LettersTab';
+import JournalTab from './JournalTab';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -65,7 +66,7 @@ function ViewSection({ label, text }: { label: string; text: string }) {
 }
 
 // 인물 뷰 탭 — 5종 전부 가동(서신이 마지막으로 채워졌다).
-const 인물탭 = ['약력', '보고서', '임무', '소지품', '서신'] as const;
+const 인물탭 = ['약력', '보고서', '임무', '소지품', '일지', '서신'] as const;
 
 // 보고서 능력치 8종 (키→라벨). 서버 lib/report.mjs STAT_KEYS와 일치해야 한다.
 const 능력치목록: [string, string][] = [
@@ -660,8 +661,13 @@ export default function Characters({
   const [reporting, setReporting] = useState(false); // 보고서 발급 중
   const [questing, setQuesting] = useState(false); // 임무 장부 발급 중
   const [exploring, setExploring] = useState(false); // 소지품 탐색 중
+  const [journaling, setJournaling] = useState(false); // 일지 술회 중
   const [armedItemId, setArmedItemId] = useState<string | null>(null); // 소지품 소각 두 번 누르기 대상
-  useEffect(() => setArmedItemId(null), [tab]); // 탭을 옮기면 활성 해제
+  const [armedJournalId, setArmedJournalId] = useState<string | null>(null); // 일지 소각 두 번 누르기 대상
+  useEffect(() => {
+    setArmedItemId(null);
+    setArmedJournalId(null);
+  }, [tab]); // 탭을 옮기면 활성 해제
   // ESC = 그 화면의 뒤로/취소(없으면 닫기) — 편집 중 실수로 패널 전체가 닫히지 않게 한 겹씩.
   //  (크롭·반입·다이얼로그가 떠 있을 땐 그쪽이 스택 맨 위라 여긴 안 불린다.)
   useEscClose(() => {
@@ -821,6 +827,58 @@ export default function Characters({
       await refresh();
     } catch {
       showToast('정렬을 완료하지 못했습니다.');
+    }
+  }
+
+  // 일지 술회 — Gemini Flash가 인물 본인이 되어 그날의 끝에서 일지 한 장을 적어 누적한다.
+  async function 일지작성() {
+    if (!viewing?.id || journaling) return;
+    const 이름 = firstName(viewing.name);
+    setJournaling(true);
+    try {
+      const res = await fetch('/api/journal', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ character_id: viewing.id, story_id: storyId }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        // 빈손('무르익지 않음')·사망 게이트 등 디제틱 사유는 그대로 전한다.
+        showToast(data.error || '일지를 적지 못했습니다.');
+        return;
+      }
+      setViewing((v) => (v ? { ...v, analysis: data.report } : v));
+      await refresh();
+      showToast(`${이름}의 하루가 일지에 적혔습니다.`);
+    } catch {
+      showToast('일지를 적지 못했습니다.');
+    } finally {
+      setJournaling(false);
+    }
+  }
+
+  // 일지 소각 — 두 번 누르기(앱 공통): 첫 클릭=활성(붉게), 둘째 클릭=실행.
+  async function 일지소각(e: JournalEntry) {
+    if (!viewing?.id || !e.id) return;
+    if (armedJournalId !== e.id) {
+      setArmedJournalId(e.id);
+      return;
+    }
+    setArmedJournalId(null);
+    try {
+      const res = await fetch(
+        `/api/journal?character_id=${viewing.id}&id=${encodeURIComponent(e.id)}`,
+        { method: 'DELETE' },
+      );
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        showToast(`일지를 ${UI.erase}하지 못했습니다.`);
+        return;
+      }
+      setViewing((v) => (v ? { ...v, analysis: data.report } : v));
+      await refresh();
+    } catch {
+      showToast(`일지를 ${UI.erase}하지 못했습니다.`);
     }
   }
 
@@ -1192,6 +1250,14 @@ export default function Characters({
                   onExplore={탐색}
                   onBurn={물건소각}
                   onReorder={물건정렬}
+                />
+              ) : tab === '일지' ? (
+                <JournalTab
+                  report={viewing.analysis}
+                  journaling={journaling}
+                  armedId={armedJournalId}
+                  onWrite={일지작성}
+                  onBurn={일지소각}
                 />
               ) : (
                 <LettersTab

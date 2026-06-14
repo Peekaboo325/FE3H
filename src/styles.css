@@ -2208,3 +2208,14 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   color: var(--text); font-size: 14px; line-height: 1.8; padding: 12px; outline: none;
 }
 .letter-edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+/* ── 일지(日誌) — 인물의 사적 연대기(목록→상세). 서신의 안쪽 짝(밖↔안).
+   읽는 골격은 연대 문헌을 닮아 .chronicle-row/.chronicle-summary.clamp2를 재사용한다.
+   날것·수수(흘림체·봉인 없음). 빈 상태·골격은 보고서(.report-locked)와 같은 바닥. */
+.journal, .journal-detail { display: flex; flex-direction: column; min-height: 360px; }
+.journal-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.journal .report-foot { margin-top: auto; padding-top: 4px; }
+.journal-detail-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.journal-title { font-size: 17px; color: var(--text); margin: 2px 0 14px; letter-spacing: 0.02em; }
+.journal-body { white-space: pre-wrap; line-height: 1.9; color: var(--text); font-size: 15px; }
+.journal-burn.armed { color: #e06b6b; background: rgba(224, 107, 107, 0.12); }
