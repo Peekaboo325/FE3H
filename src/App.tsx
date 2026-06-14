@@ -84,9 +84,9 @@ export default function App() {
   const menuItems: MenuItem[] = [
     { label: '인물 명부', onClick: () => setShowChars(true) },
     { label: '물자 조달', onClick: () => setShowSupply(true) },
-    { label: '대륙 문헌', onClick: () => setShowLore(true) },
+    { label: '대륙 문헌', divider: true, onClick: () => setShowLore(true) },
     { label: '연대 문헌', onClick: () => setShowChronicle(true) },
-    { label: '기록 지침', onClick: () => setShowGuidance(true) },
+    { label: '기록 지침', divider: true, onClick: () => setShowGuidance(true) },
     { label: '천각의 박동', onClick: () => setShowStories(true) },
   ];
 

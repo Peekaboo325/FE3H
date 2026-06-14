@@ -1,9 +1,10 @@
 // 물자 조달 — 점포 6에서 입하한 물건을 인물 소지품에 '조달'(선물). 설계 = docs/물자조달_설계.md.
 //  소지품의 그림·카드를 재사용. 점포 목록 → 진열(9점)+새로 입하 → 물건 골라 인물에게 조달.
 import { useCallback, useEffect, useState } from 'react';
+import { RotateCcw } from 'lucide-react';
 import Modal from './Modal';
 import Spinner from './Spinner';
-import Button from './Button';
+import IconButton from './IconButton';
 import { showToast } from './toast';
 import { UI } from './strings';
 import { useCharacters } from './useCharacters';
@@ -164,10 +165,10 @@ export default function SupplyMenu({
             ) : (
               <p className="supply-empty">진열이 비었습니다.</p>
             )}
-            <div className="supply-foot">
-              <Button variant="secondary" loading={restocking} onClick={() => 입하(sel!)}>
-                새로 입하
-              </Button>
+            <div className="report-foot">
+              <IconButton label="새로 입하" onClick={() => 입하(sel!)} disabled={restocking}>
+                {restocking ? <span className="spinner" /> : <RotateCcw size={17} />}
+              </IconButton>
             </div>
           </>
         )}

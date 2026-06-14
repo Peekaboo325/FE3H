@@ -173,6 +173,8 @@ body::before {
 .drawer-logo { display: block; height: 19.5px; width: auto; }
 .drawer-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
 .drawer-list { display: flex; flex-direction: column; gap: 2px; }
+/* 메뉴 그룹 구분선(인물·물자 / 대륙·연대 / 지침·박동) */
+.drawer-divider { height: 1px; background: var(--border); margin: 7px 12px; }
 .drawer-item {
   display: flex;
   flex-direction: column;
@@ -2231,4 +2233,3 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .supply-card { font: inherit; width: 100%; cursor: pointer; }
 .supply-card:hover { border-color: var(--accent); }
 .supply-empty { text-align: center; color: var(--text-dim); padding: 44px 0; }
-.supply-foot { display: flex; justify-content: center; }
