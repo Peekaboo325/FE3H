@@ -2213,8 +2213,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
    목록 = 연대 문헌 클래스(.chronicle-row/.chronicle-summary.clamp2) 재사용,
    상세·편집 = 서신 뷰어 클래스(.letter-view/.letter-paper/.letter-body…) 재사용.
    여기선 목록 레이아웃만. 빈 상태·골격은 보고서(.report-locked)와 같은 바닥. */
-.journal { display: flex; flex-direction: column; min-height: 360px; }
-.journal-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-.journal .report-foot { margin-top: auto; padding-top: 4px; }
+.journal { min-height: 360px; padding-bottom: 76px; } /* 76px = 하단 술회 FAB(.letter-fab)에 마지막 행 안 가리게(.letters-tab과 동일) */
+.journal-list { display: flex; flex-direction: column; gap: 8px; }
 /* 상세 머리(순번 라벨) 밑 구분선 — 편지의 메타줄 테두리와 같은 결(일지엔 메타가 없어 라벨에 직접) */
 .journal-title { padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }

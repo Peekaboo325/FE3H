@@ -153,11 +153,16 @@ export default function JournalTab({
             <JournalRow key={e.id} label={라벨(journals.length - i)} e={e} onOpen={() => setOpenId(e.id!)} />
           ))}
         </div>
-        <div className="report-foot">
-          <IconButton label={UI.journalize} onClick={onWrite} disabled={journaling}>
-            {journaling ? <span className="spinner" /> : <Feather size={17} />}
-          </IconButton>
-        </div>
+        {/* 술회 — 서신 깃펜과 같은 금빛 플로팅 인장(.letter-fab). 모달 우하단에 닻 내림 */}
+        <button
+          className="letter-fab"
+          onClick={onWrite}
+          disabled={journaling}
+          title={UI.journalize}
+          aria-label={UI.journalize}
+        >
+          {journaling ? <span className="spinner" /> : <Feather size={19} />}
+        </button>
       </div>
     );
   }
