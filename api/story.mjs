@@ -81,10 +81,15 @@ export default async function handler(req, res) {
   const 인물블록 = buildCharacterContext(인물원천);
   const 지침블록 = buildGuidanceBlock(지침);
   const 줄거리블록 = buildSummaryBlock(줄거리);
-  const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  // 캐시 ①: 박제 세계관(불변) — 1시간 TTL. 유저가 5분 넘게 쉬어도 캐시 유지 → write 재과금 차단.
+  const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral', ttl: '1h' } }];
   if (지침블록) system.push({ type: 'text', text: 지침블록 }); // 기록자 추가 지침(박제 세계관 바로 뒤)
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
+  // 캐시 ②: 여기까지(세계관+지침+견문록+인물)는 편집 전엔 안 바뀌는 '안정 프리픽스'. 마지막 블록에
+  //  2번째 캐시 경계를 둬 통째로 캐시 → worldview만 캐싱하던 때(적중률 ~1/3)보다 크게 올린다.
+  //  이 아래(줄거리·화수·앵커)는 매 턴 바뀌므로 캐시하지 않는다(프리픽스 뒤라 캐시 안 깸).
+  system[system.length - 1].cache_control = { type: 'ephemeral', ttl: '1h' };
   if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락
   system.push({
     type: 'text',
@@ -125,7 +130,13 @@ export default async function handler(req, res) {
       본문 += delta;
       res.write(delta);
     });
-    await stream.finalMessage();
+    const _final = await stream.finalMessage();
+    // 비용 실측 — 콘솔에 토큰 내역(캐시 적중률 = cr / (in+cw+cr)). in은 '캐시 안 된 나머지'만.
+    const u = _final?.usage;
+    if (u)
+      console.log(
+        `[비용] story 화${화수} in:${u.input_tokens ?? '-'} cw(캐시쓰기):${u.cache_creation_input_tokens ?? '-'} cr(캐시읽기):${u.cache_read_input_tokens ?? '-'} out:${u.output_tokens ?? '-'}`,
+      );
 
     // 완성된 본문을 영구 저장하고, 이야기의 최근 플레이 시각을 갱신한다.
     if (본문.trim()) {

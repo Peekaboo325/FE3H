@@ -397,10 +397,12 @@ app.post('/api/story', async (req, res) => {
   const 인물블록 = buildCharacterContext(인물원천);
   const 지침블록 = buildGuidanceBlock(지침);
   const 줄거리블록 = buildSummaryBlock(줄거리);
-  const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  // 캐시 ①: 박제 세계관 1시간 TTL. ②: 안정 프리픽스(세계관+지침+견문록+인물) 끝에 2번째 경계.
+  const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral', ttl: '1h' } }];
   if (지침블록) system.push({ type: 'text', text: 지침블록 }); // 기록자 추가 지침(박제 세계관 바로 뒤)
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
+  system[system.length - 1].cache_control = { type: 'ephemeral', ttl: '1h' };
   if (줄거리블록) system.push({ type: 'text', text: 줄거리블록 }); // 대화 앞 = 최신 맥락
   system.push({
     type: 'text',
@@ -438,7 +440,12 @@ app.post('/api/story', async (req, res) => {
       본문 += delta;
       res.write(delta);
     });
-    await stream.finalMessage();
+    const _fin = await stream.finalMessage();
+    const _u = _fin?.usage;
+    if (_u)
+      console.log(
+        `[비용] story 화${화수} in:${_u.input_tokens ?? '-'} cw:${_u.cache_creation_input_tokens ?? '-'} cr:${_u.cache_read_input_tokens ?? '-'} out:${_u.output_tokens ?? '-'}`,
+      );
 
     if (본문.trim()) {
       await saveTurn('assistant', 본문, storyId);
@@ -478,10 +485,12 @@ app.post('/api/regen', async (req, res) => {
   const 인물블록 = buildCharacterContext(인물원천);
   const 지침블록 = buildGuidanceBlock(지침);
   const 화수 = messages.filter((m) => m?.role === 'assistant').length + 1; // 그 턴의 화수(§5)
-  const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  // 캐시 ①: 박제 세계관 1시간 TTL. ②: 안정 프리픽스 끝에 2번째 경계(아래 화수는 매 턴 바뀜).
+  const system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral', ttl: '1h' } }];
   if (지침블록) system.push({ type: 'text', text: 지침블록 }); // 기록자 추가 지침(박제 세계관 바로 뒤)
   if (설정블록) system.push({ type: 'text', text: 설정블록 });
   if (인물블록) system.push({ type: 'text', text: 인물블록 });
+  system[system.length - 1].cache_control = { type: 'ephemeral', ttl: '1h' };
   system.push({
     type: 'text',
     text:
@@ -507,7 +516,12 @@ app.post('/api/regen', async (req, res) => {
       본문 += delta;
       res.write(delta);
     });
-    await stream.finalMessage();
+    const _fin = await stream.finalMessage();
+    const _u = _fin?.usage;
+    if (_u)
+      console.log(
+        `[비용] regen 화${화수} in:${_u.input_tokens ?? '-'} cw:${_u.cache_creation_input_tokens ?? '-'} cr:${_u.cache_read_input_tokens ?? '-'} out:${_u.output_tokens ?? '-'}`,
+      );
     if (본문.trim()) await updateTurn(turnId, 본문, true); // 요약 무효화(재생성)
     res.end();
   } catch (err) {
