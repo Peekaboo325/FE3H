@@ -422,6 +422,8 @@ export default function App() {
 
   // 보이는 창 = 최근 visibleCount칸. start 위쪽은 '말아둔 두루마리'로 접어둔다.
   const start = Math.max(0, turns.length - visibleCount);
+  // 펼치기 버튼의 카운트 = 숨긴 것 중 'AI 답변(화)'만 — 프롬프트는 세지 않는다(화=서술자 본문).
+  const 묵은화수 = turns.slice(0, start).filter((t) => t.role !== 'user').length;
 
   // 화 번호 — 한 번 '전개' = 한 화. N번째 본문(서술자)이 N화. (앵커링 "N화 참고"의 기준)
   let _ac = 0;
@@ -473,7 +475,7 @@ export default function App() {
             onClick={() => setVisibleCount((c) => c + STEP)}
             title="앞선 장면을 더 펼칩니다"
           >
-            이전 화 펼치기 <span className="unfurl-rest">{start}</span>
+            이전 화 펼치기 <span className="unfurl-rest">{묵은화수}</span>
           </button>
         )}
         {turns.slice(start).map((t, vi) => {
