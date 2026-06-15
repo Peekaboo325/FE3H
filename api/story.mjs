@@ -13,6 +13,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
 import { saveTurn, touchStory, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
+import { genConfig } from '../lib/genConfig.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
@@ -52,6 +53,7 @@ export default async function handler(req, res) {
   }
 
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
+  const { model, effort } = genConfig(req.body); // 앱 설정(빌더)에서 받은 모델·사고 깊이. 기본 Opus/medium
 
   // 이번 차례의 새 유저 입력을 먼저 영구 저장한다(설정돼 있으면).
   const 새입력 = messages[messages.length - 1];
@@ -125,10 +127,10 @@ export default async function handler(req, res) {
   let 본문 = '';
   try {
     const stream = client.messages.stream({
-      model: MODEL,
+      model,
       max_tokens: 8000,
       thinking: { type: 'adaptive' },
-      output_config: { effort: 'medium' }, // 사실 정밀도 위해 medium 재승격(2026-06-15, 빌더). 비용↑ — 필요시 low 회귀
+      output_config: { effort }, // 모델·effort 모두 앱 '설정'에서 받음(genConfig 검증). 기본 Opus/medium
       system,
       messages: 대화,
     });

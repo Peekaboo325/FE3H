@@ -7,6 +7,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
 import { updateTurn, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
+import { genConfig } from '../lib/genConfig.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 
@@ -27,6 +28,7 @@ export default async function handler(req, res) {
   const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
   const turnId = req.body?.turn_id ? Number(req.body.turn_id) : null;
+  const { model, effort } = genConfig(req.body); // 앱 설정에서 받은 모델·사고 깊이
   if (messages.length === 0 || !turnId) {
     res.status(400).setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.end('[서고] 잘못된 재생성 요청입니다.');
@@ -65,10 +67,10 @@ export default async function handler(req, res) {
   let 본문 = '';
   try {
     const stream = client.messages.stream({
-      model: MODEL,
+      model,
       max_tokens: 8000,
       thinking: { type: 'adaptive' },
-      output_config: { effort: 'medium' }, // 사실 정밀도 위해 medium 재승격(2026-06-15, 빌더). 비용↑ — 필요시 low 회귀
+      output_config: { effort }, // 앱 '설정'에서 받음(genConfig). 기본 Opus/medium
       system,
       messages,
     });

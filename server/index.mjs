@@ -36,6 +36,7 @@ import {
   setGuidance,
 } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
+import { genConfig } from '../lib/genConfig.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { runReport } from '../lib/report.mjs';
 import { runQuests } from '../lib/quests.mjs';
@@ -446,6 +447,7 @@ app.post('/api/story', async (req, res) => {
   }
 
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
+  const { model, effort } = genConfig(req.body); // 앱 설정에서 받은 모델·사고 깊이
   const 새입력 = messages[messages.length - 1];
   if (새입력?.role === 'user') await saveTurn('user', 새입력.content, storyId);
 
@@ -510,10 +512,10 @@ app.post('/api/story', async (req, res) => {
   let 본문 = '';
   try {
     const stream = client.messages.stream({
-      model: MODEL,
+      model,
       max_tokens: 8000,
       thinking: { type: 'adaptive' },
-      output_config: { effort: 'medium' }, // 사실 정밀도 위해 medium 재승격(2026-06-15, 빌더). 비용↑ — 필요시 low 회귀
+      output_config: { effort }, // 앱 '설정'에서 받음(genConfig). 기본 Opus/medium
       system,
       messages: 대화,
     });
@@ -553,6 +555,7 @@ app.post('/api/regen', async (req, res) => {
   const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
   const turnId = req.body?.turn_id ? Number(req.body.turn_id) : null;
+  const { model, effort } = genConfig(req.body); // 앱 설정에서 받은 모델·사고 깊이
   if (messages.length === 0 || !turnId) {
     res.status(400).type('text/plain; charset=utf-8').end('[서고] 잘못된 재생성 요청입니다.');
     return;
@@ -587,10 +590,10 @@ app.post('/api/regen', async (req, res) => {
   let 본문 = '';
   try {
     const stream = client.messages.stream({
-      model: MODEL,
+      model,
       max_tokens: 8000,
       thinking: { type: 'adaptive' },
-      output_config: { effort: 'medium' }, // 사실 정밀도 위해 medium 재승격(2026-06-15, 빌더). 비용↑ — 필요시 low 회귀
+      output_config: { effort }, // 앱 '설정'에서 받음(genConfig). 기본 Opus/medium
       system,
       messages,
     });

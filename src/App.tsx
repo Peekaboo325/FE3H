@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Characters from './Characters';
 import SupplyMenu from './SupplyMenu';
+import Settings, { type GenConfig } from './Settings';
 import LorePanel from './Lore';
 import Chronicle from './Chronicle';
 import Guidance from './Guidance';
@@ -41,6 +42,20 @@ const STEP = 30;
 let _kc = 0;
 const nk = () => 'ck' + ++_kc;
 
+// 본문 생성 설정(모델·사고 깊이) — 빌더가 앱 '설정'에서 고르고 localStorage에 남는다. /api/story·regen 본문으로 보냄.
+const GEN_KEY = 'genCfg';
+const DEFAULT_GEN: GenConfig = { model: 'claude-opus-4-8', effort: 'medium' };
+function loadGenCfg(): GenConfig {
+  try {
+    const p = JSON.parse(localStorage.getItem(GEN_KEY) || 'null');
+    if (p && typeof p === 'object')
+      return { model: p.model || DEFAULT_GEN.model, effort: p.effort || DEFAULT_GEN.effort };
+  } catch {
+    /* 기본값으로 */
+  }
+  return DEFAULT_GEN;
+}
+
 export default function App() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
@@ -52,6 +67,16 @@ export default function App() {
   const [showChronicle, setShowChronicle] = useState(false);
   const [showGuidance, setShowGuidance] = useState(false);
   const [showSupply, setShowSupply] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [genCfg, setGenCfg] = useState<GenConfig>(loadGenCfg);
+  function 설정변경(c: GenConfig) {
+    setGenCfg(c);
+    try {
+      localStorage.setItem(GEN_KEY, JSON.stringify(c));
+    } catch {
+      /* 저장 실패해도 이번 세션엔 적용됨 */
+    }
+  }
   const [showStories, setShowStories] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState<number | null>(null);
@@ -91,6 +116,7 @@ export default function App() {
     { label: '대륙 문헌', divider: true, onClick: () => setShowLore(true) },
     { label: '연대 문헌', onClick: () => setShowChronicle(true) },
     { label: '기록 지침', divider: true, onClick: () => setShowGuidance(true) },
+    { label: '설정', onClick: () => setShowSettings(true) },
     { label: '천각의 박동', onClick: () => setShowStories(true) },
   ];
 
@@ -252,7 +278,7 @@ export default function App() {
       const res = await fetch('/api/story', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages, story_id: storyId }),
+        body: JSON.stringify({ messages, story_id: storyId, model: genCfg.model, effort: genCfg.effort }),
       });
 
       if (!res.ok || !res.body) {
@@ -402,7 +428,7 @@ export default function App() {
       const res = await fetch('/api/regen', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages, story_id: storyId, turn_id: targetId }),
+        body: JSON.stringify({ messages, story_id: storyId, turn_id: targetId, model: genCfg.model, effort: genCfg.effort }),
       });
       if (!res.ok || !res.body) {
         const e = await res.text();
@@ -483,6 +509,9 @@ export default function App() {
         <Chronicle storyId={storyId} onClose={() => setShowChronicle(false)} onJump={jumpToTurn} />
       )}
       {showGuidance && <Guidance storyId={storyId} onClose={() => setShowGuidance(false)} />}
+      {showSettings && (
+        <Settings config={genCfg} onChange={설정변경} onClose={() => setShowSettings(false)} />
+      )}
 
       <main className="scroll">
         <div className="scroll-inner">
