@@ -123,6 +123,17 @@ export default async function handler(req, res) {
   if (자취.ep || 자취.lore || 자취.char) {
     res.setHeader('x-recall', encodeURIComponent(JSON.stringify(자취)));
   }
+  // 되짚으려 했으나 못 살린 것 — 조용한 실패를 없애 작가가 결과를 본다(x-recall-note).
+  const 안내 = {};
+  if (참고.missNums?.length) 안내.epMiss = 참고.missNums; // 아직 없는 회차
+  if (참고.briefFailed) 안내.epBrief = true; // 회차는 있으나 추려내기 실패
+  const 견문록의도 = 견문록지목.refs.length || 견문록지목.titles.length;
+  if (견문록의도 && !견문록참고.items.length) 안내.loreMiss = true; // 지목 문헌 못 찾음
+  if (인물참고.here?.length) 안내.charHere = 인물참고.here; // 이미 함께 있음
+  if (인물참고.miss?.length) 안내.charMiss = 인물참고.miss; // 명부에 없는 이름
+  if (안내.epMiss || 안내.epBrief || 안내.loreMiss || 안내.charHere || 안내.charMiss) {
+    res.setHeader('x-recall-note', encodeURIComponent(JSON.stringify(안내)));
+  }
 
   let 본문 = '';
   try {

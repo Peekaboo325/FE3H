@@ -21,6 +21,14 @@ type Turn = { id?: number; role: 'user' | 'assistant'; content: string; _key?: s
 type Story = { id: number; title: string };
 // 되짚은 자취 — 서버가 실제로 주입한 회차·문헌(확인 자취용).
 type Recall = { ep?: number[]; lore?: { n: number; t: string }[]; char?: string[] };
+// 되짚으려 했으나 못 살린 것 — 조용한 실패를 없애 작가가 결과를 본다.
+type RecallNote = {
+  epMiss?: number[]; // 아직 없는 회차
+  epBrief?: boolean; // 회차는 있으나 추려내기 실패
+  loreMiss?: boolean; // 지목 문헌 못 찾음
+  charHere?: string[]; // 이미 함께 있는 인물
+  charMiss?: string[]; // 명부에 없는 이름
+};
 
 // 되짚은 자취를 디제틱 한 줄로: "제3화 · 제2권 퍼거스 신성 왕국 · 펠릭스"
 function recallTraceText(r: Recall): string {
@@ -29,6 +37,20 @@ function recallTraceText(r: Recall): string {
   if (r.lore?.length) parts.push(...r.lore.map((l) => `제${l.n}권${l.t ? ' ' + l.t : ''}`));
   if (r.char?.length) parts.push(...r.char);
   return parts.join(' · ');
+}
+
+// 자취(살린 것) + 안내(못 살린 것)를 한 토스트 문구로. 둘 다 없으면 null.
+function recallMessage(r: Recall | null, note: RecallNote | null): string | null {
+  const parts: string[] = [];
+  if (r) parts.push(`회상한 기록 - ${recallTraceText(r)}`);
+  if (note?.charHere?.length) parts.push(`이미 함께 있습니다 - ${note.charHere.join(' · ')}`);
+  const miss: string[] = [];
+  if (note?.epMiss?.length) miss.push(`아직 없는 회차 ${note.epMiss.map((n) => `제${n}화`).join(' · ')}`);
+  if (note?.epBrief) miss.push('회차를 추려내지 못했습니다');
+  if (note?.loreMiss) miss.push('지목한 문헌을 찾지 못했습니다');
+  if (note?.charMiss?.length) miss.push(`명부에 없는 인물 ${note.charMiss.join(' · ')}`);
+  if (miss.length) parts.push(`되짚지 못함 - ${miss.join(', ')}`);
+  return parts.length ? parts.join('   ·   ') : null;
 }
 
 const LS_STORY = 'fe3h.currentStoryId';
@@ -84,10 +106,6 @@ export default function App() {
   const [armedTurn, setArmedTurn] = useState<number | null>(null); // 삭제 두 번 누르기 대상
   const [pendingRecall, setPendingRecall] = useState(false); // 이번 생성이 '회상'(앵커)인가 → 로딩 톤
 
-  // 되짚었음을 잠깐 알리는 토스트(떴다 사라짐). 본문/DB와 무관, 화면 표시뿐.
-  function showRecallToast(r: Recall) {
-    showToast(`회상한 기록 - ${recallTraceText(r)}`);
-  }
   const [visibleCount, setVisibleCount] = useState(WINDOW); // 지금 펼쳐 둔 칸 수
   const [pendingJump, setPendingJump] = useState<number | null>(null); // 연대 문헌에서 '그 화로 가기'
   const [최신로내려가기, set최신로내려가기] = useState(false); // 위로 한참 올라갔을 때만 뜨는 '맨 아래로' FAB
@@ -285,9 +303,11 @@ export default function App() {
         return;
       }
 
-      // 서버가 실제로 되짚은 자취(헤더, 본문 전 도착)를 읽어 토스트로 잠깐 띄운다.
+      // 서버가 되짚은 자취(살린 것)와 안내(못 살린 것)를 헤더에서 읽어 한 토스트로 띄운다.
       const 자취 = parseRecallHeader(res.headers.get('x-recall'));
-      if (자취) showRecallToast(자취);
+      const 안내 = parseNoteHeader(res.headers.get('x-recall-note'));
+      const 문구 = recallMessage(자취, 안내);
+      if (문구) showToast(문구);
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -344,6 +364,19 @@ export default function App() {
     try {
       const r = JSON.parse(decodeURIComponent(raw)) as Recall;
       return (r.ep?.length || r.lore?.length || r.char?.length) ? r : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // 응답 헤더(x-recall-note = 못 살린 것)를 안전하게 푼다.
+  function parseNoteHeader(raw: string | null): RecallNote | null {
+    if (!raw) return null;
+    try {
+      const n = JSON.parse(decodeURIComponent(raw)) as RecallNote;
+      return n.epMiss?.length || n.epBrief || n.loreMiss || n.charHere?.length || n.charMiss?.length
+        ? n
+        : null;
     } catch {
       return null;
     }
