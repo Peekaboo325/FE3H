@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Characters from './Characters';
 import SupplyMenu from './SupplyMenu';
-import Settings, { type GenConfig } from './Settings';
+import { type GenConfig } from './Settings';
 import LorePanel from './Lore';
 import Chronicle from './Chronicle';
 import Guidance from './Guidance';
@@ -67,7 +67,6 @@ export default function App() {
   const [showChronicle, setShowChronicle] = useState(false);
   const [showGuidance, setShowGuidance] = useState(false);
   const [showSupply, setShowSupply] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [genCfg, setGenCfg] = useState<GenConfig>(loadGenCfg);
   function 설정변경(c: GenConfig) {
     setGenCfg(c);
@@ -116,7 +115,6 @@ export default function App() {
     { label: '대륙 문헌', divider: true, onClick: () => setShowLore(true) },
     { label: '연대 문헌', onClick: () => setShowChronicle(true) },
     { label: '기록 지침', divider: true, onClick: () => setShowGuidance(true) },
-    { label: '설정', onClick: () => setShowSettings(true) },
     { label: '천각의 박동', onClick: () => setShowStories(true) },
   ];
 
@@ -500,7 +498,13 @@ export default function App() {
       />
 
       {showStories && (
-        <Stories currentStoryId={storyId} onSwitch={switchStory} onClose={() => setShowStories(false)} />
+        <Stories
+          currentStoryId={storyId}
+          onSwitch={switchStory}
+          onClose={() => setShowStories(false)}
+          genConfig={genCfg}
+          onGenChange={설정변경}
+        />
       )}
       {showChars && <Characters storyId={storyId} onClose={() => setShowChars(false)} />}
       {showSupply && <SupplyMenu storyId={storyId} onClose={() => setShowSupply(false)} />}
@@ -509,9 +513,6 @@ export default function App() {
         <Chronicle storyId={storyId} onClose={() => setShowChronicle(false)} onJump={jumpToTurn} />
       )}
       {showGuidance && <Guidance storyId={storyId} onClose={() => setShowGuidance(false)} />}
-      {showSettings && (
-        <Settings config={genCfg} onChange={설정변경} onClose={() => setShowSettings(false)} />
-      )}
 
       <main className="scroll">
         <div className="scroll-inner">

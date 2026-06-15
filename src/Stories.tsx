@@ -7,6 +7,7 @@ import { UI } from './strings';
 import Modal from './Modal';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
+import GenControls, { type GenConfig } from './Settings';
 
 type Story = { id: number; title: string; updated_at?: string };
 
@@ -14,10 +15,14 @@ export default function Stories({
   currentStoryId,
   onSwitch,
   onClose,
+  genConfig,
+  onGenChange,
 }: {
   currentStoryId: number | null;
   onSwitch: (id: number, title: string) => void;
   onClose: () => void;
+  genConfig: GenConfig;
+  onGenChange: (c: GenConfig) => void;
 }) {
   const [list, setList] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
@@ -283,6 +288,7 @@ export default function Stories({
               )}
             </ul>
           )}
+          <GenControls config={genConfig} onChange={onGenChange} />
         </div>
     </Modal>
   );
