@@ -68,7 +68,7 @@ export default async function handler(req, res) {
       model: MODEL,
       max_tokens: 8000,
       thinking: { type: 'adaptive' },
-      output_config: { effort: 'low' }, // 비용 절감으로 low 회귀(2026-06-14). medium은 '사실 정밀도' 실험이었음 — 필요시 재승격
+      output_config: { effort: 'medium' }, // 사실 정밀도 위해 medium 재승격(2026-06-15, 빌더). 비용↑ — 필요시 low 회귀
       system,
       messages,
     });
