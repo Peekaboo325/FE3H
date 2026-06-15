@@ -16,7 +16,7 @@ import { showToast, ToastHost } from './toast';
 import { UI } from './strings';
 import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon, ChevronsDown } from 'lucide-react';
 
-type Turn = { id?: number; role: 'user' | 'assistant'; content: string };
+type Turn = { id?: number; role: 'user' | 'assistant'; content: string; _key?: string };
 type Story = { id: number; title: string };
 // 되짚은 자취 — 서버가 실제로 주입한 회차·문헌(확인 자취용).
 type Recall = { ep?: number[]; lore?: { n: number; t: string }[]; char?: string[] };
@@ -36,6 +36,10 @@ const LS_STORY = 'fe3h.currentStoryId';
 // (화수가 쌓여도 화면에 살아있는 DOM을 가볍게 유지: legacy의 100화+ 공방 대비)
 const WINDOW = 30;
 const STEP = 30;
+
+// 턴별 '고정 클라이언트 키' 발급기 — 스트리밍 칸이 완료 시 id를 얻어도 React key가 안 바뀌게(리마운트=스크롤 튐 방지).
+let _kc = 0;
+const nk = () => 'ck' + ++_kc;
 
 export default function App() {
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -229,7 +233,11 @@ export default function App() {
     const 입력 = input.trim();
     if (!입력 || busy) return;
 
-    const 다음: Turn[] = [...turns, { role: 'user', content: 입력 }, { role: 'assistant', content: '' }];
+    const 다음: Turn[] = [
+      ...turns,
+      { role: 'user', content: 입력, _key: nk() },
+      { role: 'assistant', content: '', _key: nk() },
+    ];
     setTurns(다음);
     setInput('');
     setBusy(true);
@@ -280,8 +288,13 @@ export default function App() {
             const 끝 = fresh[fresh.length - 1];
             const 저장길이 = 끝?.role === 'assistant' ? (끝.content?.trim().length || 0) : -1;
             if (저장길이 >= 본문길이) {
-              setTurns(fresh);
-              if (붙어있기.current) setVisibleCount(WINDOW); // 바닥에 붙어있을 때만 창 리셋(위 읽는 중이면 화면 안 흔듦)
+              // ⚠️ 통째 교체(setTurns(fresh))는 스트리밍 칸의 key를 tmp→id로 바꿔 리마운트→스크롤 튐을 부른다.
+              //  길이가 맞으면 '제자리 패치': 새 칸엔 id·최종 본문만 채우고 _key는 유지(앞 칸은 그대로 = 리마운트 0).
+              setTurns((prev) =>
+                fresh.length !== prev.length
+                  ? fresh // 정렬이 어긋나면 안전하게 통째로(드문 경우)
+                  : prev.map((t, idx) => (t.id == null && t._key ? { ...fresh[idx], _key: t._key } : t)),
+              );
               break;
             }
           } catch {
@@ -491,7 +504,7 @@ export default function App() {
           const editing = editingTurn != null && t.id === editingTurn;
           return (
             <div
-              key={t.id ?? 'tmp-' + i}
+              key={t._key ?? t.id ?? 'tmp-' + i}
               data-turn-id={t.id ?? undefined}
               className={t.role === 'user' ? 'turn user' : 'turn story'}
             >
