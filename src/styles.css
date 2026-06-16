@@ -2239,6 +2239,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   display: flex; justify-content: center; padding: 16px 0 18px; pointer-events: none;
 }
 .emblem-foot { width: 54px; height: auto; opacity: 0.07; }
+/* 대륙 문헌 대문(5영역) 빈 여백 인장 — 워터마크 위치 기준(.lore-side는 이미 relative) */
+.modal--lore .modal-body { position: relative; }
 .supply-shop {
   padding: 20px 14px; border: 1px solid var(--border); border-radius: 12px;
   background: var(--surface-2); color: var(--text); font: inherit; font-size: 15px;

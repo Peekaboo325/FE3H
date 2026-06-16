@@ -23,6 +23,7 @@ import Button from './Button';
 import Spinner from './Spinner';
 import Dropdown from './Dropdown';
 import Markdown from './Markdown';
+import Emblem from './Emblem';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -451,6 +452,7 @@ export default function LorePanel({
                   </li>
                 )}
               </ul>
+              <Emblem className="emblem-watermark" />
             </div>
           </>
         ) : (
@@ -458,6 +460,7 @@ export default function LorePanel({
           <div className={'lore-codex' + (hasSel ? ' has-sel' : '')}>
             {/* 왼쪽: 그 영역의 권 목록(목차) */}
             <aside className="lore-side">
+              <Emblem className="emblem-watermark" />
               <div className="lore-side-head">
                 <IconButton label="영역으로" onClick={backToTopics}>
                   <ArrowLeft size={18} />
