@@ -2234,6 +2234,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 /* 본문 고정 높이 — 점포 목록(짧음)·진열(9칸)·로딩·빈 진열 모두 같은 높이로(모달 안 출렁임). 넘치면 안에서 스크롤. */
 .supply-body { position: relative; height: min(605px, 80vh); overflow-y: auto; scrollbar-gutter: stable; }
 .supply-shops { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+/* PC: 3열 2행 + 카드 축소(그리드 폭 제한·가운데 정렬) */
+@media (min-width: 601px) {
+  .supply-shops { grid-template-columns: repeat(3, 1fr); max-width: 468px; margin-inline: auto; }
+}
 
 /* 세계의 인장(문양) 워터마크 — fill=currentColor라 color/opacity/width로만 결을 잡는다(src/Emblem.tsx). */
 .emblem-watermark, .emblem-foot { display: block; color: var(--text); pointer-events: none; }
@@ -2269,7 +2273,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 }
 .supply-shop-label {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 14px;
-  color: #fff; font-size: 16px; font-weight: 600; text-align: left;
+  color: #fff; font-size: 16px; font-weight: 600; text-align: center;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 }
 .supply-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
