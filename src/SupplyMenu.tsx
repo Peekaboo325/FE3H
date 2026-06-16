@@ -5,6 +5,7 @@ import { RotateCcw } from 'lucide-react';
 import Modal from './Modal';
 import Spinner from './Spinner';
 import IconButton from './IconButton';
+import Emblem from './Emblem';
 import { showToast } from './toast';
 import { UI } from './strings';
 import { useCharacters } from './useCharacters';
@@ -15,6 +16,16 @@ type Shop = { key: string; label: string };
 type Stock = Record<string, BelongingItem[]>;
 
 const PORTRAIT = '/assets/illust/avatar-placeholder.webp'; // 인물 카드 기본 초상(Characters와 동일)
+
+// 점포 부제(1줄·짧게) — 카드 이름 아래 풍미. 표시용(Lore TOPICS의 sub와 같은 결, 키로 매핑).
+const SHOP_SUBS: Record<string, string> = {
+  grocery: '식탁의 풍요',
+  general: '온갖 살림',
+  attire: '차림과 멋',
+  smithy: '쇠와 불꽃',
+  forager: '들과 숲에서',
+  blackmarket: '그늘의 거래',
+};
 
 // 물건 그림 — 소지품 ItemIcon과 같은 결(없거나 못 읽으면 공용 문양).
 function SupplyIcon({ icon }: { icon?: string }) {
@@ -141,23 +152,29 @@ export default function SupplyMenu({
           <Spinner />
         ) : !curShop ? (
           // ── 점포 목록 ──
-          <div className="supply-shops">
-            {shops.map((s) => (
-              <button key={s.key} className="supply-shop" onClick={() => openShop(s.key)}>
-                <img
-                  className="supply-shop-img"
-                  src={`/assets/illust/shop-${s.key}.webp`}
-                  alt=""
-                  draggable={false}
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-                <span className="supply-shop-grad" />
-                <span className="supply-shop-label">{s.label}</span>
-              </button>
-            ))}
-          </div>
+          <>
+            <div className="supply-shops">
+              {shops.map((s) => (
+                <button key={s.key} className="supply-shop" onClick={() => openShop(s.key)}>
+                  <img
+                    className="supply-shop-img"
+                    src={`/assets/illust/shop-${s.key}.webp`}
+                    alt=""
+                    draggable={false}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <span className="supply-shop-grad" />
+                  <span className="supply-shop-label">
+                    <span className="supply-shop-name">{s.label}</span>
+                    {SHOP_SUBS[s.key] && <span className="supply-shop-sub">{SHOP_SUBS[s.key]}</span>}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <Emblem className="emblem-watermark" />
+          </>
         ) : restocking && !curStock.length ? (
           <div className="supply-empty">
             <Spinner />
