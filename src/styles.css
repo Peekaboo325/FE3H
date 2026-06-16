@@ -2228,10 +2228,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 
 /* 세계의 인장(문양) 워터마크 — fill=currentColor라 color/opacity/width로만 결을 잡는다(src/Emblem.tsx). */
 .emblem-watermark, .emblem-foot { display: block; color: var(--text); pointer-events: none; }
-/* 빈 패널(물자 조달 점포 목록 등) 아래 여백 중앙에 크게·아주 옅게 */
+/* 빈 패널 하단에 작게 박는다(과하지 않게) — 컨테이너 바닥 기준 */
 .emblem-watermark {
-  position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%);
-  width: 188px; height: auto; opacity: 0.05; z-index: 0;
+  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+  width: 60px; height: auto; opacity: 0.06; z-index: 0;
 }
 /* 사이드바(드로어) 하단 인장 */
 .drawer-foot {

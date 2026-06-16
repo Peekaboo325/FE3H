@@ -452,8 +452,8 @@ export default function LorePanel({
                   </li>
                 )}
               </ul>
-              <Emblem className="emblem-watermark" />
             </div>
+            <Emblem className="emblem-watermark" />
           </>
         ) : (
           // ── 영역 펼침 — 2단(목차 사이드바 + 본문) ────────────────────────
