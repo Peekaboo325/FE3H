@@ -2233,6 +2233,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
   width: 60px; height: auto; opacity: 0.06; z-index: 0;
 }
+/* PC(데스크탑) 대륙 문헌 대문엔 인장 불필요 — 모바일 풀스크린 여백에서만 둔다(사이드바·물자조달은 그대로). */
+@media (min-width: 601px) {
+  .modal--lore.modal--list > .emblem-watermark { display: none; }
+}
 /* 사이드바(드로어) 하단 인장 */
 .drawer-foot {
   position: absolute; left: 0; right: 0; bottom: 0;
