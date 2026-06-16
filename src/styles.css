@@ -979,6 +979,10 @@ em, i { font-style: normal; }
 @media (min-width: 601px) {
   .lore-side-head, .lore-main-head { padding-top: 20px; }
 }
+/* 모바일: codex 헤더 뒤로가기 버튼을 입구(.modal-head)와 같은 가로 위치로 — 좌측 들여쓰기(14) 제거 */
+@media (max-width: 600px) {
+  .lore-side-head, .lore-main-head { padding-left: 0; }
+}
 .lore-main-body { flex: 1; overflow-y: auto; min-height: 0; padding: 0; scrollbar-gutter: stable both-edges; }
 /* 문헌 한 권(읽기) — 표제·여백을 살린 정갈한 읽기 */
 .lore-doc { max-width: 680px; margin: 0 auto; padding: 34px 32px 56px; }
