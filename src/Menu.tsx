@@ -3,6 +3,7 @@
 
 import { Fragment } from 'react';
 import Logo from './Logo';
+import Emblem from './Emblem';
 
 // divider: true면 이 항목 앞에 구분선을 둔다(메뉴 그룹 나누기).
 export type MenuItem = { label: string; hint?: string; divider?: boolean; onClick: () => void };
@@ -44,6 +45,9 @@ export default function Menu({
               </button>
             </Fragment>
           ))}
+        </div>
+        <div className="drawer-foot">
+          <Emblem className="emblem-foot" />
         </div>
       </nav>
     </>

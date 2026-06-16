@@ -5,6 +5,7 @@ import { RotateCcw } from 'lucide-react';
 import Modal from './Modal';
 import Spinner from './Spinner';
 import IconButton from './IconButton';
+import Emblem from './Emblem';
 import { showToast } from './toast';
 import { UI } from './strings';
 import { useCharacters } from './useCharacters';
@@ -141,13 +142,16 @@ export default function SupplyMenu({
           <Spinner />
         ) : !curShop ? (
           // ── 점포 목록 ──
-          <div className="supply-shops">
-            {shops.map((s) => (
-              <button key={s.key} className="supply-shop" onClick={() => openShop(s.key)}>
-                {s.label}
-              </button>
-            ))}
-          </div>
+          <>
+            <div className="supply-shops">
+              {shops.map((s) => (
+                <button key={s.key} className="supply-shop" onClick={() => openShop(s.key)}>
+                  {s.label}
+                </button>
+              ))}
+            </div>
+            <Emblem className="emblem-watermark" />
+          </>
         ) : restocking && !curStock.length ? (
           <div className="supply-empty">
             <Spinner />
