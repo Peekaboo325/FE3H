@@ -237,7 +237,9 @@ function ReportView({
   onIssue: () => void;
 }) {
   // 첫 발급 중(보고서 없음) — 골격 흐리고 스피너로 '작동 중'.
-  if (reporting && !report) {
+  //  ⚠️ analysis 통째가 아니라 '보고서 고유 표식(generated_at)'으로 판정한다 —
+  //     서신·일지 등 형제 칸이 analysis에 써져도 보고서 가림이 풀리지 않게(빈 화면 버그 차단).
+  if (reporting && !report?.generated_at) {
     return (
       <div className="report-locked">
         <div className="report report--ghost" aria-hidden="true">
@@ -249,7 +251,7 @@ function ReportView({
       </div>
     );
   }
-  if (report) {
+  if (report?.generated_at) {
     return (
       <div className="report">
         <ReportBody report={report} />
