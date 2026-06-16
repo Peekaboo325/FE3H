@@ -2254,12 +2254,24 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .emblem-foot { width: 54px; height: auto; opacity: 0.07; }
 /* 대륙 문헌 대문(5영역) 빈 여백 인장 — 워터마크 위치 기준(.lore-side는 이미 relative) */
 .modal--lore .modal-body { position: relative; }
+/* 점포 = 정사각 그림 카드(그림 꽉 + 하단 그라데이션 + 이름) — 대륙 문헌 결, 세로형 */
 .supply-shop {
-  padding: 20px 14px; border: 1px solid var(--border); border-radius: 12px;
-  background: var(--surface-2); color: var(--text); font: inherit; font-size: 15px;
-  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+  position: relative; overflow: hidden; aspect-ratio: 1 / 1;
+  padding: 0; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface-2); cursor: pointer; display: block;
+  transition: border-color 0.15s;
 }
-.supply-shop:hover { background: var(--hover); border-color: var(--accent); }
+.supply-shop:hover { border-color: var(--accent); }
+.supply-shop-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.supply-shop-grad {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.2) 42%, rgba(0, 0, 0, 0) 66%);
+}
+.supply-shop-label {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 14px;
+  color: #fff; font-size: 16px; font-weight: 600; text-align: left;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
 .supply-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
 .supply-card { font: inherit; width: 100%; cursor: pointer; }
 .supply-card:hover { border-color: var(--accent); }
