@@ -13,7 +13,7 @@ import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 
 const MODEL = 'claude-opus-4-8';
-export const config = { maxDuration: 300 }; // Vercel Pro — 긴 화도 60초 천장 없이 완결(2026-06-13)
+export const config = { maxDuration: 300 }; // 긴 화도 60초 천장 없이 완결. 진짜 천장 = 이 값 + Fluid compute(플랜 아님): 300초 = Hobby(Fluid ON)·Pro 공통(2026-06-19 정정·DEVLOG)
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
