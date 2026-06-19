@@ -701,7 +701,7 @@ export default function Characters({
     const 이전 = viewing.analysis ?? null; // 갱신 여부 판단용(이전 보고서)
     setReporting(true);
     try {
-      const res = await fetch('/api/report', {
+      const res = await fetch('/api/analysis?kind=report', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ character_id: viewing.id, story_id: storyId }),
@@ -731,7 +731,7 @@ export default function Characters({
     const 이름 = firstName(viewing.name);
     setQuesting(true);
     try {
-      const res = await fetch('/api/quests', {
+      const res = await fetch('/api/analysis?kind=quests', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ character_id: viewing.id, story_id: storyId }),
@@ -757,7 +757,7 @@ export default function Characters({
     const 이름 = firstName(viewing.name);
     setExploring(true);
     try {
-      const res = await fetch('/api/items', {
+      const res = await fetch('/api/analysis?kind=items', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ character_id: viewing.id, story_id: storyId }),
@@ -786,7 +786,7 @@ export default function Characters({
     }
     setArmedItemId(null);
     try {
-      const res = await fetch(`/api/items?character_id=${viewing.id}&id=${encodeURIComponent(b.id)}`, {
+      const res = await fetch(`/api/analysis?kind=items&character_id=${viewing.id}&id=${encodeURIComponent(b.id)}`, {
         method: 'DELETE',
       });
       const data = await res.json();
@@ -815,7 +815,7 @@ export default function Characters({
     );
     setArmedItemId(null);
     try {
-      const res = await fetch('/api/items', {
+      const res = await fetch('/api/analysis?kind=items', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ character_id: viewing.id, order: next.map((b) => b.id) }),
@@ -837,7 +837,7 @@ export default function Characters({
     const 이름 = firstName(viewing.name);
     setJournaling(true);
     try {
-      const res = await fetch('/api/journal', {
+      const res = await fetch('/api/analysis?kind=journal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ character_id: viewing.id, story_id: storyId }),
@@ -862,7 +862,7 @@ export default function Characters({
   async function 일지기록(e: JournalEntry, fields: { body: string }) {
     if (!viewing?.id || !e.id) return false;
     try {
-      const res = await fetch('/api/journal', {
+      const res = await fetch('/api/analysis?kind=journal', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ character_id: viewing.id, id: e.id, ...fields }),
@@ -893,7 +893,7 @@ export default function Characters({
     if (!ok) return;
     try {
       const res = await fetch(
-        `/api/journal?character_id=${viewing.id}&id=${encodeURIComponent(e.id)}`,
+        `/api/analysis?kind=journal&character_id=${viewing.id}&id=${encodeURIComponent(e.id)}`,
         { method: 'DELETE' },
       );
       const data = await res.json();

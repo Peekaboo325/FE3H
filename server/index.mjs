@@ -39,10 +39,7 @@ import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
 import { 서술자키, 서술자클라이언트, 사고옵션, 모델별지침 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
-import { runReport } from '../lib/report.mjs';
-import { runQuests } from '../lib/quests.mjs';
-import { runItems, removeItem, reorderItems } from '../lib/items.mjs';
-import { runJournal, updateJournal, removeJournal } from '../lib/journal.mjs';
+import analysisHandler from '../api/analysis.mjs'; // 보고서·임무·소지품·일지 통합 입구(Hobby 12함수 한도)
 import { runLetters, runDirectedLetter } from '../lib/letters.mjs';
 import { listLetters, updateLetter, deleteLetter } from '../lib/db.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
@@ -200,114 +197,10 @@ app.delete('/api/characters', async (req, res) => {
   res.status(r.error ? 500 : 200).json(r);
 });
 
-// ── 인물 분석 보고서 발급 (Gemini Flash) ──────────────────────────────────
-app.post('/api/report', async (req, res) => {
-  if (!process.env.GEMINI_API_KEY) {
-    res.status(400).json({ error: '분석관과의 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).' });
-    return;
-  }
-  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
-  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
-  const instruction = (req.body?.instruction || '').trim();
-  try {
-    const r = await runReport({ characterId, storyId, customInstruction: instruction });
-    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
-  } catch (e) {
-    res.status(500).json({ error: e?.message || String(e) });
-  }
-});
-
-// ── 임무 장부 발급 (Gemini Flash) ─────────────────────────────────────────
-app.post('/api/quests', async (req, res) => {
-  if (!process.env.GEMINI_API_KEY) {
-    res.status(400).json({ error: '분석관과의 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).' });
-    return;
-  }
-  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
-  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
-  try {
-    const r = await runQuests({ characterId, storyId });
-    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
-  } catch (e) {
-    res.status(500).json({ error: e?.message || String(e) });
-  }
-});
-
-// ── 소지품 탐색·소각 (Gemini Flash) ──────────────────────────────────────
-app.post('/api/items', async (req, res) => {
-  if (!process.env.GEMINI_API_KEY) {
-    res.status(400).json({ error: '분석관과의 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).' });
-    return;
-  }
-  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
-  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
-  try {
-    const r = await runItems({ characterId, storyId });
-    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
-  } catch (e) {
-    res.status(500).json({ error: e?.message || String(e) });
-  }
-});
-
-app.put('/api/items', async (req, res) => {
-  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
-  const order = Array.isArray(req.body?.order) ? req.body.order : null;
-  try {
-    const r = await reorderItems({ characterId, order });
-    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
-  } catch (e) {
-    res.status(500).json({ error: e?.message || String(e) });
-  }
-});
-
-app.delete('/api/items', async (req, res) => {
-  const characterId = req.query?.character_id ? Number(req.query.character_id) : null;
-  const itemId = req.query?.id || null;
-  try {
-    const r = await removeItem({ characterId, itemId });
-    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
-  } catch (e) {
-    res.status(500).json({ error: e?.message || String(e) });
-  }
-});
-
-// ── 일지(日誌) 술회·소각 (Gemini Flash) — 설계 = docs/일지_설계.md ──────────
-app.post('/api/journal', async (req, res) => {
-  if (!process.env.GEMINI_API_KEY) {
-    res.status(400).json({ error: '분석관과의 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).' });
-    return;
-  }
-  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
-  const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
-  try {
-    const r = await runJournal({ characterId, storyId });
-    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
-  } catch (e) {
-    res.status(500).json({ error: e?.message || String(e) });
-  }
-});
-
-app.put('/api/journal', async (req, res) => {
-  const characterId = req.body?.character_id ? Number(req.body.character_id) : null;
-  const entryId = req.body?.id || null;
-  try {
-    const r = await updateJournal({ characterId, entryId, title: req.body?.title, body: req.body?.body });
-    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
-  } catch (e) {
-    res.status(500).json({ error: e?.message || String(e) });
-  }
-});
-
-app.delete('/api/journal', async (req, res) => {
-  const characterId = req.query?.character_id ? Number(req.query.character_id) : null;
-  const entryId = req.query?.id || null;
-  try {
-    const r = await removeJournal({ characterId, entryId });
-    res.status(r.error ? 500 : 200).json({ dbReady: dbReady(), ...r });
-  } catch (e) {
-    res.status(500).json({ error: e?.message || String(e) });
-  }
-});
+// ── 인물 분석 계열(보고서·임무·소지품·일지) 통합 입구 ───────────────────────
+//   Vercel Hobby는 배포당 서버리스 함수 12개 한도 → 네 입구를 api/analysis.mjs 한 함수로 합쳤다.
+//   로컬·배포가 같은 핸들러를 쓴다(/api/analysis?kind=report|quests|items|journal). 두뇌는 lib/*.mjs 그대로.
+app.all('/api/analysis', analysisHandler);
 
 // ── 물자 조달 (Gemini Flash) — 설계 = docs/물자조달_설계.md ─────────────────
 app.get('/api/supply', async (req, res) => {
