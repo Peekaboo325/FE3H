@@ -39,6 +39,16 @@ for (const 파일 of 박제문서) {
 
 const SYSTEM = `${머리말}\n\n${조각.join('\n\n---\n\n')}`;
 
+// ─── DeepSeek 서술자 한정 본문 보정 ───────────────────────────────────────
+//  SYSTEM(박제 4종 = 모든 모델 공통)과 별개. DeepSeek에만 덧대는 절제 지침(lib/llm.mjs 모델별지침).
+//  빌더는 worldview/딥시크_보정지침.md 만 고치고 'npm run bake' 하면 된다.
+let DEEPSEEK_TUNING = '';
+try {
+  DEEPSEEK_TUNING = fs.readFileSync(path.join(srcDir, '딥시크_보정지침.md'), 'utf-8').trim();
+} catch {
+  console.warn('[bake] 딥시크_보정지침.md 못 찾음 (DeepSeek 보정 건너뜀)');
+}
+
 // ─── 고유명사 사전 → {정발 표기(한글) → 원어(영문)} 맵 (영문명 자동 매칭용) ───
 const dict = {};
 try {
@@ -67,10 +77,13 @@ const out =
   '// 정발 표기 목록(한글 키만) — 임무(quests) 보상 풍미용. SYSTEM과 달리 가벼운 명단이다.\n' +
   `export const NAMES = ${JSON.stringify(Object.keys(dict))};\n` +
   '// { 한글 → 영문 } — 서신(letters) 영문 서명 폴백용(명부 미등록 인연도 사전 표기로 서명).\n' +
-  `export const NAME_DICT = ${JSON.stringify(dict)};\n`;
+  `export const NAME_DICT = ${JSON.stringify(dict)};\n` +
+  '// DeepSeek 서술자 한정 본문 보정(SYSTEM·박제 4종과 별개) — lib/llm.mjs 모델별지침()이 DeepSeek일 때만 시스템 끝에 덧댐.\n' +
+  `export const DEEPSEEK_TUNING = ${JSON.stringify(DEEPSEEK_TUNING)};\n`;
 fs.writeFileSync(path.join(libDir, 'worldview.mjs'), out, 'utf-8');
 
 console.log(`[bake] 세계관 박제 ${SYSTEM.length.toLocaleString()}자 → lib/worldview.mjs`);
+if (DEEPSEEK_TUNING) console.log(`[bake] DeepSeek 보정 ${DEEPSEEK_TUNING.length.toLocaleString()}자 → DEEPSEEK_TUNING`);
 
 const nameOut =
   '// ⚠️ 자동 생성 파일 — 직접 손대지 마십시오.\n' +
