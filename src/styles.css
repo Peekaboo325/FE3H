@@ -2304,6 +2304,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 /* ── 본문 생성 설정(모델·사고 깊이) — '천각의 박동' 안에 흡수. 라벨만, 가로 세그먼트 ── */
 .settings { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
 .settings-group { display: flex; align-items: center; gap: 12px; }
+/* DeepSeek 선택 시 '사고 깊이'는 비활성(회색·클릭 불가) — 사고가 상시 ON이라 무의미해 헷갈림 방지 */
+.settings-group.disabled { opacity: 0.4; }
+.settings-group.disabled .settings-opt { cursor: default; }
 .settings-label { flex: 0 0 64px; font-size: 13px; color: var(--text-dim); }
 .settings-options { display: flex; gap: 8px; flex: 1; }
 .settings-opt {
