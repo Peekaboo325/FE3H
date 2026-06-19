@@ -602,8 +602,10 @@ export default function App() {
                   ) : busy ? (
                     <LoadingIndicator recall={pendingRecall} />
                   ) : null}
-                  {t.content && !busy && mode === 'write' && (
-                    <div className="turn-actions">
+                  {t.content && mode === 'write' && (
+                    // 생성 중엔 버튼을 DOM에서 빼지 않고 자리만 지킨다(흐리게+못 누르게) — 빼면 완료 시
+                    //  모든 칸의 버튼 줄이 한꺼번에 되살아나 위쪽으로 스크롤이 튄다(모바일에서 특히).
+                    <div className={'turn-actions' + (busy ? ' turn-actions--busy' : '')}>
                       {t.role === 'assistant' && (
                         <button
                           className="turn-btn"

@@ -342,6 +342,9 @@ em, i { font-style: normal; }
   transition: opacity 0.15s;
 }
 .turn:hover .turn-actions { opacity: 1; }
+/* 생성 중: 버튼 자리는 지키되 흐리게+비활성(hover로도 안 살아남) — 완료 시 스크롤 튐 방지 */
+.turn-actions--busy,
+.turn:hover .turn-actions--busy { opacity: 0.25; pointer-events: none; }
 .turn-btn {
   display: inline-flex;
   align-items: center;
