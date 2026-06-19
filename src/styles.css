@@ -2307,6 +2307,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 /* DeepSeek 선택 시 '사고 깊이'는 비활성(회색·클릭 불가) — 사고가 상시 ON이라 무의미해 헷갈림 방지 */
 .settings-group.disabled { opacity: 0.4; }
 .settings-group.disabled .settings-opt { cursor: default; }
+/* 비활성 그룹은 hover·선택(.on) 칠을 모두 죽여 평평한 회색으로 */
+.settings-group.disabled .settings-opt.on {
+  border-color: var(--border); background: var(--surface-2); color: var(--text);
+}
 .settings-label { flex: 0 0 64px; font-size: 13px; color: var(--text-dim); }
 .settings-options { display: flex; gap: 8px; flex: 1; }
 .settings-opt {
@@ -2314,5 +2318,5 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   background: var(--surface-2); color: var(--text); font: inherit; font-size: 13.5px;
   cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
-.settings-opt:hover { border-color: var(--accent); }
+.settings-opt:not(:disabled):hover { border-color: var(--accent); }
 .settings-opt.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface-2)); color: var(--accent); }
