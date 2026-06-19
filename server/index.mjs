@@ -37,7 +37,7 @@ import {
 } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
-import { 서술자키, 서술자클라이언트, 사고옵션 } from '../lib/llm.mjs';
+import { 서술자키, 서술자클라이언트, 사고옵션, 모델별지침 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { runReport } from '../lib/report.mjs';
 import { runQuests } from '../lib/quests.mjs';
@@ -527,7 +527,7 @@ app.post('/api/story', async (req, res) => {
       model,
       max_tokens: 8000,
       ...사고옵션(model, effort), // 클로드=adaptive+effort / DeepSeek=thinking enabled (lib/llm.mjs)
-      system,
+      system: [...system, ...모델별지침(model)], // DeepSeek 한정 보정 지침을 끝에 덧댐(Opus엔 빈 배열)
       messages: 대화,
     });
 
@@ -604,7 +604,7 @@ app.post('/api/regen', async (req, res) => {
       model,
       max_tokens: 8000,
       ...사고옵션(model, effort), // 클로드=adaptive+effort / DeepSeek=thinking enabled (lib/llm.mjs)
-      system,
+      system: [...system, ...모델별지침(model)], // DeepSeek 한정 보정 지침을 끝에 덧댐(Opus엔 빈 배열)
       messages,
     });
     stream.on('text', (delta) => {
