@@ -5,7 +5,7 @@
 export type GenConfig = { model: string; effort: string };
 
 const MODELS = [
-  { id: 'claude-opus-4-8', label: 'Opus 4.8' },
+  // ⚠️ Opus 4.8 잠깐 걷어둠(2026-06-19, 비용 사고) — 복구: { id: 'claude-opus-4-8', label: 'Opus 4.8' } 다시 추가
   { id: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro' },
 ];
 // 사고 깊이 = 클로드 effort. '낮음/중간'은 '높음'을 기대하게 해 어색 → 단계 표기(1단계=low, 2단계=medium).

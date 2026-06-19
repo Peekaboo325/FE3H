@@ -66,7 +66,7 @@ const nk = () => 'ck' + ++_kc;
 
 // 본문 생성 설정(모델·사고 깊이) — 빌더가 앱 '설정'에서 고르고 localStorage에 남는다. /api/story·regen 본문으로 보냄.
 const GEN_KEY = 'genCfg';
-const DEFAULT_GEN: GenConfig = { model: 'claude-opus-4-8', effort: 'medium' };
+const DEFAULT_GEN: GenConfig = { model: 'deepseek-v4-pro', effort: 'medium' }; // Opus 잠깐 걷어둠(2026-06-19, 비용)
 function loadGenCfg(): GenConfig {
   try {
     const p = JSON.parse(localStorage.getItem(GEN_KEY) || 'null');
