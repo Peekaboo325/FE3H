@@ -37,6 +37,7 @@ import {
 } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
+import { 서술자키, 서술자클라이언트, 사고옵션 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { runReport } from '../lib/report.mjs';
 import { runQuests } from '../lib/quests.mjs';
@@ -430,12 +431,13 @@ app.delete('/api/lore', async (req, res) => {
 });
 
 app.post('/api/story', async (req, res) => {
-  const key = process.env.ANTHROPIC_API_KEY;
+  const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이(기본 Opus/medium). DeepSeek도 허용
+  const key = 서술자키(model); // 제공자에 맞는 키(클로드=ANTHROPIC_API_KEY / DeepSeek=DEEPSEEK_API_KEY)
   if (!key) {
     res.status(400).type('text/plain; charset=utf-8');
     res.end(
-      '[서고] 아직 클로드 API 열쇠가 꽂히지 않았습니다.\n' +
-        '.env 파일에 ANTHROPIC_API_KEY 값을 넣고 서버를 다시 켜 주세요.',
+      `[서고] ${model.startsWith('deepseek') ? 'DEEPSEEK_API_KEY' : 'ANTHROPIC_API_KEY'} 가 꽂히지 않았습니다.\n` +
+        '환경 변수에 값을 넣고 서버를 다시 켜 주세요.',
     );
     return;
   }
@@ -447,7 +449,6 @@ app.post('/api/story', async (req, res) => {
   }
 
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
-  const { model, effort } = genConfig(req.body); // 앱 설정에서 받은 모델·사고 깊이
   const 새입력 = messages[messages.length - 1];
   if (새입력?.role === 'user') await saveTurn('user', 새입력.content, storyId);
 
@@ -497,7 +498,7 @@ app.post('/api/story', async (req, res) => {
   if (견문록참고.block) system.push({ type: 'text', text: 견문록참고.block }); // 지목 문헌
   if (참고.block) system.push({ type: 'text', text: 참고.block }); // 지목 회차 = 가장 가까이
 
-  const client = new Anthropic({ apiKey: key });
+  const client = 서술자클라이언트(model); // Opus/Sonnet=Anthropic, DeepSeek=Anthropic 호환 엔드포인트
   res.status(200).type('text/plain; charset=utf-8');
 
   // 실제로 되짚은 회차·문헌·소환 인물을 헤더로 — 클라가 그 화에 '확인 자취'를 남긴다.
@@ -525,8 +526,7 @@ app.post('/api/story', async (req, res) => {
     const stream = client.messages.stream({
       model,
       max_tokens: 8000,
-      thinking: { type: 'adaptive' },
-      output_config: { effort }, // 앱 '설정'에서 받음(genConfig). 기본 Opus/medium
+      ...사고옵션(model, effort), // 클로드=adaptive+effort / DeepSeek=thinking enabled (lib/llm.mjs)
       system,
       messages: 대화,
     });
@@ -558,15 +558,15 @@ app.post('/api/story', async (req, res) => {
 
 // 한 답변 다시 받기 — 새 유저턴 저장 없이 turn_id 칸만 갱신.
 app.post('/api/regen', async (req, res) => {
-  const key = process.env.ANTHROPIC_API_KEY;
+  const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이. DeepSeek도 허용
+  const key = 서술자키(model);
   if (!key) {
-    res.status(400).type('text/plain; charset=utf-8').end('[서고] 클로드 API 열쇠가 없습니다.');
+    res.status(400).type('text/plain; charset=utf-8').end(`[서고] ${model.startsWith('deepseek') ? 'DEEPSEEK_API_KEY' : 'ANTHROPIC_API_KEY'} 가 없습니다.`);
     return;
   }
   const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
   const turnId = req.body?.turn_id ? Number(req.body.turn_id) : null;
-  const { model, effort } = genConfig(req.body); // 앱 설정에서 받은 모델·사고 깊이
   if (messages.length === 0 || !turnId) {
     res.status(400).type('text/plain; charset=utf-8').end('[서고] 잘못된 재생성 요청입니다.');
     return;
@@ -595,7 +595,7 @@ app.post('/api/regen', async (req, res) => {
       `화수를 스스로 세거나 다른 숫자를 쓰지 말 것.`,
   });
 
-  const client = new Anthropic({ apiKey: key });
+  const client = 서술자클라이언트(model); // Opus/Sonnet=Anthropic, DeepSeek=Anthropic 호환 엔드포인트
   res.status(200).type('text/plain; charset=utf-8');
 
   let 본문 = '';
@@ -603,8 +603,7 @@ app.post('/api/regen', async (req, res) => {
     const stream = client.messages.stream({
       model,
       max_tokens: 8000,
-      thinking: { type: 'adaptive' },
-      output_config: { effort }, // 앱 '설정'에서 받음(genConfig). 기본 Opus/medium
+      ...사고옵션(model, effort), // 클로드=adaptive+effort / DeepSeek=thinking enabled (lib/llm.mjs)
       system,
       messages,
     });

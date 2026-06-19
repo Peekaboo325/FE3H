@@ -14,6 +14,7 @@ import { SYSTEM } from '../lib/worldview.mjs';
 import { saveTurn, touchStory, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
+import { 서술자키, 서술자클라이언트, 사고옵션 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
@@ -35,12 +36,13 @@ export default async function handler(req, res) {
     return;
   }
 
-  const key = process.env.ANTHROPIC_API_KEY;
+  const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이(기본 Opus/medium). DeepSeek도 여기서 허용
+  const key = 서술자키(model); // 제공자에 맞는 키(클로드=ANTHROPIC_API_KEY / DeepSeek=DEEPSEEK_API_KEY)
   if (!key) {
     res.status(400).setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.end(
-      '[서고] 아직 클로드 API 열쇠가 꽂히지 않았습니다.\n' +
-        'Vercel 프로젝트 설정 → Environment Variables 에 ANTHROPIC_API_KEY 를 추가하고 다시 배포해 주세요.',
+      `[서고] ${model.startsWith('deepseek') ? 'DEEPSEEK_API_KEY' : 'ANTHROPIC_API_KEY'} 가 꽂히지 않았습니다.\n` +
+        '환경 변수에 추가하고 다시 배포해 주세요.',
     );
     return;
   }
@@ -53,7 +55,6 @@ export default async function handler(req, res) {
   }
 
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
-  const { model, effort } = genConfig(req.body); // 앱 설정(빌더)에서 받은 모델·사고 깊이. 기본 Opus/medium
 
   // 이번 차례의 새 유저 입력을 먼저 영구 저장한다(설정돼 있으면).
   const 새입력 = messages[messages.length - 1];
@@ -109,7 +110,7 @@ export default async function handler(req, res) {
   if (견문록참고.block) system.push({ type: 'text', text: 견문록참고.block }); // 지목 문헌
   if (참고.block) system.push({ type: 'text', text: 참고.block }); // 지목 회차 = 가장 가까이
 
-  const client = new Anthropic({ apiKey: key });
+  const client = 서술자클라이언트(model); // Opus/Sonnet=Anthropic, DeepSeek=Anthropic 호환 엔드포인트
   res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');
   // 스트림이 프록시에 버퍼링·변형돼 끊기지 않게(간헐적 끊김 대비).
   res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -140,8 +141,7 @@ export default async function handler(req, res) {
     const stream = client.messages.stream({
       model,
       max_tokens: 8000,
-      thinking: { type: 'adaptive' },
-      output_config: { effort }, // 모델·effort 모두 앱 '설정'에서 받음(genConfig 검증). 기본 Opus/medium
+      ...사고옵션(model, effort), // 클로드=adaptive+effort / DeepSeek=thinking enabled (lib/llm.mjs)
       system,
       messages: 대화,
     });

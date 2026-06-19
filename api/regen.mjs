@@ -8,6 +8,7 @@ import { SYSTEM } from '../lib/worldview.mjs';
 import { updateTurn, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
+import { 서술자키, 서술자클라이언트, 사고옵션 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 
@@ -19,16 +20,16 @@ export default async function handler(req, res) {
     res.status(405).end('POST만 받습니다.');
     return;
   }
-  const key = process.env.ANTHROPIC_API_KEY;
+  const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이. DeepSeek도 허용
+  const key = 서술자키(model); // 제공자에 맞는 키(클로드=ANTHROPIC / DeepSeek=DEEPSEEK)
   if (!key) {
     res.status(400).setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.end('[서고] 클로드 API 열쇠가 없습니다.');
+    res.end(`[서고] ${model.startsWith('deepseek') ? 'DEEPSEEK_API_KEY' : 'ANTHROPIC_API_KEY'} 가 없습니다.`);
     return;
   }
   const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
   const storyId = req.body?.story_id ? Number(req.body.story_id) : null;
   const turnId = req.body?.turn_id ? Number(req.body.turn_id) : null;
-  const { model, effort } = genConfig(req.body); // 앱 설정에서 받은 모델·사고 깊이
   if (messages.length === 0 || !turnId) {
     res.status(400).setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.end('[서고] 잘못된 재생성 요청입니다.');
@@ -59,7 +60,7 @@ export default async function handler(req, res) {
       `화수를 스스로 세거나 다른 숫자를 쓰지 말 것.`,
   });
 
-  const client = new Anthropic({ apiKey: key });
+  const client = 서술자클라이언트(model); // Opus/Sonnet=Anthropic, DeepSeek=Anthropic 호환 엔드포인트
   res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('X-Accel-Buffering', 'no');
@@ -69,8 +70,7 @@ export default async function handler(req, res) {
     const stream = client.messages.stream({
       model,
       max_tokens: 8000,
-      thinking: { type: 'adaptive' },
-      output_config: { effort }, // 앱 '설정'에서 받음(genConfig). 기본 Opus/medium
+      ...사고옵션(model, effort), // 클로드=adaptive+effort / DeepSeek=thinking enabled (lib/llm.mjs)
       system,
       messages,
     });

@@ -7,6 +7,7 @@ export type GenConfig = { model: string; effort: string };
 const MODELS = [
   { id: 'claude-opus-4-8', label: 'Opus 4.8' },
   { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
+  { id: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro' },
 ];
 const EFFORTS = [
   { id: 'medium', label: '중간' },
