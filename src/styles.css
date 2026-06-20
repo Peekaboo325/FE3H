@@ -482,8 +482,8 @@ em, i { font-style: normal; }
   .modal.has-hero.modal--list .modal-body { flex: 1; min-height: 0; overflow-y: auto; }
 }
 .modal--list .modal-body { min-height: 420px; }
-/* 연대 문헌 — 화면에 높이를 맞추고(다른 모달처럼) 본문만 스크롤(헤더 고정). 최소 높이로 안 쪼그라들게. */
-.modal--chronicle { display: flex; flex-direction: column; min-height: 360px; max-height: 86vh; }
+/* 연대 문헌 — 높이를 고정(min(고정px, 86vh))해 화를 넘겨도 안 흔들리게. 본문만 스크롤(헤더 고정). */
+.modal--chronicle { display: flex; flex-direction: column; height: min(660px, 86vh); }
 .modal--chronicle .modal-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
 .warn {
   background: var(--warn-bg);
