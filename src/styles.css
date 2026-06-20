@@ -1656,10 +1656,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .daily-talent.on .daily-talent-g { color: var(--accent); }
 .daily-talent.full { opacity: 0.45; cursor: default; }
 
-/* 특성 — 능력별 묶음 + 칩 토글(다중 선택). 늘면 그 능력 줄에 칩만 더 붙는다. */
-.daily-trait-groups { display: flex; flex-direction: column; gap: 10px; }
-.daily-trait-group { display: flex; align-items: baseline; gap: 12px; }
-.daily-trait-ability { flex: 0 0 36px; color: var(--text-dim); font-size: 13px; }
+/* 특성 — 칩 한 줄나열(자동 줄바꿈, 다중 선택). 늘면 칩만 더 붙는다. */
 .daily-trait-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .daily-chip {
   padding: 7px 14px;

@@ -103,27 +103,20 @@ export default function DailyTab({
 
         <div className="view-section">
           <div className="view-label">특성</div>
-          <div className="daily-trait-groups">
-            {능력6각.map(([ability, ko]) => (
-              <div className="daily-trait-group" key={ability}>
-                <span className="daily-trait-ability">{ko}</span>
-                <div className="daily-trait-chips">
-                  {TRAITS.filter((t) => t.ability === ability).map((t) => {
-                    const on = traitNames.includes(t.name);
-                    return (
-                      <button
-                        key={t.name}
-                        type="button"
-                        className={'daily-chip' + (on ? ' on' : '')}
-                        onClick={() => 특성토글(t.name)}
-                      >
-                        {t.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+          <div className="daily-trait-chips">
+            {TRAITS.map((t) => {
+              const on = traitNames.includes(t.name);
+              return (
+                <button
+                  key={t.name}
+                  type="button"
+                  className={'daily-chip' + (on ? ' on' : '')}
+                  onClick={() => 특성토글(t.name)}
+                >
+                  {t.name}
+                </button>
+              );
+            })}
           </div>
         </div>
 
