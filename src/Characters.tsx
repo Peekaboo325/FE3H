@@ -71,75 +71,14 @@ function ViewSection({ label, text }: { label: string; text: string }) {
 //  '일지'는 앱에서 내림(2026-06-16) → 일상(日常)으로 대체. 일지 코드·API·렌더 분기는 보존(되살리려면 목록에 '일지' 재추가).
 const 인물탭 = ['약력', '보고서', '일상', '임무', '소지품', '서신'] as const;
 
-// 보고서 능력치 8종 (키→라벨). 서버 lib/report.mjs STAT_KEYS와 일치해야 한다.
-const 능력치목록: [string, string][] = [
-  ['prowess', '무력'],
-  ['magic', '마력'],
-  ['faith', '신앙'],
-  ['intellect', '지성'],
+// 보고서에 남는 위치 지표 — 입지·재력(사회적·물질적, 능력 아님). 6각 능력은 일상(日常)으로 이사.
+const 위치목록: [string, string][] = [
   ['standing', '입지'],
   ['wealth', '재력'],
-  ['charm', '매력'],
-  ['resilience', '정신'],
 ];
 
-// 능력치 한 줄(라벨·점수·막대·한 줄 평).
-function StatBar({ label, value, comment }: { label: string; value: number; comment?: string }) {
-  return (
-    <div className="stat-row">
-      <div className="stat-head">
-        <span className="stat-label">{label}</span>
-        {comment && <span className="stat-cmt">{comment}</span>}
-        <span className="stat-num">{value}</span>
-      </div>
-      <span className="stat-track">
-        <span className="stat-fill" style={{ width: `${value}%` }} />
-      </span>
-    </div>
-  );
-}
-
-// 능력치 8종을 한눈에 — 팔각형 레이더 그래프(SVG, 의존성 없음).
-function StatRadar({ stats }: { stats: Record<string, number> }) {
-  const size = 240;
-  const c = size / 2;
-  const R = c - 30; // 라벨 자리 여백
-  const n = 능력치목록.length; // 8
-  const pt = (i: number, radius: number): [number, number] => {
-    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n; // 12시 방향부터 시계방향
-    return [c + radius * Math.cos(a), c + radius * Math.sin(a)];
-  };
-  const poly = (radius: number | ((i: number) => number)) =>
-    능력치목록
-      .map((_, i) => pt(i, typeof radius === 'function' ? radius(i) : radius).join(','))
-      .join(' ');
-  const val = (i: number) => {
-    const v = stats?.[능력치목록[i][0]] ?? 0;
-    return (R * Math.max(0, Math.min(100, v))) / 100;
-  };
-  return (
-    <svg className="stat-radar" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="능력치 그래프">
-      {[0.25, 0.5, 0.75, 1].map((f) => (
-        <polygon key={f} className="radar-ring" points={poly(R * f)} />
-      ))}
-      {능력치목록.map((_, i) => {
-        const [x, y] = pt(i, R);
-        return <line key={i} className="radar-axis" x1={c} y1={c} x2={x} y2={y} />;
-      })}
-      <polygon className="radar-area" points={poly(val)} />
-      {능력치목록.map(([, ko], i) => {
-        const [x, y] = pt(i, R + 16);
-        return (
-          <text key={i} className="radar-label" x={x} y={y} textAnchor="middle" dominantBaseline="central">
-            {ko}
-          </text>
-        );
-      })}
-    </svg>
-  );
-}
-
-// 보고서 본문 렌더(발급본·골격 공용) — 2단: 왼쪽 능력치(인용구·해시태그·레이더·막대) / 오른쪽 분석.
+// 보고서 본문 렌더(발급본·골격 공용) — 능력 그래프를 들어내고 '어떻게 보이는가'로 재편(1단계).
+//  인용구·해시태그 → 타인의 시선(평판·중심) → 행동 양상·잠재 심리 → 위치(입지·재력).
 function ReportBody({ report }: { report: CharReport }) {
   return (
     <div className="report-body">
@@ -153,39 +92,40 @@ function ReportBody({ report }: { report: CharReport }) {
           ))}
         </div>
       )}
-      {/* 능력 — 레이더 + 막대 그래프 (한 줄) */}
-      <div className="report-stats-row">
-        <div className="view-label report-stats-head">능력</div>
-        <StatRadar stats={report.stats ?? {}} />
-        <div className="report-stats">
-          {능력치목록.map(([k, ko]) => (
-            <StatBar
-              key={k}
-              label={ko}
-              value={report.stats?.[k] ?? 0}
-              comment={report.stat_comments?.[k]}
-            />
-          ))}
-        </div>
-      </div>
-      {/* 성격 분석 + 무의식 분석 (한 줄) */}
-      <div className="report-analysis-row">
-        {report.personality && <ViewSection label="행동 양상" text={report.personality} />}
-        {report.unconscious && <ViewSection label="잠재 심리" text={report.unconscious} />}
-      </div>
+      {/* 타인의 시선(평판) — 보고서의 중심(상호성 엔진). 증언 카드로 승격. */}
       {!!report.reputation?.length && (
         <div className="view-section">
-          <div className="view-label">평판</div>
-          <ul className="rep-list">
+          <div className="view-label">타인의 시선</div>
+          <ul className="rep-cards">
             {report.reputation.map((r, i) => (
-              <li key={i} className="rep-item">
-                <div className="rep-src">{r.source}</div>
-                <div className="rep-cmt">{r.comment}</div>
+              <li key={i} className="rep-card">
+                <p className="rep-card-cmt">{r.comment}</p>
+                <div className="rep-card-src">{r.source}</div>
               </li>
             ))}
           </ul>
         </div>
       )}
+      {/* 행동 양상 + 잠재 심리 (한 줄) */}
+      <div className="report-analysis-row">
+        {report.personality && <ViewSection label="행동 양상" text={report.personality} />}
+        {report.unconscious && <ViewSection label="잠재 심리" text={report.unconscious} />}
+      </div>
+      {/* 위치 — 입지·재력(사회적·물질적, 능력 아님). 막대 없이 라벨+수치+한 줄 평. */}
+      <div className="view-section">
+        <div className="view-label">위치</div>
+        <div className="report-pos">
+          {위치목록.map(([k, ko]) => (
+            <div key={k} className="pos-item">
+              <div className="pos-head">
+                <span className="pos-label">{ko}</span>
+                <span className="pos-num">{report.stats?.[k] ?? 0}</span>
+              </div>
+              {report.stat_comments?.[k] && <p className="pos-cmt">{report.stat_comments[k]}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -194,25 +134,10 @@ function ReportBody({ report }: { report: CharReport }) {
 const 골격보고서: CharReport = {
   quote: '아직 거두지 못한 한마디',
   hashtags: ['미상', '미상', '미상', '미상', '미상'],
-  stats: {
-    prowess: 62,
-    magic: 38,
-    faith: 74,
-    intellect: 56,
-    standing: 80,
-    wealth: 47,
-    charm: 64,
-    resilience: 33,
-  },
+  stats: { standing: 80, wealth: 47 },
   stat_comments: {
-    prowess: '아직 가늠하지 못함',
-    magic: '아직 가늠하지 못함',
-    faith: '아직 가늠하지 못함',
-    intellect: '아직 가늠하지 못함',
     standing: '아직 가늠하지 못함',
     wealth: '아직 가늠하지 못함',
-    charm: '아직 가늠하지 못함',
-    resilience: '아직 가늠하지 못함',
   },
   personality:
     '겉으로 드러나는 면모와 행동의 결이 이 자리에 적힌다. 분석관이 인물을 들여다보면 그 윤곽이 또렷이 떠오를 것이다.',
