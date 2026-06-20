@@ -1656,8 +1656,24 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .daily-talent.on .daily-talent-g { color: var(--accent); }
 .daily-talent.full { opacity: 0.45; cursor: default; }
 
-/* 특성 — 칩 한 줄나열(자동 줄바꿈, 다중 선택). 늘면 칩만 더 붙는다. */
-.daily-trait-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+/* 특성 — 칩 한 줄나열(자동 줄바꿈, 다중 선택). 더블클릭으로 그 인물용 이름 개칭(흡인→자색). */
+.daily-trait-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.daily-chip-base {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+.daily-chip-edit {
+  padding: 7px 12px;
+  width: 96px;
+  background: var(--surface-2);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 13px;
+  text-align: center;
+}
 .daily-chip {
   padding: 7px 14px;
   background: var(--surface-2);

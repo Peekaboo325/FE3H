@@ -40,14 +40,20 @@ export default function DailyTab({
 
   // 세팅 폼 상태 — 진입할 때 기존값(편집)이나 기본값(신규: 재능·특성 없음·수입 없음)으로 채운다.
   const [talents, setTalents] = useState<AbilityKey[]>([]);
-  const [traitNames, setTraitNames] = useState<string[]>([]); // 고른 특성 이름들(사전 TRAITS에서)
+  // 고른 특성 = 사전 키(name) → 표시 이름(label). 키 있으면 선택, 값은 그 인물용 이름(기본=사전 이름).
+  const [picked, setPicked] = useState<Record<string, string>>({});
+  const [editing, setEditing] = useState<string | null>(null); // 인라인 개칭 중인 사전 키
+  const [editVal, setEditVal] = useState('');
   const [income, setIncome] = useState<IncomeGrade>('없음');
 
   function 세팅열기() {
     setTalents(daily?.talents ?? []);
-    // 저장된 특성 중 현재 사전에 있는 것만(폐기된 표기는 흘림). 사전 순서로 정렬.
-    const saved = new Set((daily?.traits ?? []).map((t) => t.name));
-    setTraitNames(TRAITS.filter((t) => saved.has(t.name)).map((t) => t.name));
+    // 저장된 특성 중 현재 사전에 있는 것만(폐기된 표기는 흘림). 인물용 표시 이름(label)이 있으면 그것.
+    const saved = new Map((daily?.traits ?? []).map((t) => [t.name, t.label || t.name] as const));
+    const next: Record<string, string> = {};
+    for (const t of TRAITS) if (saved.has(t.name)) next[t.name] = saved.get(t.name)!;
+    setPicked(next);
+    setEditing(null);
     setIncome(daily?.income_grade ?? '없음');
     setMode('setup');
   }
@@ -57,9 +63,28 @@ export default function DailyTab({
     setTalents((ts) => (ts.includes(k) ? ts.filter((x) => x !== k) : ts.length >= 재능정원 ? ts : [...ts, k]));
   }
 
-  // 특성 토글 — 사전에서 켜고 끈다(개수 제한·상극은 4단계 육성에서). 다중 선택.
+  // 특성 토글 — 사전에서 켜고 끈다(개수 제한·상극은 4단계 육성에서). 다중 선택. 끄면 인물용 이름도 비움.
   function 특성토글(name: string) {
-    setTraitNames((ns) => (ns.includes(name) ? ns.filter((x) => x !== name) : [...ns, name]));
+    setPicked((p) => {
+      const next = { ...p };
+      if (name in next) delete next[name];
+      else next[name] = name; // 처음엔 사전 이름 그대로
+      return next;
+    });
+  }
+
+  // 더블클릭 = 그 인물용 이름 개칭(흡인→자색). 선택 안 됐으면 켜면서 편집.
+  function 개칭시작(name: string) {
+    setPicked((p) => (name in p ? p : { ...p, [name]: name }));
+    setEditVal(picked[name] ?? name);
+    setEditing(name);
+  }
+  function 개칭마침() {
+    if (editing) {
+      const v = editVal.trim();
+      setPicked((p) => ({ ...p, [editing]: v || editing })); // 비우면 사전 이름으로 되돌림
+    }
+    setEditing(null);
   }
 
   async function 기록() {
@@ -69,8 +94,11 @@ export default function DailyTab({
     const patch: Partial<DailyState> = {
       talents,
       start_grades,
-      // 고른 특성을 사전 순서로(이름+매인 능력) 저장. 이름이 곧 키.
-      traits: TRAITS.filter((t) => traitNames.includes(t.name)).map((t) => ({ name: t.name, ability: t.ability })),
+      // 고른 특성을 사전 순서로 저장. name=기계 키, label=인물용 이름(사전과 다를 때만).
+      traits: TRAITS.filter((t) => t.name in picked).map((t) => {
+        const label = picked[t.name];
+        return { name: t.name, ability: t.ability, ...(label && label !== t.name ? { label } : {}) };
+      }),
       income_grade: income,
     };
     if (await onSetup(patch)) setMode('view');
@@ -105,15 +133,36 @@ export default function DailyTab({
           <div className="view-label">특성</div>
           <div className="daily-trait-chips">
             {TRAITS.map((t) => {
-              const on = traitNames.includes(t.name);
+              const on = t.name in picked;
+              const label = picked[t.name] ?? t.name;
+              const 개칭됨 = on && label !== t.name; // 인물용으로 이름을 바꿈
+              if (editing === t.name) {
+                return (
+                  <input
+                    key={t.name}
+                    className="daily-chip-edit"
+                    autoFocus
+                    value={editVal}
+                    onChange={(e) => setEditVal(e.target.value)}
+                    onBlur={개칭마침}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') 개칭마침();
+                      if (e.key === 'Escape') setEditing(null);
+                    }}
+                  />
+                );
+              }
               return (
                 <button
                   key={t.name}
                   type="button"
                   className={'daily-chip' + (on ? ' on' : '')}
                   onClick={() => 특성토글(t.name)}
+                  onDoubleClick={() => 개칭시작(t.name)}
+                  title="더블클릭으로 이름 개칭"
                 >
-                  {t.name}
+                  {label}
+                  {개칭됨 && <span className="daily-chip-base">{t.name}</span>}
                 </button>
               );
             })}
