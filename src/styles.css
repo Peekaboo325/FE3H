@@ -1750,15 +1750,24 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 
 /* 기반 종합 줄글 — 입지·재력을 아우른 처지(분석관의 서너 문장). 막대 아래에. */
 .report-foundation { margin: 14px 0 0; font-size: 13.5px; color: var(--text); line-height: 1.75; }
-/* 기반 막대(입지·재력·명망) — 3열 배치. [항목 수치] / [게이지바] / [한 줄 평] */
+/* 기반 막대(입지·명망·재력) — 3열 배치. [항목 … 한 줄 평 수치] / [게이지바] */
 .report-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 18px; min-width: 0; }
 .stat-row { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.stat-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.stat-label { font-size: 13px; color: var(--text); font-weight: 600; }
-.stat-num { font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.stat-head { display: flex; align-items: center; gap: 8px; }
+.stat-label { font-size: 13px; color: var(--text); font-weight: 600; flex-shrink: 0; }
+.stat-cmt {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat-num { font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .stat-track { height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; }
 .stat-fill { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
-.stat-cmt { font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
 @media (max-width: 600px) { .report-stats { grid-template-columns: 1fr; gap: 12px; } }
 
 /* 평판 */
