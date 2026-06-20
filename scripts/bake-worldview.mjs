@@ -49,6 +49,15 @@ try {
   console.warn('[bake] 딥시크_보정지침.md 못 찾음 (DeepSeek 보정 건너뜀)');
 }
 
+// ─── DeepSeek 서술자 한정 '성인향 수위 가산'(한 단계 위) — 베이스 성인향 지침 위에 얹음 ───
+//  worldview/성인향_딥시크가산.md(빌더가 직접 고침) → DEEPSEEK_ADULT. DeepSeek일 때만 덧댐(Opus 등 불변).
+let DEEPSEEK_ADULT = '';
+try {
+  DEEPSEEK_ADULT = fs.readFileSync(path.join(srcDir, '성인향_딥시크가산.md'), 'utf-8').trim();
+} catch {
+  console.warn('[bake] 성인향_딥시크가산.md 못 찾음 (DeepSeek 수위 가산 건너뜀)');
+}
+
 // ─── 고유명사 사전 → {정발 표기(한글) → 원어(영문)} 맵 (영문명 자동 매칭용) ───
 const dict = {};
 try {
@@ -79,11 +88,14 @@ const out =
   '// { 한글 → 영문 } — 서신(letters) 영문 서명 폴백용(명부 미등록 인연도 사전 표기로 서명).\n' +
   `export const NAME_DICT = ${JSON.stringify(dict)};\n` +
   '// DeepSeek 서술자 한정 본문 보정(SYSTEM·박제 4종과 별개) — lib/llm.mjs 모델별지침()이 DeepSeek일 때만 시스템 끝에 덧댐.\n' +
-  `export const DEEPSEEK_TUNING = ${JSON.stringify(DEEPSEEK_TUNING)};\n`;
+  `export const DEEPSEEK_TUNING = ${JSON.stringify(DEEPSEEK_TUNING)};\n` +
+  '// DeepSeek 한정 성인향 수위 가산(한 단계 위) — 베이스 성인향 지침 위에 얹음. 모델별지침()이 DeepSeek일 때 덧댐.\n' +
+  `export const DEEPSEEK_ADULT = ${JSON.stringify(DEEPSEEK_ADULT)};\n`;
 fs.writeFileSync(path.join(libDir, 'worldview.mjs'), out, 'utf-8');
 
 console.log(`[bake] 세계관 박제 ${SYSTEM.length.toLocaleString()}자 → lib/worldview.mjs`);
 if (DEEPSEEK_TUNING) console.log(`[bake] DeepSeek 보정 ${DEEPSEEK_TUNING.length.toLocaleString()}자 → DEEPSEEK_TUNING`);
+if (DEEPSEEK_ADULT) console.log(`[bake] DeepSeek 수위가산 ${DEEPSEEK_ADULT.length.toLocaleString()}자 → DEEPSEEK_ADULT`);
 
 const nameOut =
   '// ⚠️ 자동 생성 파일 — 직접 손대지 마십시오.\n' +
