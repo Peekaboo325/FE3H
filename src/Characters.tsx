@@ -71,10 +71,11 @@ function ViewSection({ label, text }: { label: string; text: string }) {
 //  '일지'는 앱에서 내림(2026-06-16) → 일상(日常)으로 대체. 일지 코드·API·렌더 분기는 보존(되살리려면 목록에 '일지' 재추가).
 const 인물탭 = ['약력', '보고서', '일상', '임무', '소지품', '서신'] as const;
 
-// 보고서에 남는 기반 지표 — 입지·재력(사회적·물질적, 능력 아님). 6각 능력은 일상(日常)으로 이사.
+// 보고서에 남는 기반 지표 — 입지·재력·명망(사회적·물질적·이름값, 능력 아님). 6각 능력은 일상(日常)으로 이사.
 const 기반목록: [string, string][] = [
   ['standing', '입지'],
   ['wealth', '재력'],
+  ['renown', '명망'],
 ];
 
 // 기반 한 줄(라벨·수치 / 게이지 막대 / 한 줄 평). 2열 배치라 한 줄 평은 막대 아래로(안 잘리게).
@@ -145,10 +146,11 @@ function ReportBody({ report }: { report: CharReport }) {
 const 골격보고서: CharReport = {
   quote: '아직 거두지 못한 한마디',
   hashtags: ['미상', '미상', '미상', '미상', '미상'],
-  stats: { standing: 80, wealth: 47 },
+  stats: { standing: 80, wealth: 47, renown: 61 },
   stat_comments: {
     standing: '아직 가늠하지 못함',
     wealth: '아직 가늠하지 못함',
+    renown: '아직 가늠하지 못함',
   },
   foundation:
     '입지와 재력을 아우른 처지가 이 자리에 적힌다. 권세가 어디에 닿고 곳간이 어디에 매이는지, 두 축이 엇갈리는 긴장이 또렷이 떠오를 것이다. 분석관이 인물을 들여다보면 그가 어떤 자리에 서 있는지, 무엇에 발이 묶여 있는지가 드러난다. 아직은 가늠하지 못한다.',
