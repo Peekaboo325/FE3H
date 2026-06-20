@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { UI } from './strings';
 import { showToast } from './toast';
 import Modal from './Modal';
@@ -69,6 +70,11 @@ export default function Chronicle({
     };
   }, [storyId]);
 
+  // 이전/다음 장 — 목록(화 오름차순)에서 현재 항목의 앞뒤(요약은 목록에 이미 실려 추가 호출 없음)
+  const vIdx = selected ? list.findIndex((e) => e.ep === selected.ep) : -1;
+  const prevE = vIdx > 0 ? list[vIdx - 1] : null;
+  const nextE = vIdx >= 0 && vIdx < list.length - 1 ? list[vIdx + 1] : null;
+
   return (
     <Modal
       onClose={onClose}
@@ -88,7 +94,19 @@ export default function Chronicle({
             <Spinner />
           ) : selected ? (
             <div className="chronicle-view">
-              <h3 className="chronicle-view-title">{selected.title}</h3>
+              <div className="chronicle-view-meta">
+                <span className="chronicle-view-ep">제{selected.ep}화</span>
+                {/* 이전/다음 장 — 대륙 문헌(코덱스) 본문 네비와 같은 결 */}
+                <div className="chronicle-view-nav">
+                  <button disabled={!prevE} onClick={() => prevE && setSelected(prevE)} aria-label="이전 장">
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button disabled={!nextE} onClick={() => nextE && setSelected(nextE)} aria-label="다음 장">
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              </div>
+              <h3 className="chronicle-view-title">{selected.title.replace(/^제\s*\d+\s*화\s*·\s*/, '')}</h3>
               {selected.summary ? (
                 <div className="chronicle-view-body">{selected.summary}</div>
               ) : (
