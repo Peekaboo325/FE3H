@@ -136,13 +136,6 @@ export default async function handler(req, res) {
     res.setHeader('x-recall-note', encodeURIComponent(JSON.stringify(안내)));
   }
 
-  // [임시 진단] 무조건 찍어 '지목 빈값(파싱 실패) vs 함수 미실행'을 가른다 — 입력 끝(앵커 영역)만. 확인 후 제거.
-  console.log(
-    `[앵커진단] 입력끝:"${(입력문 || '').slice(-22)}" len:${(입력문 || '').length}` +
-      ` | 지목:${JSON.stringify(지목)} 살림:${JSON.stringify(참고.episodes)} 없음:${JSON.stringify(참고.missNums || [])} brief실패:${!!참고.briefFailed}` +
-      ` | x-recall:${!!(자취.ep || 자취.lore || 자취.char)} note:${!!(안내.epMiss || 안내.epBrief || 안내.loreMiss || 안내.charHere || 안내.charMiss)}`,
-  );
-
   let 본문 = '';
   try {
     const stream = client.messages.stream({

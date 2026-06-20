@@ -450,7 +450,7 @@ export default function App() {
     const messages = turns.slice(0, promptIdx + 1).map((t) => ({ role: t.role, content: t.content }));
 
     setBusy(true);
-    setPendingRecall(false); // 다시 받기는 아직 앵커 미적용 → 일반 로딩
+    setPendingRecall(hasAnchor(messages[messages.length - 1]?.content || '')); // 다시받기도 앵커 적용 — 회상 로딩 톤
     setEditingTurn(null);
     setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: '' } : x)));
 
@@ -466,6 +466,12 @@ export default function App() {
         setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: e || old } : x)));
         return;
       }
+      // 되짚은 자취·안내를 헤더에서 읽어 토스트(전개와 동일) — 다시받기도 앵커 반영.
+      const 문구 = recallMessage(
+        parseRecallHeader(res.headers.get('x-recall')),
+        parseNoteHeader(res.headers.get('x-recall-note')),
+      );
+      if (문구) showToast(문구);
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       for (;;) {
