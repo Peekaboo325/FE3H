@@ -1664,23 +1664,26 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   color: var(--text-dim);
   opacity: 0.7;
 }
+/* 뷰(버튼)·편집(입력)이 같은 폭이라야 더블클릭 때 안 덜컹인다 — 편집 폭 기준으로 맞춤. */
+.daily-chip,
 .daily-chip-edit {
+  box-sizing: border-box;
+  min-width: 96px;
   padding: 7px 12px;
-  width: 96px;
-  background: var(--surface-2);
-  border: 1px solid var(--accent);
   border-radius: 999px;
-  color: var(--text);
   font-size: 13px;
   text-align: center;
 }
+.daily-chip-edit {
+  width: 96px;
+  background: var(--surface-2);
+  border: 1px solid var(--accent);
+  color: var(--text);
+}
 .daily-chip {
-  padding: 7px 14px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 999px;
   color: var(--text);
-  font-size: 13px;
   cursor: pointer;
   transition: border-color 0.12s, background 0.12s;
 }
