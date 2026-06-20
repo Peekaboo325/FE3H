@@ -24,6 +24,7 @@ const 능력6각: [AbilityKey, string][] = [
 const 수입등급들: IncomeGrade[] = ['없음', '하', '중', '상'];
 const 수입옵션 = 수입등급들.map((g) => ({ value: g, label: g }));
 const 재능정원 = 3; // 재능은 최대 셋 — 고르면 C, 나머지는 E에서 시작
+const 특성정원 = 3; // 특성은 최대 셋. 또 한 능력당 하나(상반 특성은 서로 막음)
 
 export default function DailyTab({
   report,
@@ -106,6 +107,10 @@ export default function DailyTab({
 
   // ── 세팅 면 — 빌더가 시작 등급·특성·수입을 직접 깐다(한 번 정하면 끝, 이후 변화는 육성·전개로). ──
   if (mode === 'setup') {
+    // 특성 제약: 총 정원(3) + 한 능력당 하나(상반은 서로 막음). 이미 찬 능력·정원이면 못 고르게.
+    const 찬능력 = new Set<AbilityKey>();
+    for (const t of TRAITS) if (t.name in picked) 찬능력.add(t.ability);
+    const 특성꽉 = Object.keys(picked).length >= 특성정원;
     return (
       <div className="daily-setup">
         <div className="view-section">
@@ -136,6 +141,8 @@ export default function DailyTab({
               const on = t.name in picked;
               const label = picked[t.name] ?? t.name;
               const 개칭됨 = on && label !== t.name; // 인물용으로 이름을 바꿈
+              // 못 고름 = 안 골랐는데 (정원 찼거나 / 같은 능력에 이미 하나 = 상반 막음)
+              const 막힘 = !on && (특성꽉 || 찬능력.has(t.ability));
               if (editing === t.name) {
                 return (
                   <input
@@ -157,9 +164,10 @@ export default function DailyTab({
                   key={t.name}
                   type="button"
                   className={'daily-chip' + (on ? ' on' : '')}
+                  disabled={막힘}
                   onClick={() => 특성토글(t.name)}
                   onDoubleClick={() => 개칭시작(t.name)}
-                  title="더블클릭으로 이름 개칭"
+                  title={막힘 ? '' : '더블클릭으로 이름 개칭'}
                 >
                   {label}
                   {개칭됨 && <span className="daily-chip-base">{t.name}</span>}

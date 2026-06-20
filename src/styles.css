@@ -1692,6 +1692,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
   color: var(--accent);
 }
+.daily-chip:disabled { opacity: 0.32; cursor: default; } /* 상반·정원 초과 — 못 고름 */
 .daily-set-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
 
 /* 보고서 본문 — 멘트·해시태그(전폭) → 레이더+막대(한 줄) → 성격+무의식(한 줄) → 평판 */
