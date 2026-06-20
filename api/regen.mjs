@@ -8,7 +8,7 @@ import { SYSTEM } from '../lib/worldview.mjs';
 import { updateTurn, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
-import { 서술자키, 서술자클라이언트, 사고옵션, 모델별지침, 양식가드 } from '../lib/llm.mjs';
+import { 서술자키, 서술자클라이언트, 사고옵션, 모델별지침, 양식가드, 머리글게이트, 직전화날짜 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import {
@@ -105,6 +105,7 @@ export default async function handler(req, res) {
   }
 
   let 본문 = '';
+  const 게이트 = 머리글게이트(화수, 직전화날짜(messages), (s) => res.write(s)); // 머리글 누락 결정론적 보강
   try {
     const stream = client.messages.stream({
       model,
@@ -113,11 +114,10 @@ export default async function handler(req, res) {
       system: [...system, ...모델별지침(model), 양식가드], // DeepSeek 보정+수위가산을 끝에, 양식가드는 그보다 더 뒤(recency)
       messages,
     });
-    stream.on('text', (delta) => {
-      본문 += delta;
-      res.write(delta);
-    });
+    stream.on('text', (delta) => 게이트.먹임(delta));
     const _final = await stream.finalMessage();
+    게이트.닫기();
+    본문 = 게이트.값();
     const u = _final?.usage;
     if (u)
       console.log(
