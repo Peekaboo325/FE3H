@@ -1627,12 +1627,35 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 }
 .daily-edit:hover { color: var(--text); border-color: var(--accent); }
 
-/* 일상 세팅 면 — 빌더 수기(시작 등급 6각 · 특성 3 · 수입). 일상 탭 안에서. */
+/* 현황 설정 면 — 빌더 수기(재능 ≤3 · 특성 3 · 수입). 일상 탭 안에서. */
 .daily-setup { display: flex; flex-direction: column; gap: 18px; }
-.daily-grades { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 16px; }
-.daily-set-row { display: flex; align-items: center; gap: 10px; }
-.daily-set-row .dd { flex: 1; min-width: 0; }
-.daily-set-key { flex: 0 0 32px; color: var(--text-dim); font-size: 13px; }
+.daily-hint { margin: 0 0 10px; color: var(--text-dim); font-size: 13px; line-height: 1.5; }
+.daily-talents { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.daily-talent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.daily-talent .daily-talent-g {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.daily-talent.on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+}
+.daily-talent.on .daily-talent-g { color: var(--accent); }
+.daily-talent.full { opacity: 0.45; cursor: default; }
 .daily-traits { display: flex; flex-direction: column; gap: 8px; }
 .daily-trait-row { display: flex; align-items: center; gap: 8px; }
 .daily-trait-name {

@@ -2,7 +2,8 @@
 //  자립 기둥: 연료를 '턴'이 아니라 인물 프로필·세계·관계·정사에서 가져온다 → Opus 꺼져도, 본문이 백지여도 논다.
 //  화면 = 3구획(§11): [거처 삽화 — 스킨] / [근황(안색·지갑) + 격려·조달·육성 버튼] / [활동 로그 — 심장].
 //  ⚠️ 가림 판정은 '자기칸'(daily.setup_at)으로만 — analysis 통째 truthy로 보지 말 것(§14 빈화면 버그 교훈).
-//  0단계 = 껍데기(빈 3구획) + 세팅 면(빌더가 시작 등급·특성·수입을 직접 깐다 — AI 안 거침, 피플 생성하듯).
+//  0단계 = 껍데기(빈 3구획) + 현황 설정 면(빌더가 재능 ≤3·특성·수입을 직접 깐다 — AI 안 거침, 피플 생성하듯).
+//   재능 = 고른 능력 C·나머지 E에서 시작(start_grades로 파생 저장). 천장 C, B·A·S는 육성으로만.
 //   능력 적립·경제·상태·로그·버튼은 단계별로 채운다.
 import { useState } from 'react';
 import type { CharReport, DailyState, AbilityKey, Grade, IncomeGrade, DailyTrait } from './useCharacters';
@@ -19,11 +20,10 @@ const 능력6각: [AbilityKey, string][] = [
   ['charm', '매력'],
   ['resilience', '정신'],
 ];
-const 등급들: Grade[] = ['E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S'];
 const 수입등급들: IncomeGrade[] = ['없음', '하', '중', '상'];
-const 등급옵션 = 등급들.map((g) => ({ value: g, label: g }));
 const 수입옵션 = 수입등급들.map((g) => ({ value: g, label: g }));
 const 능력옵션 = [{ value: '', label: '— 없음 —' }, ...능력6각.map(([k, ko]) => ({ value: k, label: ko }))];
+const 재능정원 = 3; // 재능은 최대 셋 — 고르면 C, 나머지는 E에서 시작
 
 export default function DailyTab({
   report,
@@ -38,23 +38,30 @@ export default function DailyTab({
   const ready = !!daily?.setup_at; // 빌더가 세팅을 한 번 깔았는가
   const [mode, setMode] = useState<'view' | 'setup'>('view');
 
-  // 세팅 폼 상태 — 진입할 때 기존값(편집)이나 기본값(신규: 등급 E·특성 빈칸·수입 없음)으로 채운다.
-  const [grades, setGrades] = useState<Partial<Record<AbilityKey, Grade>>>({});
+  // 세팅 폼 상태 — 진입할 때 기존값(편집)이나 기본값(신규: 재능 없음·특성 빈칸·수입 없음)으로 채운다.
+  const [talents, setTalents] = useState<AbilityKey[]>([]);
   const [traits, setTraits] = useState<DailyTrait[]>([{ name: '' }, { name: '' }, { name: '' }]);
   const [income, setIncome] = useState<IncomeGrade>('없음');
 
   function 세팅열기() {
-    const g: Partial<Record<AbilityKey, Grade>> = {};
-    for (const [k] of 능력6각) g[k] = daily?.start_grades?.[k] ?? 'E';
-    setGrades(g);
+    setTalents(daily?.talents ?? []);
     setTraits([0, 1, 2].map((i) => daily?.traits?.[i] ?? { name: '' }));
     setIncome(daily?.income_grade ?? '없음');
     setMode('setup');
   }
 
+  // 재능 토글 — 이미 골랐으면 빼고, 정원(3) 안이면 더한다. 정원 넘으면 무시.
+  function 재능토글(k: AbilityKey) {
+    setTalents((ts) => (ts.includes(k) ? ts.filter((x) => x !== k) : ts.length >= 재능정원 ? ts : [...ts, k]));
+  }
+
   async function 기록() {
+    // 재능 = C, 나머지 = E로 시작 등급을 파생해 함께 저장(다음 단계가 등급을 한 결로 읽게).
+    const start_grades: Partial<Record<AbilityKey, Grade>> = {};
+    for (const [k] of 능력6각) start_grades[k] = talents.includes(k) ? 'C' : 'E';
     const patch: Partial<DailyState> = {
-      start_grades: grades,
+      talents,
+      start_grades,
       // 이름 빈 특성 슬롯은 떨군다. 대상 능력은 골랐을 때만 싣는다.
       traits: traits
         .filter((t) => t.name.trim())
@@ -69,18 +76,26 @@ export default function DailyTab({
     return (
       <div className="daily-setup">
         <div className="view-section">
-          <div className="view-label">시작 등급</div>
-          <div className="daily-grades">
-            {능력6각.map(([k, ko]) => (
-              <div className="daily-set-row" key={k}>
-                <span className="daily-set-key">{ko}</span>
-                <Dropdown
-                  value={grades[k] ?? 'E'}
-                  options={등급옵션}
-                  onChange={(v) => setGrades((g) => ({ ...g, [k]: v as Grade }))}
-                />
-              </div>
-            ))}
+          <div className="view-label">재능 설정</div>
+          <p className="daily-hint">
+            재능을 최대 셋까지 선택하십시오. 선택한 재능은 C, 나머지는 E에서 시작합니다.
+          </p>
+          <div className="daily-talents">
+            {능력6각.map(([k, ko]) => {
+              const on = talents.includes(k);
+              const full = talents.length >= 재능정원 && !on;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  className={'daily-talent' + (on ? ' on' : '') + (full ? ' full' : '')}
+                  onClick={() => 재능토글(k)}
+                >
+                  {ko}
+                  <span className="daily-talent-g">{on ? 'C' : 'E'}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -146,9 +161,9 @@ export default function DailyTab({
           {skeleton}
         </div>
         <div className="report-lock-overlay">
-          <p className="report-lock-msg">아직 일상이 깃들지 않았습니다.</p>
+          <p className="report-lock-msg">아직 현황이 정해지지 않았습니다.</p>
           <button className="list-btn" onClick={세팅열기}>
-            일상 세팅
+            현황 설정
           </button>
         </div>
       </div>
@@ -160,7 +175,7 @@ export default function DailyTab({
     <div className="daily">
       <div className="daily-top">
         <button className="daily-edit" onClick={세팅열기}>
-          세팅
+          현황 설정
         </button>
       </div>
       <div className="daily-skin" />

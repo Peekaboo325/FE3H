@@ -923,15 +923,15 @@ export default function Characters({
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        showToast(data.error || '일상을 기록하지 못했습니다.');
+        showToast(data.error || '현황을 기록하지 못했습니다.');
         return false;
       }
       setViewing((v) => (v ? { ...v, analysis: data.report } : v));
       await refresh();
-      showToast(처음 ? `${firstName(viewing.name)}의 일상이 깃들었습니다.` : '일상을 기록하였습니다.');
+      showToast(처음 ? `${firstName(viewing.name)}의 현황이 정해졌습니다.` : '현황을 기록하였습니다.');
       return true;
     } catch {
-      showToast('일상을 기록하지 못했습니다.');
+      showToast('현황을 기록하지 못했습니다.');
       return false;
     } finally {
       setDailySaving(false);
