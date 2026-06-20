@@ -136,6 +136,14 @@ export default async function handler(req, res) {
     res.setHeader('x-recall-note', encodeURIComponent(JSON.stringify(안내)));
   }
 
+  // [임시 진단] 딥리콜이 토스트도 안 뜬다는 보고 — 어디서 끊기는지 사실 확보용. 확인 후 제거.
+  if (지목.length || 견문록지목.refs.length || 견문록지목.titles.length || 입력문.includes('등장')) {
+    console.log(
+      `[앵커진단] 지목:${JSON.stringify(지목)} 살림:${JSON.stringify(참고.episodes)} 없음:${JSON.stringify(참고.missNums || [])} brief실패:${!!참고.briefFailed}` +
+        ` | x-recall셋팅:${!!(자취.ep || 자취.lore || 자취.char)} x-recall-note셋팅:${!!(안내.epMiss || 안내.epBrief || 안내.loreMiss || 안내.charHere || 안내.charMiss)}`,
+    );
+  }
+
   let 본문 = '';
   try {
     const stream = client.messages.stream({
