@@ -76,10 +76,7 @@ export default function DailyTab({
     return (
       <div className="daily-setup">
         <div className="view-section">
-          <div className="view-label">재능 설정</div>
-          <p className="daily-hint">
-            재능을 최대 셋까지 선택하십시오. 선택한 재능은 C, 나머지는 E에서 시작합니다.
-          </p>
+          <div className="view-label">재능</div>
           <div className="daily-talents">
             {능력6각.map(([k, ko]) => {
               const on = talents.includes(k);
