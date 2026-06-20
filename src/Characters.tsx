@@ -77,18 +77,18 @@ const 기반목록: [string, string][] = [
   ['wealth', '재력'],
 ];
 
-// 기반 한 줄(라벨·한 줄 평·수치·게이지 막대).
+// 기반 한 줄(라벨·수치 / 게이지 막대 / 한 줄 평). 2열 배치라 한 줄 평은 막대 아래로(안 잘리게).
 function StatBar({ label, value, comment }: { label: string; value: number; comment?: string }) {
   return (
     <div className="stat-row">
       <div className="stat-head">
         <span className="stat-label">{label}</span>
-        {comment && <span className="stat-cmt">{comment}</span>}
         <span className="stat-num">{value}</span>
       </div>
       <span className="stat-track">
         <span className="stat-fill" style={{ width: `${value}%` }} />
       </span>
+      {comment && <div className="stat-cmt">{comment}</div>}
     </div>
   );
 }
@@ -108,9 +108,10 @@ function ReportBody({ report }: { report: CharReport }) {
           ))}
         </div>
       )}
-      {/* 기반 — 입지·재력(사회적·물질적 위치). 능력 6각은 일상으로 이사. */}
+      {/* 기반 — 입지·재력(사회적·물질적 위치). 종합 줄글 + 2열 막대. 능력 6각은 일상으로 이사. */}
       <div className="view-section">
         <div className="view-label">기반</div>
+        {report.foundation && <p className="report-foundation">{report.foundation}</p>}
         <div className="report-stats">
           {기반목록.map(([k, ko]) => (
             <StatBar key={k} label={ko} value={report.stats?.[k] ?? 0} comment={report.stat_comments?.[k]} />
@@ -149,6 +150,7 @@ const 골격보고서: CharReport = {
     standing: '아직 가늠하지 못함',
     wealth: '아직 가늠하지 못함',
   },
+  foundation: '입지와 재력을 아우른 처지가 이 자리에 적힌다. 아직은 가늠하지 못한다.',
   personality:
     '겉으로 드러나는 면모와 행동의 결이 이 자리에 적힌다. 분석관이 인물을 들여다보면 그 윤곽이 또렷이 떠오를 것이다.',
   unconscious:

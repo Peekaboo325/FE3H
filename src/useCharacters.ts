@@ -86,6 +86,7 @@ export type CharReport = {
   hashtags?: string[];
   stats?: Record<string, number>; // 8종: prowess·magic·faith·intellect·standing·wealth·charm·resilience
   stat_comments?: Record<string, string>;
+  foundation?: string; // 기반 종합 — 입지·재력을 아우른 처지 줄글
   personality?: string; // 성격 분석
   unconscious?: string; // 무의식 분석
   reputation?: { source: string; comment: string }[]; // 평판 6종 (타인의 시선)

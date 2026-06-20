@@ -1748,24 +1748,18 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   padding: 3px 10px;
 }
 
-/* 기반 막대(입지·재력) — [항목 … 평가(11px) 수치] / [게이지바] */
-.report-stats { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.stat-row { display: flex; flex-direction: column; gap: 5px; }
-.stat-head { display: flex; align-items: center; gap: 8px; }
-.stat-label { font-size: 13px; color: var(--text); font-weight: 600; flex-shrink: 0; }
-.stat-cmt {
-  flex: 1;
-  min-width: 0;
-  font-size: 11px;
-  color: var(--text-dim);
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.stat-num { font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+/* 기반 종합 줄글 — 입지·재력을 아우른 처지(분석관의 한두 문장). 막대 위에. */
+.report-foundation { margin: 0 0 14px; font-size: 13.5px; color: var(--text); line-height: 1.75; }
+/* 기반 막대(입지·재력) — 2열 배치(둘뿐이라 풀너비 낭비 방지). [항목 수치] / [게이지바] / [한 줄 평] */
+.report-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; min-width: 0; }
+.stat-row { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.stat-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.stat-label { font-size: 13px; color: var(--text); font-weight: 600; }
+.stat-num { font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; }
 .stat-track { height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; }
 .stat-fill { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.stat-cmt { font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
+@media (max-width: 600px) { .report-stats { grid-template-columns: 1fr; gap: 12px; } }
 
 /* 평판 */
 .rep-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
