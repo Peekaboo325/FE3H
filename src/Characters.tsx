@@ -108,15 +108,15 @@ function ReportBody({ report }: { report: CharReport }) {
           ))}
         </div>
       )}
-      {/* 기반 — 입지·재력(사회적·물질적 위치). 종합 줄글 + 2열 막대. 능력 6각은 일상으로 이사. */}
+      {/* 기반 — 입지·재력(사회적·물질적 위치). 2열 막대 + 종합 줄글. 능력 6각은 일상으로 이사. */}
       <div className="view-section">
         <div className="view-label">기반</div>
-        {report.foundation && <p className="report-foundation">{report.foundation}</p>}
         <div className="report-stats">
           {기반목록.map(([k, ko]) => (
             <StatBar key={k} label={ko} value={report.stats?.[k] ?? 0} comment={report.stat_comments?.[k]} />
           ))}
         </div>
+        {report.foundation && <p className="report-foundation">{report.foundation}</p>}
       </div>
       {/* 행동 양상 + 잠재 심리 (한 줄) */}
       <div className="report-analysis-row">
@@ -150,7 +150,8 @@ const 골격보고서: CharReport = {
     standing: '아직 가늠하지 못함',
     wealth: '아직 가늠하지 못함',
   },
-  foundation: '입지와 재력을 아우른 처지가 이 자리에 적힌다. 아직은 가늠하지 못한다.',
+  foundation:
+    '입지와 재력을 아우른 처지가 이 자리에 적힌다. 권세가 어디에 닿고 곳간이 어디에 매이는지, 두 축이 엇갈리는 긴장이 또렷이 떠오를 것이다. 분석관이 인물을 들여다보면 그가 어떤 자리에 서 있는지, 무엇에 발이 묶여 있는지가 드러난다. 아직은 가늠하지 못한다.',
   personality:
     '겉으로 드러나는 면모와 행동의 결이 이 자리에 적힌다. 분석관이 인물을 들여다보면 그 윤곽이 또렷이 떠오를 것이다.',
   unconscious:

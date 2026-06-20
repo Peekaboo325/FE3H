@@ -1748,8 +1748,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   padding: 3px 10px;
 }
 
-/* 기반 종합 줄글 — 입지·재력을 아우른 처지(분석관의 한두 문장). 막대 위에. */
-.report-foundation { margin: 0 0 14px; font-size: 13.5px; color: var(--text); line-height: 1.75; }
+/* 기반 종합 줄글 — 입지·재력을 아우른 처지(분석관의 서너 문장). 막대 아래에. */
+.report-foundation { margin: 14px 0 0; font-size: 13.5px; color: var(--text); line-height: 1.75; }
 /* 기반 막대(입지·재력) — 2열 배치(둘뿐이라 풀너비 낭비 방지). [항목 수치] / [게이지바] / [한 줄 평] */
 .report-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; min-width: 0; }
 .stat-row { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
