@@ -71,14 +71,30 @@ function ViewSection({ label, text }: { label: string; text: string }) {
 //  '일지'는 앱에서 내림(2026-06-16) → 일상(日常)으로 대체. 일지 코드·API·렌더 분기는 보존(되살리려면 목록에 '일지' 재추가).
 const 인물탭 = ['약력', '보고서', '일상', '임무', '소지품', '서신'] as const;
 
-// 보고서에 남는 위치 지표 — 입지·재력(사회적·물질적, 능력 아님). 6각 능력은 일상(日常)으로 이사.
-const 위치목록: [string, string][] = [
+// 보고서에 남는 기반 지표 — 입지·재력(사회적·물질적, 능력 아님). 6각 능력은 일상(日常)으로 이사.
+const 기반목록: [string, string][] = [
   ['standing', '입지'],
   ['wealth', '재력'],
 ];
 
-// 보고서 본문 렌더(발급본·골격 공용) — 능력 그래프를 들어내고 '어떻게 보이는가'로 재편(1단계).
-//  인용구·해시태그 → 타인의 시선(평판·중심) → 행동 양상·잠재 심리 → 위치(입지·재력).
+// 기반 한 줄(라벨·한 줄 평·수치·게이지 막대).
+function StatBar({ label, value, comment }: { label: string; value: number; comment?: string }) {
+  return (
+    <div className="stat-row">
+      <div className="stat-head">
+        <span className="stat-label">{label}</span>
+        {comment && <span className="stat-cmt">{comment}</span>}
+        <span className="stat-num">{value}</span>
+      </div>
+      <span className="stat-track">
+        <span className="stat-fill" style={{ width: `${value}%` }} />
+      </span>
+    </div>
+  );
+}
+
+// 보고서 본문 렌더(발급본·골격 공용) — 능력(6각) 그래프는 일상으로 이사.
+//  인용구·해시태그 → 기반(입지·재력) → 행동 양상·잠재 심리 → 평판.
 function ReportBody({ report }: { report: CharReport }) {
   return (
     <div className="report-body">
@@ -92,40 +108,34 @@ function ReportBody({ report }: { report: CharReport }) {
           ))}
         </div>
       )}
-      {/* 타인의 시선(평판) — 보고서의 중심(상호성 엔진). 증언 카드로 승격. */}
-      {!!report.reputation?.length && (
-        <div className="view-section">
-          <div className="view-label">타인의 시선</div>
-          <ul className="rep-cards">
-            {report.reputation.map((r, i) => (
-              <li key={i} className="rep-card">
-                <p className="rep-card-cmt">{r.comment}</p>
-                <div className="rep-card-src">{r.source}</div>
-              </li>
-            ))}
-          </ul>
+      {/* 기반 — 입지·재력(사회적·물질적 위치). 능력 6각은 일상으로 이사. */}
+      <div className="view-section">
+        <div className="view-label">기반</div>
+        <div className="report-stats">
+          {기반목록.map(([k, ko]) => (
+            <StatBar key={k} label={ko} value={report.stats?.[k] ?? 0} comment={report.stat_comments?.[k]} />
+          ))}
         </div>
-      )}
+      </div>
       {/* 행동 양상 + 잠재 심리 (한 줄) */}
       <div className="report-analysis-row">
         {report.personality && <ViewSection label="행동 양상" text={report.personality} />}
         {report.unconscious && <ViewSection label="잠재 심리" text={report.unconscious} />}
       </div>
-      {/* 위치 — 입지·재력(사회적·물질적, 능력 아님). 막대 없이 라벨+수치+한 줄 평. */}
-      <div className="view-section">
-        <div className="view-label">위치</div>
-        <div className="report-pos">
-          {위치목록.map(([k, ko]) => (
-            <div key={k} className="pos-item">
-              <div className="pos-head">
-                <span className="pos-label">{ko}</span>
-                <span className="pos-num">{report.stats?.[k] ?? 0}</span>
-              </div>
-              {report.stat_comments?.[k] && <p className="pos-cmt">{report.stat_comments[k]}</p>}
-            </div>
-          ))}
+      {/* 평판 */}
+      {!!report.reputation?.length && (
+        <div className="view-section">
+          <div className="view-label">평판</div>
+          <ul className="rep-list">
+            {report.reputation.map((r, i) => (
+              <li key={i} className="rep-item">
+                <div className="rep-src">{r.source}</div>
+                <div className="rep-cmt">{r.comment}</div>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+      )}
     </div>
   );
 }

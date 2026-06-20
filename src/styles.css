@@ -1748,20 +1748,30 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   padding: 3px 10px;
 }
 
-/* 타인의 시선(평판) — 보고서의 중심. 목소리마다 금빛 세로선(증언) — 인용구 옆 카드-인-카드 피함. */
-.rep-cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 15px; }
-.rep-card { border-left: 2px solid color-mix(in srgb, var(--accent) 45%, transparent); padding-left: 13px; }
-.rep-card-cmt { margin: 0 0 5px; font-size: 15px; color: var(--text); line-height: 1.65; }
-.rep-card-src { font-size: 12px; color: var(--text-dim); }
-.rep-card-src::before { content: '— '; }
+/* 기반 막대(입지·재력) — [항목 … 평가(11px) 수치] / [게이지바] */
+.report-stats { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.stat-row { display: flex; flex-direction: column; gap: 5px; }
+.stat-head { display: flex; align-items: center; gap: 8px; }
+.stat-label { font-size: 13px; color: var(--text); font-weight: 600; flex-shrink: 0; }
+.stat-cmt {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat-num { font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.stat-track { height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.stat-fill { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
 
-/* 위치 — 입지·재력(사회적·물질적, 능력 아님). 막대 없이 라벨+수치+한 줄 평, 2열. */
-.report-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-.pos-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px; }
-.pos-label { font-size: 13px; font-weight: 600; color: var(--text); }
-.pos-num { font-size: 14px; color: var(--accent); font-variant-numeric: tabular-nums; }
-.pos-cmt { margin: 0; font-size: 12.5px; color: var(--text-dim); line-height: 1.55; }
-@media (max-width: 600px) { .report-pos { grid-template-columns: 1fr; gap: 14px; } }
+/* 평판 */
+.rep-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.rep-item { padding: 2px 0; }
+.rep-src { font-size: 12px; color: var(--text-dim); margin-bottom: 3px; }
+.rep-cmt { font-size: 14px; color: var(--text); line-height: 1.6; }
 
 /* 다시 받기 */
 .report-foot { display: flex; justify-content: center; margin-top: 4px; }
