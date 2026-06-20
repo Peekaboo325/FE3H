@@ -14,7 +14,7 @@ import { SYSTEM } from '../lib/worldview.mjs';
 import { saveTurn, touchStory, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
-import { 서술자키, 서술자클라이언트, 사고옵션, 모델별지침 } from '../lib/llm.mjs';
+import { 서술자키, 서술자클라이언트, 사고옵션, 모델별지침, 양식가드 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
@@ -142,7 +142,7 @@ export default async function handler(req, res) {
       model,
       max_tokens: 8000,
       ...사고옵션(model, effort), // 클로드=adaptive+effort / DeepSeek=thinking enabled (lib/llm.mjs)
-      system: [...system, ...모델별지침(model)], // DeepSeek 한정 보정 지침을 끝에 덧댐(Opus엔 빈 배열)
+      system: [...system, ...모델별지침(model), 양식가드], // DeepSeek 보정+수위가산을 끝에, 양식가드는 그보다 더 뒤(recency)
       messages: 대화,
     });
 
