@@ -1595,6 +1595,27 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 }
 .report-lock-overlay .list-btn { flex: 0 0 auto; max-width: 220px; }
 
+/* 일상(日常) 탭 — 3구획 골격(거처 삽화 / 근황·버튼 / 활동 로그). 내용은 단계별로 채운다(0단계=빈 골격). */
+.daily { display: flex; flex-direction: column; gap: 14px; min-height: 360px; }
+.daily-skin {
+  aspect-ratio: 16 / 7;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.daily-status {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  min-height: 52px;
+}
+.daily-log {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  min-height: 140px;
+}
+
 /* 보고서 본문 — 멘트·해시태그(전폭) → 레이더+막대(한 줄) → 성격+무의식(한 줄) → 평판 */
 .report-body { display: flex; flex-direction: column; }
 .report-stats-row {

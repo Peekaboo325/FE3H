@@ -27,6 +27,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useSortSensors, sortGuardProps } from './useSortSensors';
 import LettersTab from './LettersTab';
 import JournalTab from './JournalTab';
+import DailyTab from './DailyTab';
 
 const 빈인물 = (): Character => ({
   name: '',
@@ -66,10 +67,9 @@ function ViewSection({ label, text }: { label: string; text: string }) {
   );
 }
 
-// 인물 뷰 탭 — 5종 전부 가동(서신이 마지막으로 채워졌다).
-// '일지'는 앱에서 내림(2026-06-16) — 일상(日常)으로 대체 예정. 코드·API·렌더 분기는 보존,
-//  이 목록에서만 제외해 탭을 숨긴다. 되살리려면 '소지품' 뒤에 '일지'를 다시 넣으면 됨.
-const 인물탭 = ['약력', '보고서', '임무', '소지품', '서신'] as const;
+// 인물 뷰 탭 — 약력·보고서·일상·임무·소지품·서신(§11 순서: 정체성·살림·바깥).
+//  '일지'는 앱에서 내림(2026-06-16) → 일상(日常)으로 대체. 일지 코드·API·렌더 분기는 보존(되살리려면 목록에 '일지' 재추가).
+const 인물탭 = ['약력', '보고서', '일상', '임무', '소지품', '서신'] as const;
 
 // 보고서 능력치 8종 (키→라벨). 서버 lib/report.mjs STAT_KEYS와 일치해야 한다.
 const 능력치목록: [string, string][] = [
@@ -1262,6 +1262,8 @@ export default function Characters({
                   reporting={reporting}
                   onIssue={발급}
                 />
+              ) : tab === '일상' ? (
+                <DailyTab report={viewing.analysis} />
               ) : tab === '임무' ? (
                 <QuestsView
                   report={viewing.analysis}
