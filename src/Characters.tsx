@@ -78,18 +78,18 @@ const 기반목록: [string, string][] = [
   ['wealth', '재력'],
 ];
 
-// 기반 한 줄(라벨·한 줄 평·수치 / 게이지 막대). 막대는 아래(예전 모양).
+// 기반 한 줄(라벨·수치 / 게이지 막대 / 한 줄 평). 좁은 좌측 칸이라 한 줄 평은 막대 아래로(안 잘리게).
 function StatBar({ label, value, comment }: { label: string; value: number; comment?: string }) {
   return (
     <div className="stat-row">
       <div className="stat-head">
         <span className="stat-label">{label}</span>
-        {comment && <span className="stat-cmt">{comment}</span>}
         <span className="stat-num">{value}</span>
       </div>
       <span className="stat-track">
         <span className="stat-fill" style={{ width: `${value}%` }} />
       </span>
+      {comment && <div className="stat-cmt">{comment}</div>}
     </div>
   );
 }
@@ -109,15 +109,17 @@ function ReportBody({ report }: { report: CharReport }) {
           ))}
         </div>
       )}
-      {/* 기반 — 입지·재력(사회적·물질적 위치). 2열 막대 + 종합 줄글. 능력 6각은 일상으로 이사. */}
+      {/* 기반 — 입지·명망·재력. 좌(1) 막대 세로 / 우(2) 종합 줄글 = 1:2. 능력 6각은 일상으로 이사. */}
       <div className="view-section">
         <div className="view-label">기반</div>
-        <div className="report-stats">
-          {기반목록.map(([k, ko]) => (
-            <StatBar key={k} label={ko} value={report.stats?.[k] ?? 0} comment={report.stat_comments?.[k]} />
-          ))}
+        <div className="report-foundation-row">
+          <div className="report-stats">
+            {기반목록.map(([k, ko]) => (
+              <StatBar key={k} label={ko} value={report.stats?.[k] ?? 0} comment={report.stat_comments?.[k]} />
+            ))}
+          </div>
+          {report.foundation && <p className="report-foundation">{report.foundation}</p>}
         </div>
-        {report.foundation && <p className="report-foundation">{report.foundation}</p>}
       </div>
       {/* 행동 양상 + 잠재 심리 (한 줄) */}
       <div className="report-analysis-row">
