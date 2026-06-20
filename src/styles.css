@@ -1627,7 +1627,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 }
 .daily-edit:hover { color: var(--text); border-color: var(--accent); }
 
-/* 현황 설정 면 — 빌더 수기(재능 ≤3 · 특성 3 · 수입). 일상 탭 안에서. */
+/* 현황 설정 면 — 빌더 수기(재능 ≤3 · 특성 사전 칩 · 수입). 일상 탭 안에서. */
 .daily-setup { display: flex; flex-direction: column; gap: 18px; }
 .daily-talents { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .daily-talent {
@@ -1655,19 +1655,27 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 }
 .daily-talent.on .daily-talent-g { color: var(--accent); }
 .daily-talent.full { opacity: 0.45; cursor: default; }
-.daily-traits { display: flex; flex-direction: column; gap: 8px; }
-.daily-trait-row { display: flex; align-items: center; gap: 8px; }
-.daily-trait-name {
-  flex: 1;
-  min-width: 0;
-  padding: 8px 10px;
+
+/* 특성 — 능력별 묶음 + 칩 토글(다중 선택). 늘면 그 능력 줄에 칩만 더 붙는다. */
+.daily-trait-groups { display: flex; flex-direction: column; gap: 10px; }
+.daily-trait-group { display: flex; align-items: baseline; gap: 12px; }
+.daily-trait-ability { flex: 0 0 36px; color: var(--text-dim); font-size: 13px; }
+.daily-trait-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.daily-chip {
+  padding: 7px 14px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 999px;
   color: var(--text);
-  font-size: 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
 }
-.daily-trait-row .dd { flex: 0 0 128px; }
+.daily-chip.on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+  color: var(--accent);
+}
 .daily-set-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
 
 /* 보고서 본문 — 멘트·해시태그(전폭) → 레이더+막대(한 줄) → 성격+무의식(한 줄) → 평판 */

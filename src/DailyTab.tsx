@@ -6,7 +6,8 @@
 //   재능 = 고른 능력 C·나머지 E에서 시작(start_grades로 파생 저장). 천장 C, B·A·S는 육성으로만.
 //   능력 적립·경제·상태·로그·버튼은 단계별로 채운다.
 import { useState } from 'react';
-import type { CharReport, DailyState, AbilityKey, Grade, IncomeGrade, DailyTrait } from './useCharacters';
+import type { CharReport, DailyState, AbilityKey, Grade, IncomeGrade } from './useCharacters';
+import { TRAITS } from './traits';
 import { UI } from './strings';
 import Button from './Button';
 import Dropdown from './Dropdown';
@@ -22,7 +23,6 @@ const 능력6각: [AbilityKey, string][] = [
 ];
 const 수입등급들: IncomeGrade[] = ['없음', '하', '중', '상'];
 const 수입옵션 = 수입등급들.map((g) => ({ value: g, label: g }));
-const 능력옵션 = [{ value: '', label: '— 없음 —' }, ...능력6각.map(([k, ko]) => ({ value: k, label: ko }))];
 const 재능정원 = 3; // 재능은 최대 셋 — 고르면 C, 나머지는 E에서 시작
 
 export default function DailyTab({
@@ -38,14 +38,16 @@ export default function DailyTab({
   const ready = !!daily?.setup_at; // 빌더가 세팅을 한 번 깔았는가
   const [mode, setMode] = useState<'view' | 'setup'>('view');
 
-  // 세팅 폼 상태 — 진입할 때 기존값(편집)이나 기본값(신규: 재능 없음·특성 빈칸·수입 없음)으로 채운다.
+  // 세팅 폼 상태 — 진입할 때 기존값(편집)이나 기본값(신규: 재능·특성 없음·수입 없음)으로 채운다.
   const [talents, setTalents] = useState<AbilityKey[]>([]);
-  const [traits, setTraits] = useState<DailyTrait[]>([{ name: '' }, { name: '' }, { name: '' }]);
+  const [traitNames, setTraitNames] = useState<string[]>([]); // 고른 특성 이름들(사전 TRAITS에서)
   const [income, setIncome] = useState<IncomeGrade>('없음');
 
   function 세팅열기() {
     setTalents(daily?.talents ?? []);
-    setTraits([0, 1, 2].map((i) => daily?.traits?.[i] ?? { name: '' }));
+    // 저장된 특성 중 현재 사전에 있는 것만(폐기된 표기는 흘림). 사전 순서로 정렬.
+    const saved = new Set((daily?.traits ?? []).map((t) => t.name));
+    setTraitNames(TRAITS.filter((t) => saved.has(t.name)).map((t) => t.name));
     setIncome(daily?.income_grade ?? '없음');
     setMode('setup');
   }
@@ -55,6 +57,11 @@ export default function DailyTab({
     setTalents((ts) => (ts.includes(k) ? ts.filter((x) => x !== k) : ts.length >= 재능정원 ? ts : [...ts, k]));
   }
 
+  // 특성 토글 — 사전에서 켜고 끈다(개수 제한·상극은 4단계 육성에서). 다중 선택.
+  function 특성토글(name: string) {
+    setTraitNames((ns) => (ns.includes(name) ? ns.filter((x) => x !== name) : [...ns, name]));
+  }
+
   async function 기록() {
     // 재능 = C, 나머지 = E로 시작 등급을 파생해 함께 저장(다음 단계가 등급을 한 결로 읽게).
     const start_grades: Partial<Record<AbilityKey, Grade>> = {};
@@ -62,10 +69,8 @@ export default function DailyTab({
     const patch: Partial<DailyState> = {
       talents,
       start_grades,
-      // 이름 빈 특성 슬롯은 떨군다. 대상 능력은 골랐을 때만 싣는다.
-      traits: traits
-        .filter((t) => t.name.trim())
-        .map((t) => ({ name: t.name.trim(), ...(t.ability ? { ability: t.ability } : {}) })),
+      // 고른 특성을 사전 순서로(이름+매인 능력) 저장. 이름이 곧 키.
+      traits: TRAITS.filter((t) => traitNames.includes(t.name)).map((t) => ({ name: t.name, ability: t.ability })),
       income_grade: income,
     };
     if (await onSetup(patch)) setMode('view');
@@ -98,27 +103,25 @@ export default function DailyTab({
 
         <div className="view-section">
           <div className="view-label">특성</div>
-          <div className="daily-traits">
-            {traits.map((t, i) => (
-              <div className="daily-trait-row" key={i}>
-                <input
-                  className="daily-trait-name"
-                  value={t.name}
-                  placeholder="이름 (예: 검의 재능)"
-                  onChange={(e) =>
-                    setTraits((ts) => ts.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))
-                  }
-                />
-                <Dropdown
-                  value={t.ability ?? ''}
-                  options={능력옵션}
-                  placeholder="대상 능력"
-                  onChange={(v) =>
-                    setTraits((ts) =>
-                      ts.map((x, j) => (j === i ? { ...x, ability: (v || undefined) as AbilityKey | undefined } : x)),
-                    )
-                  }
-                />
+          <div className="daily-trait-groups">
+            {능력6각.map(([ability, ko]) => (
+              <div className="daily-trait-group" key={ability}>
+                <span className="daily-trait-ability">{ko}</span>
+                <div className="daily-trait-chips">
+                  {TRAITS.filter((t) => t.ability === ability).map((t) => {
+                    const on = traitNames.includes(t.name);
+                    return (
+                      <button
+                        key={t.name}
+                        type="button"
+                        className={'daily-chip' + (on ? ' on' : '')}
+                        onClick={() => 특성토글(t.name)}
+                      >
+                        {t.name}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             ))}
           </div>
