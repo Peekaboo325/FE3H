@@ -2,14 +2,134 @@
 //  자립 기둥: 연료를 '턴'이 아니라 인물 프로필·세계·관계·정사에서 가져온다 → Opus 꺼져도, 본문이 백지여도 논다.
 //  화면 = 3구획(§11): [거처 삽화 — 스킨] / [근황(안색·지갑) + 격려·조달·육성 버튼] / [활동 로그 — 심장].
 //  ⚠️ 가림 판정은 '자기칸'(daily.setup_at)으로만 — analysis 통째 truthy로 보지 말 것(§14 빈화면 버그 교훈).
-//  0단계 = 껍데기(빈 골격). 능력·경제·상태·로그·버튼은 단계별로 채운다.
-import type { CharReport } from './useCharacters';
+//  0단계 = 껍데기(빈 3구획) + 세팅 면(빌더가 시작 등급·특성·수입을 직접 깐다 — AI 안 거침, 피플 생성하듯).
+//   능력 적립·경제·상태·로그·버튼은 단계별로 채운다.
+import { useState } from 'react';
+import type { CharReport, DailyState, AbilityKey, Grade, IncomeGrade, DailyTrait } from './useCharacters';
+import { UI } from './strings';
+import Button from './Button';
+import Dropdown from './Dropdown';
 
-export default function DailyTab({ report }: { report?: CharReport | null }) {
+// 능력 6각 — 무력·마력·신앙·지성·매력·정신(입지·재력은 일상에서 뺌: 재력→지갑, 입지→보고서). 키는 보고서와 공유.
+const 능력6각: [AbilityKey, string][] = [
+  ['prowess', '무력'],
+  ['magic', '마력'],
+  ['faith', '신앙'],
+  ['intellect', '지성'],
+  ['charm', '매력'],
+  ['resilience', '정신'],
+];
+const 등급들: Grade[] = ['E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S'];
+const 수입등급들: IncomeGrade[] = ['없음', '하', '중', '상'];
+const 등급옵션 = 등급들.map((g) => ({ value: g, label: g }));
+const 수입옵션 = 수입등급들.map((g) => ({ value: g, label: g }));
+const 능력옵션 = [{ value: '', label: '— 없음 —' }, ...능력6각.map(([k, ko]) => ({ value: k, label: ko }))];
+
+export default function DailyTab({
+  report,
+  saving,
+  onSetup,
+}: {
+  report?: CharReport | null;
+  saving: boolean;
+  onSetup: (patch: Partial<DailyState>) => Promise<boolean>;
+}) {
   const daily = report?.daily;
-  const ready = !!daily?.setup_at; // 빌더가 세팅 면을 한 번 깔았는가(시작 등급·특성·수입·관계)
+  const ready = !!daily?.setup_at; // 빌더가 세팅을 한 번 깔았는가
+  const [mode, setMode] = useState<'view' | 'setup'>('view');
 
-  // 세팅 후 골격(3구획) — 내용은 단계별로 채운다. 흐릿하게 깔거나 실제로 보여주는 데 공용.
+  // 세팅 폼 상태 — 진입할 때 기존값(편집)이나 기본값(신규: 등급 E·특성 빈칸·수입 없음)으로 채운다.
+  const [grades, setGrades] = useState<Partial<Record<AbilityKey, Grade>>>({});
+  const [traits, setTraits] = useState<DailyTrait[]>([{ name: '' }, { name: '' }, { name: '' }]);
+  const [income, setIncome] = useState<IncomeGrade>('없음');
+
+  function 세팅열기() {
+    const g: Partial<Record<AbilityKey, Grade>> = {};
+    for (const [k] of 능력6각) g[k] = daily?.start_grades?.[k] ?? 'E';
+    setGrades(g);
+    setTraits([0, 1, 2].map((i) => daily?.traits?.[i] ?? { name: '' }));
+    setIncome(daily?.income_grade ?? '없음');
+    setMode('setup');
+  }
+
+  async function 기록() {
+    const patch: Partial<DailyState> = {
+      start_grades: grades,
+      // 이름 빈 특성 슬롯은 떨군다. 대상 능력은 골랐을 때만 싣는다.
+      traits: traits
+        .filter((t) => t.name.trim())
+        .map((t) => ({ name: t.name.trim(), ...(t.ability ? { ability: t.ability } : {}) })),
+      income_grade: income,
+    };
+    if (await onSetup(patch)) setMode('view');
+  }
+
+  // ── 세팅 면 — 빌더가 시작 등급·특성·수입을 직접 깐다(한 번 정하면 끝, 이후 변화는 육성·전개로). ──
+  if (mode === 'setup') {
+    return (
+      <div className="daily-setup">
+        <div className="view-section">
+          <div className="view-label">시작 등급</div>
+          <div className="daily-grades">
+            {능력6각.map(([k, ko]) => (
+              <div className="daily-set-row" key={k}>
+                <span className="daily-set-key">{ko}</span>
+                <Dropdown
+                  value={grades[k] ?? 'E'}
+                  options={등급옵션}
+                  onChange={(v) => setGrades((g) => ({ ...g, [k]: v as Grade }))}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="view-section">
+          <div className="view-label">특성</div>
+          <div className="daily-traits">
+            {traits.map((t, i) => (
+              <div className="daily-trait-row" key={i}>
+                <input
+                  className="daily-trait-name"
+                  value={t.name}
+                  placeholder="이름 (예: 검의 재능)"
+                  onChange={(e) =>
+                    setTraits((ts) => ts.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))
+                  }
+                />
+                <Dropdown
+                  value={t.ability ?? ''}
+                  options={능력옵션}
+                  placeholder="대상 능력"
+                  onChange={(v) =>
+                    setTraits((ts) =>
+                      ts.map((x, j) => (j === i ? { ...x, ability: (v || undefined) as AbilityKey | undefined } : x)),
+                    )
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="view-section">
+          <div className="view-label">수입</div>
+          <Dropdown value={income} options={수입옵션} onChange={(v) => setIncome(v as IncomeGrade)} />
+        </div>
+
+        <div className="daily-set-actions">
+          <Button variant="secondary" onClick={() => setMode('view')}>
+            {UI.cancel}
+          </Button>
+          <Button variant="primary" loading={saving} onClick={기록}>
+            {UI.save}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // 세팅 후 골격(3구획) — 내용은 단계별로 채운다.
   const skeleton = (
     <div className="daily">
       <div className="daily-skin" />
@@ -18,8 +138,7 @@ export default function DailyTab({ report }: { report?: CharReport | null }) {
     </div>
   );
 
-  // 세팅 전 — 빌더가 직접 시작 등급·특성·수입 등급·관계 태그를 깔아야 일상이 돈다(0-C 세팅 면).
-  //  (세팅 면 버튼은 0-C에서 이 자리에 들어온다.)
+  // ── 세팅 전 — 빌더가 직접 깔아야 일상이 돈다(잠금 화면 + '일상 세팅' 진입). ──
   if (!ready) {
     return (
       <div className="report-locked">
@@ -28,10 +147,25 @@ export default function DailyTab({ report }: { report?: CharReport | null }) {
         </div>
         <div className="report-lock-overlay">
           <p className="report-lock-msg">아직 일상이 깃들지 않았습니다.</p>
+          <button className="list-btn" onClick={세팅열기}>
+            일상 세팅
+          </button>
         </div>
       </div>
     );
   }
 
-  return skeleton;
+  // ── 세팅 후 — 3구획 + 세팅 다시 열기(우상단). ──
+  return (
+    <div className="daily">
+      <div className="daily-top">
+        <button className="daily-edit" onClick={세팅열기}>
+          세팅
+        </button>
+      </div>
+      <div className="daily-skin" />
+      <div className="daily-status" />
+      <div className="daily-log" />
+    </div>
+  );
 }

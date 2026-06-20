@@ -1615,6 +1615,38 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   background: var(--surface);
   min-height: 140px;
 }
+.daily-top { display: flex; justify-content: flex-end; }
+.daily-edit {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-size: 12px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.daily-edit:hover { color: var(--text); border-color: var(--accent); }
+
+/* 일상 세팅 면 — 빌더 수기(시작 등급 6각 · 특성 3 · 수입). 일상 탭 안에서. */
+.daily-setup { display: flex; flex-direction: column; gap: 18px; }
+.daily-grades { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 16px; }
+.daily-set-row { display: flex; align-items: center; gap: 10px; }
+.daily-set-row .dd { flex: 1; min-width: 0; }
+.daily-set-key { flex: 0 0 32px; color: var(--text-dim); font-size: 13px; }
+.daily-traits { display: flex; flex-direction: column; gap: 8px; }
+.daily-trait-row { display: flex; align-items: center; gap: 8px; }
+.daily-trait-name {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+.daily-trait-row .dd { flex: 0 0 128px; }
+.daily-set-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
 
 /* 보고서 본문 — 멘트·해시태그(전폭) → 레이더+막대(한 줄) → 성격+무의식(한 줄) → 평판 */
 .report-body { display: flex; flex-direction: column; }

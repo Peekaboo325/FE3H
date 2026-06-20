@@ -2,7 +2,7 @@ import { useState, useEffect, Fragment, type ReactNode } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
 import { showToast } from './toast';
 import { confirmAsk } from './dialog';
-import { useCharacters, type Character, type Bond, type CharReport, type QuestItem, type BelongingItem, type JournalEntry } from './useCharacters';
+import { useCharacters, type Character, type Bond, type CharReport, type QuestItem, type BelongingItem, type JournalEntry, type DailyState } from './useCharacters';
 import { UI } from './strings';
 import IconButton from './IconButton';
 import Button from './Button';
@@ -667,6 +667,7 @@ export default function Characters({
   const [questing, setQuesting] = useState(false); // 임무 장부 발급 중
   const [exploring, setExploring] = useState(false); // 소지품 탐색 중
   const [journaling, setJournaling] = useState(false); // 일지 술회 중
+  const [dailySaving, setDailySaving] = useState(false); // 일상 세팅 기록 중
   const [armedItemId, setArmedItemId] = useState<string | null>(null); // 소지품 소각 두 번 누르기 대상
   useEffect(() => setArmedItemId(null), [tab]); // 탭을 옮기면 활성 해제
   // ESC = 그 화면의 뒤로/취소(없으면 닫기) — 편집 중 실수로 패널 전체가 닫히지 않게 한 겹씩.
@@ -905,6 +906,35 @@ export default function Characters({
       await refresh();
     } catch {
       showToast(`일지를 ${UI.erase}하지 못했습니다.`);
+    }
+  }
+
+  // 일상 세팅 저장 — 빌더가 일상 탭 안에서 깐 시작 등급·특성·수입을 daily 서랍에 새긴다(AI 안 거침, 순수 DB).
+  //  patch = daily 부분 패치. 처음 저장하면 setup_at이 박혀 일상이 '깃든다'(가림 해제).
+  async function 일상세팅(patch: Partial<DailyState>): Promise<boolean> {
+    if (!viewing?.id || dailySaving) return false;
+    const 처음 = !viewing.analysis?.daily?.setup_at;
+    setDailySaving(true);
+    try {
+      const res = await fetch('/api/analysis?kind=daily', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ character_id: viewing.id, daily: patch }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        showToast(data.error || '일상을 기록하지 못했습니다.');
+        return false;
+      }
+      setViewing((v) => (v ? { ...v, analysis: data.report } : v));
+      await refresh();
+      showToast(처음 ? `${firstName(viewing.name)}의 일상이 깃들었습니다.` : '일상을 기록하였습니다.');
+      return true;
+    } catch {
+      showToast('일상을 기록하지 못했습니다.');
+      return false;
+    } finally {
+      setDailySaving(false);
     }
   }
 
@@ -1263,7 +1293,7 @@ export default function Characters({
                   onIssue={발급}
                 />
               ) : tab === '일상' ? (
-                <DailyTab report={viewing.analysis} />
+                <DailyTab report={viewing.analysis} saving={dailySaving} onSetup={일상세팅} />
               ) : tab === '임무' ? (
                 <QuestsView
                   report={viewing.analysis}
