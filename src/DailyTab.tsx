@@ -26,6 +26,48 @@ const 수입옵션 = 수입등급들.map((g) => ({ value: g, label: g }));
 const 재능정원 = 3; // 재능은 최대 셋 — 고르면 C, 나머지는 E에서 시작
 const 특성정원 = 3; // 특성은 최대 셋. 또 한 능력당 하나(상반 특성은 서로 막음)
 
+// 등급 사다리 11단계(설계 §6, S+ 없음) — 표시·레이더 환산용. 속은 숫자(육성)는 4단계에서.
+const 등급사다리 = ['E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S'];
+const 등급값 = (g?: string) => {
+  const i = 등급사다리.indexOf(g ?? 'E');
+  return i < 0 ? 0 : i / (등급사다리.length - 1); // 0(E)~1(S)
+};
+
+// 능력 6각 레이더 — 시작 등급을 육각형으로(SVG, 의존성 없음). 값은 등급→0~1 환산.
+function DailyRadar({ grades }: { grades?: Partial<Record<AbilityKey, Grade>> }) {
+  const size = 220;
+  const c = size / 2;
+  const R = c - 34; // 라벨 자리 여백
+  const n = 능력6각.length; // 6
+  const pt = (i: number, radius: number): [number, number] => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n; // 12시부터 시계방향
+    return [c + radius * Math.cos(a), c + radius * Math.sin(a)];
+  };
+  const poly = (radius: number | ((i: number) => number)) =>
+    능력6각.map((_, i) => pt(i, typeof radius === 'function' ? radius(i) : radius).join(',')).join(' ');
+  const val = (i: number) => R * 등급값(grades?.[능력6각[i][0]]);
+  return (
+    <svg className="daily-radar" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="능력 등급">
+      {[0.25, 0.5, 0.75, 1].map((f) => (
+        <polygon key={f} className="radar-ring" points={poly(R * f)} />
+      ))}
+      {능력6각.map((_, i) => {
+        const [x, y] = pt(i, R);
+        return <line key={i} className="radar-axis" x1={c} y1={c} x2={x} y2={y} />;
+      })}
+      <polygon className="radar-area" points={poly(val)} />
+      {능력6각.map(([, ko], i) => {
+        const [x, y] = pt(i, R + 18);
+        return (
+          <text key={i} className="radar-label" x={x} y={y} textAnchor="middle" dominantBaseline="central">
+            {ko}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
 export default function DailyTab({
   report,
   saving,
@@ -220,7 +262,7 @@ export default function DailyTab({
     );
   }
 
-  // ── 세팅 후 — 3구획 + 세팅 다시 열기(우상단). ──
+  // ── 세팅 후 — 능력 레이더(1단계). 거처 스킨·근황·활동 로그는 단계별로 채운다. ──
   return (
     <div className="daily">
       <div className="daily-top">
@@ -228,9 +270,20 @@ export default function DailyTab({
           현황 설정
         </button>
       </div>
-      <div className="daily-skin" />
-      <div className="daily-status" />
-      <div className="daily-log" />
+      <div className="view-section">
+        <div className="view-label">능력</div>
+        <div className="daily-abilities">
+          <DailyRadar grades={daily?.start_grades} />
+          <ul className="daily-grade-list">
+            {능력6각.map(([k, ko]) => (
+              <li key={k} className="daily-grade-row">
+                <span className="daily-grade-ab">{ko}</span>
+                <span className="daily-grade-g">{daily?.start_grades?.[k] ?? 'E'}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }

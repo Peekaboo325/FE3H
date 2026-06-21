@@ -1627,7 +1627,37 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   background: var(--surface);
   min-height: 140px;
 }
-.daily-top { display: flex; justify-content: flex-end; }
+.daily-top { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+
+/* 능력 — 좌 6각 레이더 / 우 등급 목록(1단계) */
+.daily-abilities { display: grid; grid-template-columns: auto 1fr; gap: 22px; align-items: center; }
+.daily-radar { width: 220px; max-width: 100%; height: auto; display: block; }
+.daily-radar .radar-ring { fill: none; stroke: var(--border); stroke-width: 1; }
+.daily-radar .radar-axis { stroke: var(--border); stroke-width: 1; }
+.daily-radar .radar-area {
+  fill: color-mix(in srgb, var(--accent) 26%, transparent);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.daily-radar .radar-label { fill: var(--text-dim); font-size: 11px; font-weight: 600; }
+.daily-grade-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.daily-grade-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.daily-grade-row:last-child { border-bottom: none; }
+.daily-grade-ab { font-size: 14px; color: var(--text); }
+.daily-grade-g { font-size: 15px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) {
+  .daily-abilities { grid-template-columns: 1fr; justify-items: center; gap: 16px; }
+  .daily-grade-list { width: 100%; }
+}
+
 .daily-edit {
   background: none;
   border: 1px solid var(--border);
