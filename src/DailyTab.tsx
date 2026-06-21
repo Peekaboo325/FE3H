@@ -6,10 +6,12 @@
 //   재능 = 고른 능력 C·나머지 E에서 시작(start_grades로 파생 저장). 천장 C, B·A·S는 육성으로만.
 //   능력 적립·경제·상태·로그·버튼은 단계별로 채운다.
 import { useState } from 'react';
+import { Settings } from 'lucide-react';
 import type { CharReport, DailyState, AbilityKey, Grade, IncomeGrade } from './useCharacters';
 import { TRAITS } from './traits';
 import { UI } from './strings';
 import Button from './Button';
+import IconButton from './IconButton';
 import Dropdown from './Dropdown';
 
 // 능력 6각 — 무력·마력·신앙·지성·매력·정신(입지·재력은 일상에서 뺌: 재력→지갑, 입지→보고서). 키는 보고서와 공유.
@@ -45,7 +47,8 @@ function DailyRadar({ grades }: { grades?: Partial<Record<AbilityKey, Grade>> })
   };
   const poly = (radius: number | ((i: number) => number)) =>
     능력6각.map((_, i) => pt(i, typeof radius === 'function' ? radius(i) : radius).join(',')).join(' ');
-  const val = (i: number) => R * 등급값(grades?.[능력6각[i][0]]);
+  const FLOOR = 0.18; // 0점(E)이어도 육각이 완전히 쪼그라들지 않게 안쪽 바닥을 둔다
+  const val = (i: number) => R * (FLOOR + (1 - FLOOR) * 등급값(grades?.[능력6각[i][0]]));
   return (
     <svg className="daily-radar" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="능력 등급">
       {[0.25, 0.5, 0.75, 1].map((f) => (
@@ -262,14 +265,9 @@ export default function DailyTab({
     );
   }
 
-  // ── 세팅 후 — 능력 레이더(1단계). 거처 스킨·근황·활동 로그는 단계별로 채운다. ──
+  // ── 세팅 후 — 능력 레이더(1단계) + 하단 가운데 '현황 설정'. 거처 스킨·근황·로그는 단계별로. ──
   return (
     <div className="daily">
-      <div className="daily-top">
-        <button className="daily-edit" onClick={세팅열기}>
-          현황 설정
-        </button>
-      </div>
       <div className="view-section">
         <div className="view-label">능력</div>
         <div className="daily-abilities">
@@ -283,6 +281,11 @@ export default function DailyTab({
             ))}
           </ul>
         </div>
+      </div>
+      <div className="report-foot">
+        <IconButton label="현황 설정" onClick={세팅열기}>
+          <Settings size={17} />
+        </IconButton>
       </div>
     </div>
   );
