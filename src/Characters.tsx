@@ -14,7 +14,7 @@ import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
 import useEscClose from './useEscClose';
-import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw, Plus, Search, Eye, Heart, MessagesSquare, Landmark } from 'lucide-react';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw, Plus, Search } from 'lucide-react';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -55,15 +55,20 @@ const 상태label: Record<string, string> = { alive: '생존', deceased: '사망
 const statusFx = (s?: string) =>
   s === 'deceased' ? 'fx-dead' : s === 'unknown' ? 'fx-unknown' : '';
 
-// 뷰 모드의 한 섹션(내용 있을 때만 호출). icon = 보고서 카드의 흐릿한 배경 문양(시각 텍스처, 보고서에서만 전달).
-function ViewSection({ label, text, icon }: { label: string; text: string; icon?: ReactNode }) {
+// 보고서 카드의 배경 문양(빌더 제작 SVG, #000 단색). CSS mask로 금빛 틴트 — 필드명과 1:1.
+const 보고서문양 = {
+  foundation: '/assets/icon/report-foundation.svg',
+  personality: '/assets/icon/report-personality.svg',
+  unconscious: '/assets/icon/report-unconscious.svg',
+  reputation: '/assets/icon/report-reputation.svg',
+} as const;
+const 문양스타일 = (url: string) => ({ WebkitMaskImage: `url(${url})`, maskImage: `url(${url})` });
+
+// 뷰 모드의 한 섹션(내용 있을 때만 호출). wm = 보고서 카드의 흐릿한 배경 문양 경로(보고서에서만 전달).
+function ViewSection({ label, text, wm }: { label: string; text: string; wm?: string }) {
   return (
-    <div className={'view-section' + (icon ? ' report-card' : '')}>
-      {icon && (
-        <span className="card-wm" aria-hidden="true">
-          {icon}
-        </span>
-      )}
+    <div className={'view-section' + (wm ? ' report-card' : '')}>
+      {wm && <span className="card-wm" style={문양스타일(wm)} aria-hidden="true" />}
       <div className="view-label">{label}</div>
       <div className="view-text">
         <Markdown text={text} />
@@ -116,9 +121,7 @@ function ReportBody({ report }: { report: CharReport }) {
       )}
       {/* 기반 — 입지·명망·재력. 좌(1) 막대 세로 / 우(2) 종합 줄글 = 1:2. 능력 6각은 일상으로 이사. */}
       <div className="view-section report-card">
-        <span className="card-wm" aria-hidden="true">
-          <Landmark size={96} />
-        </span>
+        <span className="card-wm" style={문양스타일(보고서문양.foundation)} aria-hidden="true" />
         <div className="view-label">기반</div>
         <div className="report-foundation-row">
           <div className="report-stats">
@@ -131,15 +134,13 @@ function ReportBody({ report }: { report: CharReport }) {
       </div>
       {/* 행동 양상 + 잠재 심리 (한 줄) — 카드마다 흐릿한 문양으로 시각 텍스처 */}
       <div className="report-analysis-row">
-        {report.personality && <ViewSection label="행동 양상" text={report.personality} icon={<Eye size={96} />} />}
-        {report.unconscious && <ViewSection label="잠재 심리" text={report.unconscious} icon={<Heart size={96} />} />}
+        {report.personality && <ViewSection label="행동 양상" text={report.personality} wm={보고서문양.personality} />}
+        {report.unconscious && <ViewSection label="잠재 심리" text={report.unconscious} wm={보고서문양.unconscious} />}
       </div>
       {/* 평판 */}
       {!!report.reputation?.length && (
         <div className="view-section report-card">
-          <span className="card-wm" aria-hidden="true">
-            <MessagesSquare size={96} />
-          </span>
+          <span className="card-wm" style={문양스타일(보고서문양.reputation)} aria-hidden="true" />
           <div className="view-label">평판</div>
           <ul className="rep-list">
             {report.reputation.map((r, i) => (

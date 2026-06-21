@@ -1715,10 +1715,17 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   position: absolute;
   right: -10px;
   bottom: -14px;
-  color: var(--accent);
+  width: 96px;
+  height: 96px;
+  background: var(--accent); /* #000 SVG를 mask로 찍어 금빛으로 틴트 */
   opacity: 0.06;
   pointer-events: none;
-  line-height: 0;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
 .report-analysis-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 /* 카드 자체 margin과 그리드 gap이 겹쳐 간격이 벌어지지 않게 — 간격은 gap만 담당 */
