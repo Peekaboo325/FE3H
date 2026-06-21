@@ -1709,6 +1709,17 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 
 /* 보고서 본문 — 인용구·해시태그 → 타인의 시선(평판·중심) → 심리(행동·잠재) → 위치(입지·재력). 능력은 일상으로 이사. */
 .report-body { display: flex; flex-direction: column; }
+/* 보고서 카드 — 흐릿한 배경 문양(시각 텍스처). 줄글이 평평하지 않게, 카드마다 다른 결. */
+.report-card { position: relative; overflow: hidden; }
+.card-wm {
+  position: absolute;
+  right: -10px;
+  bottom: -14px;
+  color: var(--accent);
+  opacity: 0.06;
+  pointer-events: none;
+  line-height: 0;
+}
 .report-analysis-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 /* 카드 자체 margin과 그리드 gap이 겹쳐 간격이 벌어지지 않게 — 간격은 gap만 담당 */
 .report-analysis-row .view-section { margin: 0; }
@@ -1716,15 +1727,18 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   .report-analysis-row { grid-template-columns: 1fr; }
 }
 
-/* 대표 인용구 + 해시태그 */
+/* 대표 인용구 — '핵심 인상' 패널로 틀을 줘 맨 위 시선을 잡는다 */
 .report-quote {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 500;
   color: var(--text);
   line-height: 1.6;
   text-align: center;
-  margin: 12px 0 26px;
-  padding: 0 16px;
+  margin: 6px 0 20px;
+  padding: 20px 28px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, var(--surface-2)), var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
 /* 인용구 따옴표 — 세리프 장식 글리프(금빛·살짝 크게) */
 .report-quote::before,

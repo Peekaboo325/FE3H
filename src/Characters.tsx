@@ -14,7 +14,7 @@ import { splitAliases, firstName } from './nameUtils';
 import Markdown from './Markdown';
 import Dropdown from './Dropdown';
 import useEscClose from './useEscClose';
-import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw, Plus, Search } from 'lucide-react';
+import { ImagePlus, Crop, Eraser, Flame, ArrowLeft, Bookmark, Pencil, X, MapPin, ChevronDown, UserPlus, Download, Trash2, RotateCcw, Plus, Search, Eye, Heart, MessagesSquare, Landmark } from 'lucide-react';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -55,10 +55,15 @@ const 상태label: Record<string, string> = { alive: '생존', deceased: '사망
 const statusFx = (s?: string) =>
   s === 'deceased' ? 'fx-dead' : s === 'unknown' ? 'fx-unknown' : '';
 
-// 뷰 모드의 한 섹션(내용 있을 때만 호출).
-function ViewSection({ label, text }: { label: string; text: string }) {
+// 뷰 모드의 한 섹션(내용 있을 때만 호출). icon = 보고서 카드의 흐릿한 배경 문양(시각 텍스처, 보고서에서만 전달).
+function ViewSection({ label, text, icon }: { label: string; text: string; icon?: ReactNode }) {
   return (
-    <div className="view-section">
+    <div className={'view-section' + (icon ? ' report-card' : '')}>
+      {icon && (
+        <span className="card-wm" aria-hidden="true">
+          {icon}
+        </span>
+      )}
       <div className="view-label">{label}</div>
       <div className="view-text">
         <Markdown text={text} />
@@ -110,7 +115,10 @@ function ReportBody({ report }: { report: CharReport }) {
         </div>
       )}
       {/* 기반 — 입지·명망·재력. 좌(1) 막대 세로 / 우(2) 종합 줄글 = 1:2. 능력 6각은 일상으로 이사. */}
-      <div className="view-section">
+      <div className="view-section report-card">
+        <span className="card-wm" aria-hidden="true">
+          <Landmark size={96} />
+        </span>
         <div className="view-label">기반</div>
         <div className="report-foundation-row">
           <div className="report-stats">
@@ -121,14 +129,17 @@ function ReportBody({ report }: { report: CharReport }) {
           {report.foundation && <p className="report-foundation">{report.foundation}</p>}
         </div>
       </div>
-      {/* 행동 양상 + 잠재 심리 (한 줄) */}
+      {/* 행동 양상 + 잠재 심리 (한 줄) — 카드마다 흐릿한 문양으로 시각 텍스처 */}
       <div className="report-analysis-row">
-        {report.personality && <ViewSection label="행동 양상" text={report.personality} />}
-        {report.unconscious && <ViewSection label="잠재 심리" text={report.unconscious} />}
+        {report.personality && <ViewSection label="행동 양상" text={report.personality} icon={<Eye size={96} />} />}
+        {report.unconscious && <ViewSection label="잠재 심리" text={report.unconscious} icon={<Heart size={96} />} />}
       </div>
       {/* 평판 */}
       {!!report.reputation?.length && (
-        <div className="view-section">
+        <div className="view-section report-card">
+          <span className="card-wm" aria-hidden="true">
+            <MessagesSquare size={96} />
+          </span>
           <div className="view-label">평판</div>
           <ul className="rep-list">
             {report.reputation.map((r, i) => (
