@@ -1627,9 +1627,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   background: var(--surface);
   min-height: 140px;
 }
-/* 능력(1단계) — 좌 6각 레이더 / 우 등급 목록. 중앙 정렬, 목록은 폭 고정(안 늘어남). */
-.daily-abilities { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 40px; }
-.daily-radar { width: 220px; max-width: 100%; height: auto; display: block; flex: 0 0 auto; }
+/* 능력(1단계) — 좌 6각 레이더 / 우 등급 목록(2열). 카드 폭을 반반으로 써 휑함을 줄임. */
+.daily-abilities { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 24px; }
+.daily-radar { width: 260px; max-width: 100%; height: auto; display: block; margin: 0 auto; }
 .daily-radar .radar-ring { fill: none; stroke: var(--border); stroke-width: 1; }
 .daily-radar .radar-axis { stroke: var(--border); stroke-width: 1; }
 .daily-radar .radar-area {
@@ -1639,13 +1639,21 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   stroke-linejoin: round;
 }
 .daily-radar .radar-label { fill: var(--text-dim); font-size: 11px; font-weight: 600; }
-.daily-grade-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; width: 224px; }
+.daily-grade-list {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 152px));
+  gap: 8px 12px;
+  justify-content: center;
+}
 .daily-grade-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 8px 14px;
+  gap: 10px;
+  padding: 8px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -1663,7 +1671,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
-@media (max-width: 600px) { .daily-grade-list { width: 100%; max-width: 300px; } }
+@media (max-width: 600px) {
+  .daily-abilities { grid-template-columns: 1fr; gap: 18px; }
+  .daily-grade-list { grid-template-columns: repeat(2, 1fr); width: 100%; max-width: 320px; }
+}
 
 /* 현황 설정 면 — 빌더 수기(재능 ≤3 · 특성 사전 칩 · 수입). 일상 탭 안에서. */
 .daily-setup { display: flex; flex-direction: column; gap: 18px; }
