@@ -78,18 +78,18 @@ const 기반목록: [string, string][] = [
   ['wealth', '재력'],
 ];
 
-// 기반 한 줄(라벨·수치 / 게이지 막대 / 한 줄 평). 좁은 좌측 칸이라 한 줄 평은 막대 아래로(안 잘리게).
+// 기반 한 줄(라벨·한 줄 평·수치 / 게이지 막대). 한 줄 평은 라벨 줄에 인라인(우측).
 function StatBar({ label, value, comment }: { label: string; value: number; comment?: string }) {
   return (
     <div className="stat-row">
       <div className="stat-head">
         <span className="stat-label">{label}</span>
+        {comment && <span className="stat-cmt">{comment}</span>}
         <span className="stat-num">{value}</span>
       </div>
       <span className="stat-track">
         <span className="stat-fill" style={{ width: `${value}%` }} />
       </span>
-      {comment && <div className="stat-cmt">{comment}</div>}
     </div>
   );
 }
