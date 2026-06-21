@@ -26,7 +26,7 @@ const 능력6각: [AbilityKey, string][] = [
 const 수입등급들: IncomeGrade[] = ['없음', '하', '중', '상'];
 const 수입옵션 = 수입등급들.map((g) => ({ value: g, label: g }));
 const 재능정원 = 3; // 재능은 최대 셋 — 고르면 C, 나머지는 E에서 시작
-const 특성정원 = 3; // 특성은 최대 셋. 또 한 능력당 하나(상반 특성은 서로 막음)
+const 특성정원 = 4; // 특성은 최대 넷. 또 한 능력당 하나(상반 특성은 서로 막음)
 
 // 등급 사다리 11단계(설계 §6, S+ 없음) — 표시·레이더 환산용. 속은 숫자(육성)는 4단계에서.
 const 등급사다리 = ['E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S'];
@@ -270,24 +270,35 @@ export default function DailyTab({
   // ── 세팅 후 — 능력 레이더(1단계) + 하단 가운데 '현황 설정'. 거처 스킨·근황·로그는 단계별로. ──
   return (
     <div className="daily">
-      <div className="view-section">
-        <div className="view-label">능력</div>
-        <div className="daily-abilities">
-          <DailyRadar grades={daily?.start_grades} />
+      <div className="daily-grid">
+        {/* 좌상 — 수입(표시 자리, 적립 기능은 2·6단계) */}
+        <div className="view-section daily-income">
+          <div className="view-label">수입</div>
+          <div className="daily-income-val">{daily?.income_grade ?? '없음'}</div>
         </div>
-      </div>
-      {!!daily?.traits?.length && (
-        <div className="view-section">
+        {/* 좌하 — 특성(고른 것 칩으로) */}
+        <div className="view-section daily-traits-cell">
           <div className="view-label">특성</div>
-          <div className="daily-trait-view">
-            {daily.traits.map((t, i) => (
-              <span key={i} className="daily-trait-chip">
-                {t.label || t.name}
-              </span>
-            ))}
+          {daily?.traits?.length ? (
+            <div className="daily-trait-view">
+              {daily.traits.map((t, i) => (
+                <span key={i} className="daily-trait-chip">
+                  {t.label || t.name}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="daily-empty">아직 없음</p>
+          )}
+        </div>
+        {/* 우 — 능력(세로로 차지) */}
+        <div className="view-section daily-ability-cell">
+          <div className="view-label">능력</div>
+          <div className="daily-abilities">
+            <DailyRadar grades={daily?.start_grades} />
           </div>
         </div>
-      )}
+      </div>
       <div className="report-foot">
         <IconButton label="현황 설정" onClick={세팅열기}>
           <Settings size={17} />

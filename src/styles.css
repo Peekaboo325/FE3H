@@ -1627,8 +1627,26 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   background: var(--surface);
   min-height: 140px;
 }
-/* 능력(1단계) — 6각 레이더(등급은 라벨에 합침). 가운데. */
-.daily-abilities { display: flex; justify-content: center; }
+/* 일상 본판 — 2열: 좌(수입·특성) / 우(능력, 세로로 차지). */
+.daily-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: 'income ability' 'traits ability';
+  gap: 16px;
+  align-items: stretch;
+}
+.daily-grid > .view-section { margin: 0; } /* 간격은 grid gap만 담당 */
+.daily-income { grid-area: income; }
+.daily-traits-cell { grid-area: traits; }
+.daily-ability-cell { grid-area: ability; display: flex; flex-direction: column; }
+.daily-income-val { text-align: center; font-size: 18px; font-weight: 700; color: var(--accent); padding: 6px 0 2px; }
+.daily-empty { margin: 0; font-size: 13px; color: var(--text-dim); }
+@media (max-width: 600px) {
+  .daily-grid { grid-template-columns: 1fr; grid-template-areas: 'ability' 'income' 'traits'; }
+}
+
+/* 능력(1단계) — 6각 레이더(등급은 라벨에 합침). 셀 안에서 가운데. */
+.daily-abilities { flex: 1; display: flex; align-items: center; justify-content: center; }
 .daily-radar { width: 300px; max-width: 100%; height: auto; display: block; }
 .daily-radar .radar-ring { fill: none; stroke: var(--border); stroke-width: 1; }
 .daily-radar .radar-axis { stroke: var(--border); stroke-width: 1; }
