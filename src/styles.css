@@ -1715,8 +1715,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   position: absolute;
   right: -10px;
   bottom: -14px;
-  width: 96px;
-  height: 96px;
+  width: 192px;
+  height: 192px;
   background: var(--accent); /* #000 SVG를 mask로 찍어 금빛으로 틴트 */
   opacity: 0.06;
   pointer-events: none;
