@@ -37,9 +37,9 @@ const 등급값 = (g?: string) => {
 
 // 능력 6각 레이더 — 시작 등급을 육각형으로(SVG, 의존성 없음). 값은 등급→0~1 환산.
 function DailyRadar({ grades }: { grades?: Partial<Record<AbilityKey, Grade>> }) {
-  const size = 220;
+  const size = 240;
   const c = size / 2;
-  const R = c - 34; // 라벨 자리 여백
+  const R = c - 44; // 라벨(이름+등급 2줄) 자리 여백
   const n = 능력6각.length; // 6
   const pt = (i: number, radius: number): [number, number] => {
     const a = -Math.PI / 2 + (i * 2 * Math.PI) / n; // 12시부터 시계방향
@@ -59,11 +59,13 @@ function DailyRadar({ grades }: { grades?: Partial<Record<AbilityKey, Grade>> })
         return <line key={i} className="radar-axis" x1={c} y1={c} x2={x} y2={y} />;
       })}
       <polygon className="radar-area" points={poly(val)} />
-      {능력6각.map(([, ko], i) => {
-        const [x, y] = pt(i, R + 18);
+      {능력6각.map(([k, ko], i) => {
+        const [x, y] = pt(i, R + 22);
+        const g = grades?.[k] ?? 'E';
         return (
-          <text key={i} className="radar-label" x={x} y={y} textAnchor="middle" dominantBaseline="central">
-            {ko}
+          <text key={i} className="radar-label" x={x} y={y} textAnchor="middle">
+            <tspan x={x} dy="-0.15em">{ko}</tspan>
+            <tspan x={x} dy="1.3em" className="radar-grade">{g}</tspan>
           </text>
         );
       })}
@@ -272,14 +274,6 @@ export default function DailyTab({
         <div className="view-label">능력</div>
         <div className="daily-abilities">
           <DailyRadar grades={daily?.start_grades} />
-          <ul className="daily-grade-list">
-            {능력6각.map(([k, ko]) => (
-              <li key={k} className="daily-grade-row">
-                <span className="daily-grade-ab">{ko}</span>
-                <span className="daily-grade-g">{daily?.start_grades?.[k] ?? 'E'}</span>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
       <div className="report-foot">
