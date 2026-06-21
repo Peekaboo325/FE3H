@@ -1641,6 +1641,17 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .daily-radar .radar-label { fill: var(--text-dim); font-size: 11px; font-weight: 600; }
 .daily-radar .radar-grade { fill: var(--accent); font-size: 12.5px; font-weight: 700; }
 
+/* 특성(읽기) — 고른 특성을 칩으로(개칭한 이름이면 그 이름). 효과는 4단계. */
+.daily-trait-view { display: flex; flex-wrap: wrap; gap: 8px; }
+.daily-trait-chip {
+  padding: 6px 14px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 13px;
+}
+
 /* 현황 설정 면 — 빌더 수기(재능 ≤3 · 특성 사전 칩 · 수입). 일상 탭 안에서. */
 .daily-setup { display: flex; flex-direction: column; gap: 18px; }
 .daily-talents { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }

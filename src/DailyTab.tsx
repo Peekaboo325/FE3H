@@ -276,6 +276,18 @@ export default function DailyTab({
           <DailyRadar grades={daily?.start_grades} />
         </div>
       </div>
+      {!!daily?.traits?.length && (
+        <div className="view-section">
+          <div className="view-label">특성</div>
+          <div className="daily-trait-view">
+            {daily.traits.map((t, i) => (
+              <span key={i} className="daily-trait-chip">
+                {t.label || t.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="report-foot">
         <IconButton label="현황 설정" onClick={세팅열기}>
           <Settings size={17} />
