@@ -66,12 +66,12 @@ const nk = () => 'ck' + ++_kc;
 
 // 본문 생성 설정(모델·사고 깊이) — 빌더가 앱 '설정'에서 고르고 localStorage에 남는다. /api/story·regen 본문으로 보냄.
 const GEN_KEY = 'genCfg';
-const DEFAULT_GEN: GenConfig = { model: 'deepseek-v4-pro', effort: 'medium' }; // Opus 잠깐 걷어둠(2026-06-19, 비용)
+const DEFAULT_GEN: GenConfig = { model: 'deepseek-v4-pro', effort: 'medium', enrich: true }; // Opus 잠깐 걷어둠(2026-06-19, 비용). 연출 콘티 기본 켬(딥시크 보강)
 function loadGenCfg(): GenConfig {
   try {
     const p = JSON.parse(localStorage.getItem(GEN_KEY) || 'null');
     if (p && typeof p === 'object')
-      return { model: p.model || DEFAULT_GEN.model, effort: p.effort || DEFAULT_GEN.effort };
+      return { model: p.model || DEFAULT_GEN.model, effort: p.effort || DEFAULT_GEN.effort, enrich: p.enrich !== false };
   } catch {
     /* 기본값으로 */
   }
@@ -276,8 +276,8 @@ export default function App() {
   async function 보내기() {
     const 입력 = input.trim();
     if (!입력 || busy) return;
-    if (genCfg.model.startsWith('deepseek')) {
-      await 콘티생성(입력); // 콘티 말풍선 → 실행 게이트(딥시크 한정)
+    if (genCfg.model.startsWith('deepseek') && genCfg.enrich) {
+      await 콘티생성(입력); // 콘티 말풍선 → 실행 게이트(딥시크 + 연출 콘티 켬)
       return;
     }
     const 다음: Turn[] = [
