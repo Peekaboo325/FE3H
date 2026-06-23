@@ -331,7 +331,7 @@ app.post('/api/story', async (req, res) => {
     const r = await runEnrich({ storyId: req.body?.story_id ?? null, prompt: req.body?.prompt });
     return res.status(r.error ? 500 : 200).end(JSON.stringify(r));
   }
-  const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이(기본 Opus/medium). DeepSeek도 허용
+  const { model, effort, polish } = genConfig(req.body); // 서술자 모델·사고 깊이·후보정(기본 Opus/medium/켬). DeepSeek도 허용
   const key = 서술자키(model); // 제공자에 맞는 키(클로드=ANTHROPIC_API_KEY / DeepSeek=DEEPSEEK_API_KEY)
   if (!key) {
     res.status(400).type('text/plain; charset=utf-8');
@@ -425,7 +425,7 @@ app.post('/api/story', async (req, res) => {
   const 게이트 = 머리글게이트(화수, 직전화날짜(대화), (s) => res.write(s)); // 머리글 누락 결정론적 보강
   try {
     // 본문 생성 — DeepSeek은 2패스(생성→교정), Opus 등은 1패스. 마지막 패스만 게이트로 스트리밍·비용 로그(lib/llm.mjs).
-    await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수 });
+    await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수, polish });
     게이트.닫기();
     본문 = 게이트.값();
     if (본문.trim()) {
@@ -444,7 +444,7 @@ app.post('/api/story', async (req, res) => {
 
 // 한 답변 다시 받기 — 새 유저턴 저장 없이 turn_id 칸만 갱신.
 app.post('/api/regen', async (req, res) => {
-  const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이. DeepSeek도 허용
+  const { model, effort, polish } = genConfig(req.body); // 서술자 모델·사고 깊이·후보정. DeepSeek도 허용
   const key = 서술자키(model);
   if (!key) {
     res.status(400).type('text/plain; charset=utf-8').end(`[서고] ${model.startsWith('deepseek') ? 'DEEPSEEK_API_KEY' : 'ANTHROPIC_API_KEY'} 가 없습니다.`);
@@ -488,7 +488,7 @@ app.post('/api/regen', async (req, res) => {
   const 게이트 = 머리글게이트(화수, 직전화날짜(messages), (s) => res.write(s)); // 머리글 누락 결정론적 보강
   try {
     // 본문 생성 — DeepSeek은 2패스(생성→교정), Opus 등은 1패스. 마지막 패스만 게이트로 스트리밍·비용 로그(lib/llm.mjs).
-    await 본문생성({ client, model, effort, system, messages, 게이트, tag: 'regen', 화수 });
+    await 본문생성({ client, model, effort, system, messages, 게이트, tag: 'regen', 화수, polish });
     게이트.닫기();
     본문 = 게이트.값();
     if (본문.trim()) await updateTurn(turnId, 본문, true); // 요약 무효화(재생성)

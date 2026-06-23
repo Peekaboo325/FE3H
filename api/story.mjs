@@ -44,7 +44,7 @@ export default async function handler(req, res) {
     return res.status(r.error ? 500 : 200).end(JSON.stringify(r));
   }
 
-  const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이(기본 Opus/medium). DeepSeek도 여기서 허용
+  const { model, effort, polish } = genConfig(req.body); // 서술자 모델·사고 깊이·후보정(기본 Opus/medium/켬). DeepSeek도 여기서 허용
   const key = 서술자키(model); // 제공자에 맞는 키(클로드=ANTHROPIC_API_KEY / DeepSeek=DEEPSEEK_API_KEY)
   if (!key) {
     res.status(400).setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -148,7 +148,7 @@ export default async function handler(req, res) {
   const 게이트 = 머리글게이트(화수, 직전화날짜(대화), (s) => res.write(s)); // 머리글 누락 결정론적 보강
   try {
     // 본문 생성 — DeepSeek은 2패스(생성→교정), Opus 등은 1패스. 마지막 패스만 게이트로 스트리밍·비용 로그(lib/llm.mjs).
-    await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수 });
+    await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수, polish });
     게이트.닫기();
     본문 = 게이트.값();
     // 완성된 본문을 영구 저장하고, 이야기의 최근 플레이 시각을 갱신한다.
