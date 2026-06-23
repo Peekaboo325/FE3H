@@ -349,14 +349,18 @@ export default function App() {
   }
 
   // 실행 — 콘티(2차)를 확정하고 그걸 프롬프트로 딥시크 본문 생성.
+  //   ⚠️ 1차 원문(seed)도 함께 묶어 보낸다 — 콘티가 압축하다 떨군 사실(5년/1년 등)을
+  //   작가가 친 글자 그대로 딥시크 입력에 박아, 본문에서 사라지지 않게 한다(빌더 결정 2026-06-23).
   async function 실행(i: number) {
     if (busy) return;
     const colt = turns[i]?.content || '';
+    const seed = turns[i]?.seed || '';
+    const 합본 = seed ? `${seed}\n\n---\n\n${colt}` : colt; // [유저 프롬프트] --- [가공프롬프트]
     const 다음: Turn[] = [
-      ...turns.map((t, idx) => (idx === i ? { ...t, draft: undefined, seed: undefined } : t)),
+      ...turns.map((t, idx) => (idx === i ? { ...t, content: 합본, draft: undefined, seed: undefined } : t)),
       { role: 'assistant', content: '', _key: nk() },
     ];
-    await 본문스트리밍(다음, colt);
+    await 본문스트리밍(다음, 합본);
   }
 
   // 본문 스트리밍 — 마지막(빈 assistant) 칸에 본문을 흘려 넣는다. 전개·실행 공용.
@@ -678,6 +682,12 @@ export default function App() {
                   </div>
                 ) : (
                   <>
+                    {t.seed && (
+                      <>
+                        <div className="prompt-body draft-seed">{t.seed}</div>
+                        <div className="draft-sep" />
+                      </>
+                    )}
                     <div className="prompt-body">{t.content}</div>
                     {mode === 'write' && (
                       <div className={'turn-actions' + (busy ? ' turn-actions--busy' : '')}>

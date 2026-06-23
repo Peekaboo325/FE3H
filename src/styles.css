@@ -282,6 +282,18 @@ body::before {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
   color: var(--text);
 }
+/* 한 말풍선 안에 [유저 프롬프트(1차 원문)] --- [가공프롬프트(콘티)]. 1차는 '날것' 톤(강조 없음)으로 구분. */
+.turn-draft .draft-seed {
+  display: block;
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-dim);
+}
+.turn-draft .draft-sep {
+  height: 1px;
+  margin: 9px 0;
+  background: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
 .turn-btn.draft-run {
   width: auto;
   padding: 0 12px;
