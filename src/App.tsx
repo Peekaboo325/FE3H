@@ -17,7 +17,7 @@ import { showToast, ToastHost } from './toast';
 import { UI } from './strings';
 import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon, ChevronsDown } from 'lucide-react';
 
-type Turn = { id?: number; role: 'user' | 'assistant'; content: string; _key?: string };
+type Turn = { id?: number; role: 'user' | 'assistant'; content: string; _key?: string; draft?: boolean; seed?: string };
 type Story = { id: number; title: string };
 // 되짚은 자취 — 서버가 실제로 주입한 회차·문헌(확인 자취용).
 type Recall = { ep?: number[]; lore?: { n: number; t: string }[]; char?: string[] };
@@ -103,6 +103,7 @@ export default function App() {
   const [copied, setCopied] = useState<number | null>(null);
   const [editingTurn, setEditingTurn] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
+  const [draftEdit, setDraftEdit] = useState<number | null>(null); // 콘티 초안 인라인 편집 중인 turn 인덱스
   const [armedTurn, setArmedTurn] = useState<number | null>(null); // 삭제 두 번 누르기 대상
   const [pendingRecall, setPendingRecall] = useState(false); // 이번 생성이 '회상'(앵커)인가 → 로딩 톤
 
@@ -271,19 +272,98 @@ export default function App() {
     setShowStories(false);
   }
 
+  // 전개 버튼 — 딥시크면 '연출 콘티(2차)'부터 펼쳐 게이트로, Opus면 바로 본문.
   async function 보내기() {
     const 입력 = input.trim();
     if (!입력 || busy) return;
-
+    if (genCfg.model.startsWith('deepseek')) {
+      await 콘티생성(입력); // 콘티 말풍선 → 실행 게이트(딥시크 한정)
+      return;
+    }
     const 다음: Turn[] = [
       ...turns,
       { role: 'user', content: 입력, _key: nk() },
       { role: 'assistant', content: '', _key: nk() },
     ];
-    setTurns(다음);
     setInput('');
+    await 본문스트리밍(다음, 입력);
+  }
+
+  // 연출 콘티 펼치기 — 짧은 1차를 2차 콘티로(/api/story?enrich). 결과는 'draft' 유저 말풍선으로(실행 전).
+  async function 콘티생성(seed: string) {
     setBusy(true);
-    setPendingRecall(hasAnchor(입력)); // 앵커가 있으면 로딩을 '회상' 톤으로
+    setInput('');
+    try {
+      const res = await fetch('/api/story', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ enrich: true, prompt: seed, story_id: storyId }),
+      });
+      const d = await res.json().catch(() => ({}) as { colt?: string; error?: string });
+      if (!res.ok || d.error || !d.colt) {
+        showToast(d.error || '연출을 펼치지 못했습니다 — 다시 시도하십시오.');
+        setInput(seed); // 잃지 않게 1차 복원
+        return;
+      }
+      setTurns((p) => [...p, { role: 'user', content: d.colt!, _key: nk(), draft: true, seed }]);
+      붙어있기.current = true;
+      requestAnimationFrame(() => 끝.current?.scrollIntoView({ behavior: 'smooth' }));
+    } catch {
+      showToast('연출을 펼치지 못했습니다 — 다시 시도하십시오.');
+      setInput(seed);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // 콘티 새로고침 — 같은 1차에서 다른 2차로.
+  async function 콘티새로고침(i: number) {
+    if (busy) return;
+    const seed = turns[i]?.seed;
+    if (!seed) return;
+    setBusy(true);
+    try {
+      const res = await fetch('/api/story', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ enrich: true, prompt: seed, story_id: storyId }),
+      });
+      const d = await res.json().catch(() => ({}) as { colt?: string; error?: string });
+      if (!res.ok || d.error || !d.colt) {
+        showToast(d.error || '연출을 다시 펼치지 못했습니다.');
+        return;
+      }
+      setTurns((p) => p.map((t, idx) => (idx === i ? { ...t, content: d.colt! } : t)));
+    } catch {
+      showToast('연출을 다시 펼치지 못했습니다.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // 콘티 삭제 — 초안 접고 1차를 입력창으로 되돌린다.
+  function 콘티삭제(i: number) {
+    setInput(turns[i]?.seed || turns[i]?.content || '');
+    setDraftEdit(null);
+    setTurns((p) => p.filter((_, idx) => idx !== i));
+  }
+
+  // 실행 — 콘티(2차)를 확정하고 그걸 프롬프트로 딥시크 본문 생성.
+  async function 실행(i: number) {
+    if (busy) return;
+    const colt = turns[i]?.content || '';
+    const 다음: Turn[] = [
+      ...turns.map((t, idx) => (idx === i ? { ...t, draft: undefined, seed: undefined } : t)),
+      { role: 'assistant', content: '', _key: nk() },
+    ];
+    await 본문스트리밍(다음, colt);
+  }
+
+  // 본문 스트리밍 — 마지막(빈 assistant) 칸에 본문을 흘려 넣는다. 전개·실행 공용.
+  async function 본문스트리밍(다음: Turn[], anchorText: string) {
+    setTurns(다음);
+    setBusy(true);
+    setPendingRecall(hasAnchor(anchorText)); // 앵커가 있으면 로딩을 '회상' 톤으로
     // 전개는 명시적 행동 — 위에서 읽던 중이었어도 새 화가 시작되는 곳으로 내려가고, 따라가기를 켠다.
     붙어있기.current = true;
     requestAnimationFrame(() => 끝.current?.scrollIntoView({ behavior: 'smooth' }));
@@ -571,6 +651,62 @@ export default function App() {
           const i = start + vi; // turns 원본 기준 실제 번호
           if (mode === 'read' && t.role === 'user') return null; // 읽기 모드: 프롬프트 숨김
           const editing = editingTurn != null && t.id === editingTurn;
+          // 연출 콘티 초안(2차) — 실행 전 게이트. 본문 칸과 별개 경로(본류 렌더 안 건드림).
+          if (t.draft) {
+            const dEditing = draftEdit === i;
+            return (
+              <div key={t._key ?? 'draft-' + i} className="turn user turn-draft">
+                <div className="draft-label">전개 초안</div>
+                {dEditing ? (
+                  <div className="turn-edit">
+                    <textarea value={editText} onChange={(e) => setEditText(e.target.value)} rows={3} />
+                    <div className="turn-actions">
+                      <button
+                        className="turn-btn"
+                        title={UI.save}
+                        onClick={() => {
+                          setTurns((p) => p.map((x, idx) => (idx === i ? { ...x, content: editText } : x)));
+                          setDraftEdit(null);
+                        }}
+                      >
+                        <Check size={16} />
+                      </button>
+                      <button className="turn-btn" title={UI.cancel} onClick={() => setDraftEdit(null)}>
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="prompt-body">{t.content}</div>
+                    {mode === 'write' && (
+                      <div className={'turn-actions' + (busy ? ' turn-actions--busy' : '')}>
+                        <button className="turn-btn draft-run" onClick={() => 실행(i)} disabled={busy}>
+                          실행
+                        </button>
+                        <button className="turn-btn" title={UI.regen} onClick={() => 콘티새로고침(i)} disabled={busy}>
+                          <RotateCcw size={16} />
+                        </button>
+                        <button
+                          className="turn-btn"
+                          title={UI.edit}
+                          onClick={() => {
+                            setEditText(t.content);
+                            setDraftEdit(i);
+                          }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button className="turn-btn" title={UI.erase} onClick={() => 콘티삭제(i)}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          }
           return (
             <div
               key={t._key ?? t.id ?? 'tmp-' + i}

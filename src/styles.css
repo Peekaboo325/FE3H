@@ -269,6 +269,30 @@ body::before {
 }
 .turn.story { color: var(--text); }
 .dim { color: var(--text-faint); }
+
+/* 전개 초안(연출 콘티 2차) — 본문 아닌 '작가 길잡이'로 명확히 구분. 실행 전 게이트(딥시크). */
+.turn-draft .draft-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+.turn-draft .prompt-body {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var(--surface)), var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--text);
+}
+.turn-btn.draft-run {
+  width: auto;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-radius: 999px;
+}
+.turn-btn.draft-run:hover { filter: brightness(1.06); }
+.turn-btn.draft-run:disabled { opacity: 0.5; }
 /* 절대 규칙 — 앱은 기울임(이탤릭)을 쓰지 않는다. em/i도 정상체로. */
 em, i { font-style: normal; }
 

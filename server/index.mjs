@@ -37,6 +37,7 @@ import {
 } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
+import { runEnrich } from '../lib/enrich.mjs';
 import { 서술자키, 서술자클라이언트, 사고옵션, 모델별지침, 양식가드, 머리글게이트, 직전화날짜 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import analysisHandler from '../api/analysis.mjs'; // 보고서·임무·소지품·일지 통합 입구(Hobby 12함수 한도)
@@ -324,6 +325,12 @@ app.delete('/api/lore', async (req, res) => {
 });
 
 app.post('/api/story', async (req, res) => {
+  // 윤색(연출 콘티) 전처리 — 본문 스트리밍 전, 짧은 1차를 2차 콘티로 펼쳐 JSON 반환(api/story.mjs와 같은 결).
+  if (req.body?.enrich) {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    const r = await runEnrich({ storyId: req.body?.story_id ?? null, prompt: req.body?.prompt });
+    return res.status(r.error ? 500 : 200).end(JSON.stringify(r));
+  }
   const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이(기본 Opus/medium). DeepSeek도 허용
   const key = 서술자키(model); // 제공자에 맞는 키(클로드=ANTHROPIC_API_KEY / DeepSeek=DEEPSEEK_API_KEY)
   if (!key) {

@@ -18,6 +18,7 @@ import { 서술자키, 서술자클라이언트, 사고옵션, 모델별지침, 
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
+import { runEnrich } from '../lib/enrich.mjs';
 import {
   parseAnchors,
   buildAnchorContext,
@@ -34,6 +35,13 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).end('POST만 받습니다.');
     return;
+  }
+
+  // 윤색(연출 콘티) 전처리 — 본문 스트리밍과 별개. 짧은 1차를 2차 콘티로 펼쳐 JSON으로 돌려준다(딥시크 경로의 실행 전 단계).
+  if (req.body?.enrich) {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    const r = await runEnrich({ storyId: req.body?.story_id ?? null, prompt: req.body?.prompt });
+    return res.status(r.error ? 500 : 200).end(JSON.stringify(r));
   }
 
   const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이(기본 Opus/medium). DeepSeek도 여기서 허용
