@@ -14,7 +14,7 @@ import { SYSTEM } from '../lib/worldview.mjs';
 import { saveTurn, touchStory, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
-import { 서술자키, 서술자클라이언트, 사고옵션, 모델별지침, 양식가드, 머리글게이트, 직전화날짜 } from '../lib/llm.mjs';
+import { 서술자키, 서술자클라이언트, 머리글게이트, 직전화날짜, 본문생성 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
@@ -147,25 +147,10 @@ export default async function handler(req, res) {
   let 본문 = '';
   const 게이트 = 머리글게이트(화수, 직전화날짜(대화), (s) => res.write(s)); // 머리글 누락 결정론적 보강
   try {
-    const stream = client.messages.stream({
-      model,
-      max_tokens: 8000,
-      ...사고옵션(model, effort), // 클로드=adaptive+effort / DeepSeek=thinking enabled (lib/llm.mjs)
-      system: [...system, ...모델별지침(model), 양식가드], // DeepSeek 보정+수위가산을 끝에, 양식가드는 그보다 더 뒤(recency)
-      messages: 대화,
-    });
-
-    stream.on('text', (delta) => 게이트.먹임(delta));
-    const _final = await stream.finalMessage();
+    // 본문 생성 — DeepSeek은 2패스(생성→교정), Opus 등은 1패스. 마지막 패스만 게이트로 스트리밍·비용 로그(lib/llm.mjs).
+    await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수 });
     게이트.닫기();
     본문 = 게이트.값();
-    // 비용 실측 — 콘솔에 토큰 내역(캐시 적중률 = cr / (in+cw+cr)). in은 '캐시 안 된 나머지'만.
-    const u = _final?.usage;
-    if (u)
-      console.log(
-        `[비용] story 화${화수} in:${u.input_tokens ?? '-'} cw(캐시쓰기):${u.cache_creation_input_tokens ?? '-'} cr(캐시읽기):${u.cache_read_input_tokens ?? '-'} out:${u.output_tokens ?? '-'}`,
-      );
-
     // 완성된 본문을 영구 저장하고, 이야기의 최근 플레이 시각을 갱신한다.
     if (본문.trim()) {
       await saveTurn('assistant', 본문, storyId);

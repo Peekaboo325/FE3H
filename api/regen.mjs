@@ -8,7 +8,7 @@ import { SYSTEM } from '../lib/worldview.mjs';
 import { updateTurn, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
-import { 서술자키, 서술자클라이언트, 사고옵션, 모델별지침, 양식가드, 머리글게이트, 직전화날짜 } from '../lib/llm.mjs';
+import { 서술자키, 서술자클라이언트, 머리글게이트, 직전화날짜, 본문생성 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import {
@@ -107,22 +107,10 @@ export default async function handler(req, res) {
   let 본문 = '';
   const 게이트 = 머리글게이트(화수, 직전화날짜(messages), (s) => res.write(s)); // 머리글 누락 결정론적 보강
   try {
-    const stream = client.messages.stream({
-      model,
-      max_tokens: 8000,
-      ...사고옵션(model, effort), // 클로드=adaptive+effort / DeepSeek=thinking enabled (lib/llm.mjs)
-      system: [...system, ...모델별지침(model), 양식가드], // DeepSeek 보정+수위가산을 끝에, 양식가드는 그보다 더 뒤(recency)
-      messages,
-    });
-    stream.on('text', (delta) => 게이트.먹임(delta));
-    const _final = await stream.finalMessage();
+    // 본문 생성 — DeepSeek은 2패스(생성→교정), Opus 등은 1패스. 마지막 패스만 게이트로 스트리밍·비용 로그(lib/llm.mjs).
+    await 본문생성({ client, model, effort, system, messages, 게이트, tag: 'regen', 화수 });
     게이트.닫기();
     본문 = 게이트.값();
-    const u = _final?.usage;
-    if (u)
-      console.log(
-        `[비용] regen 화${화수} in:${u.input_tokens ?? '-'} cw:${u.cache_creation_input_tokens ?? '-'} cr:${u.cache_read_input_tokens ?? '-'} out:${u.output_tokens ?? '-'}`,
-      );
     if (본문.trim()) await updateTurn(turnId, 본문, true); // 그 칸만 갱신 + 요약 무효화(재생성)
     res.end();
   } catch (err) {
