@@ -2,7 +2,7 @@
 //  값은 App이 localStorage에 남기고 /api/story·regen 본문으로 보낸다(서버가 genConfig로 검증).
 //  ※ 빌더용 셋업 컨트롤이라 기술어를 남겨둔다(CLAUDE.md §1 예외).
 
-export type GenConfig = { model: string; effort: string; enrich: boolean; polish: boolean };
+export type GenConfig = { model: string; effort: string; enrich: boolean };
 
 const MODELS = [
   // ⚠️ Opus 4.8 잠깐 걷어둠(2026-06-19, 비용 사고) — 복구: { id: 'claude-opus-4-8', label: 'Opus 4.8' } 다시 추가
@@ -13,7 +13,7 @@ const EFFORTS = [
   { id: 'low', label: '1단계' },
   { id: 'medium', label: '2단계' },
 ];
-// 공용 on/off 토글 — 연출 콘티(본문 전 콘티 펼치기)·후보정(Flash 2차 교정)에 함께 쓴다. 둘 다 딥시크 한정.
+// 연출 콘티(윤색) on/off — 짧은 1차를 본문 전에 '연출 콘티(2차)'로 펼쳐 실행 게이트를 거친다. 딥시크 한정(렌더러 보강).
 const TOGGLE = [
   { id: 'on', label: '켬' },
   { id: 'off', label: '끔' },
@@ -81,14 +81,6 @@ export default function GenControls({
         options={TOGGLE}
         value={config.enrich ? 'on' : 'off'}
         onPick={(v) => onChange({ ...config, enrich: v === 'on' })}
-        disabled={!isDeep}
-      />
-      {/* 후보정 = 1차 본문을 Flash가 절제 보정으로 다듬는 2차 교정. 딥시크 본문 전용 → 딥시크일 때만 활성 */}
-      <Group
-        label="후보정"
-        options={TOGGLE}
-        value={config.polish ? 'on' : 'off'}
-        onPick={(v) => onChange({ ...config, polish: v === 'on' })}
         disabled={!isDeep}
       />
     </div>

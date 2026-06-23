@@ -38,14 +38,14 @@ import {
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
 import { runEnrich } from '../lib/enrich.mjs';
-import { 서술자키, 서술자클라이언트, 머리글게이트, 직전화날짜, 본문생성 } from '../lib/llm.mjs';
+import { 서술자키, 서술자클라이언트, 머리글게이트, 직전화날짜, 본문생성, 본문교정 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import analysisHandler from '../api/analysis.mjs'; // 보고서·임무·소지품·일지 통합 입구(Hobby 12함수 한도)
 import { runLetters, runDirectedLetter } from '../lib/letters.mjs';
 import { listLetters, updateLetter, deleteLetter } from '../lib/db.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
-import { loadTurnsForSummary, getTurnContent, setTurnSummary } from '../lib/db.mjs';
+import { loadTurnsForSummary, getTurnContent, setTurnSummary, savePolished, setPolishedShow } from '../lib/db.mjs';
 import { runRestock, procureItem, SHOPS } from '../lib/supply.mjs';
 import { getSupply } from '../lib/db.mjs';
 import { summarizeEpisode } from '../lib/summarize.mjs';
@@ -78,11 +78,17 @@ app.get('/api/turns', async (req, res) => {
   res.json({ dbReady: dbReady(), turns: result.turns, error: result.error });
 });
 
-// 한 턴 수정 / 삭제
+// 한 턴 수정 / 삭제 / 보기 토글
 app.post('/api/turns', async (req, res) => {
-  const { id, content } = req.body || {};
+  const { id, content, polished_show } = req.body || {};
   if (!id) {
     res.status(400).json({ error: 'id가 필요합니다.' });
+    return;
+  }
+  // 보기 토글만 영속화(원본↔교정본) — content 없이 polished_show만 온 경우.
+  if (content === undefined && polished_show !== undefined) {
+    const r = await setPolishedShow(Number(id), polished_show);
+    res.status(r.error ? 500 : 200).json(r);
     return;
   }
   const r = await updateTurn(Number(id), String(content ?? ''));
@@ -331,7 +337,11 @@ app.post('/api/story', async (req, res) => {
     const r = await runEnrich({ storyId: req.body?.story_id ?? null, prompt: req.body?.prompt });
     return res.status(r.error ? 500 : 200).end(JSON.stringify(r));
   }
-  const { model, effort, polish } = genConfig(req.body); // 서술자 모델·사고 깊이·후보정(기본 Opus/medium/켬). DeepSeek도 허용
+  // 교정(유저가 '교정' 버튼) — 원본을 딥시크로 교정·스트리밍하고 turns.polished에 저장(api/story.mjs와 같은 결).
+  if (req.body?.polish) {
+    return handlePolish(req, res);
+  }
+  const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이(기본 Opus/medium). DeepSeek도 허용
   const key = 서술자키(model); // 제공자에 맞는 키(클로드=ANTHROPIC_API_KEY / DeepSeek=DEEPSEEK_API_KEY)
   if (!key) {
     res.status(400).type('text/plain; charset=utf-8');
@@ -424,8 +434,8 @@ app.post('/api/story', async (req, res) => {
   let 본문 = '';
   const 게이트 = 머리글게이트(화수, 직전화날짜(대화), (s) => res.write(s)); // 머리글 누락 결정론적 보강
   try {
-    // 본문 생성 — DeepSeek은 2패스(생성→교정), Opus 등은 1패스. 마지막 패스만 게이트로 스트리밍·비용 로그(lib/llm.mjs).
-    await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수, polish });
+    // 본문 생성 — 단일 패스(보정 없음). 게이트로 스트리밍·비용 로그(lib/llm.mjs). 교정은 '교정' 버튼에서만.
+    await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수 });
     게이트.닫기();
     본문 = 게이트.값();
     if (본문.trim()) {
@@ -444,7 +454,7 @@ app.post('/api/story', async (req, res) => {
 
 // 한 답변 다시 받기 — 새 유저턴 저장 없이 turn_id 칸만 갱신.
 app.post('/api/regen', async (req, res) => {
-  const { model, effort, polish } = genConfig(req.body); // 서술자 모델·사고 깊이·후보정. DeepSeek도 허용
+  const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이. DeepSeek도 허용
   const key = 서술자키(model);
   if (!key) {
     res.status(400).type('text/plain; charset=utf-8').end(`[서고] ${model.startsWith('deepseek') ? 'DEEPSEEK_API_KEY' : 'ANTHROPIC_API_KEY'} 가 없습니다.`);
@@ -487,8 +497,8 @@ app.post('/api/regen', async (req, res) => {
   let 본문 = '';
   const 게이트 = 머리글게이트(화수, 직전화날짜(messages), (s) => res.write(s)); // 머리글 누락 결정론적 보강
   try {
-    // 본문 생성 — DeepSeek은 2패스(생성→교정), Opus 등은 1패스. 마지막 패스만 게이트로 스트리밍·비용 로그(lib/llm.mjs).
-    await 본문생성({ client, model, effort, system, messages, 게이트, tag: 'regen', 화수, polish });
+    // 본문 생성 — 단일 패스(보정 없음). 게이트로 스트리밍·비용 로그(lib/llm.mjs). 교정은 '교정' 버튼에서만.
+    await 본문생성({ client, model, effort, system, messages, 게이트, tag: 'regen', 화수 });
     게이트.닫기();
     본문 = 게이트.값();
     if (본문.trim()) await updateTurn(turnId, 본문, true); // 요약 무효화(재생성)
@@ -501,6 +511,42 @@ app.post('/api/regen', async (req, res) => {
     res.end();
   }
 });
+
+// ── 교정 서브모드 — 한 화 원본을 딥시크로 교정·스트리밍하고 turns.polished에 저장(api/story.mjs handlePolish 미러) ──
+const POLISH_MODEL = 'deepseek-v4-pro';
+async function handlePolish(req, res) {
+  const key = 서술자키(POLISH_MODEL);
+  if (!key) {
+    res.status(400).type('text/plain; charset=utf-8').end('[서고] DEEPSEEK_API_KEY 가 없습니다.');
+    return;
+  }
+  const turnId = req.body?.turn_id ? Number(req.body.turn_id) : null;
+  if (!turnId) {
+    res.status(400).type('text/plain; charset=utf-8').end('[서고] 잘못된 교정 요청입니다.');
+    return;
+  }
+  const { content: 원본 } = await getTurnContent(turnId);
+  if (!원본?.trim()) {
+    res.status(400).type('text/plain; charset=utf-8').end('[서고] 교정할 본문이 없습니다.');
+    return;
+  }
+  const client = 서술자클라이언트(POLISH_MODEL);
+  res.status(200).type('text/plain; charset=utf-8');
+  try {
+    const { text: 교정본 } = await 본문교정({ client, model: POLISH_MODEL, draft: 원본, write: (s) => res.write(s) });
+    if (교정본.trim()) {
+      const save = await savePolished(turnId, 교정본);
+      if (save.error) res.write(`\n\n[서고 오류] 교정본을 기록하지 못했습니다: ${save.error}`);
+    }
+    res.end();
+  } catch (err) {
+    const 사유 = err?.message || String(err);
+    console.error('[서고] 교정 오류:', 사유);
+    if (!res.headersSent) res.status(500).type('text/plain; charset=utf-8');
+    res.write(`\n\n[서고 오류] 교정에 실패했습니다: ${사유}`);
+    res.end();
+  }
+}
 
 app.listen(PORT, () => {
   console.log(`[서고] 포트 ${PORT}에서 깨어남. 클로드와의 통로 열림.`);

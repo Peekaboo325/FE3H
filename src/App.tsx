@@ -15,9 +15,24 @@ import { defaultStoryTitle } from './storyTitle';
 import { DialogHost } from './dialog';
 import { showToast, ToastHost } from './toast';
 import { UI } from './strings';
-import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon, ChevronsDown } from 'lucide-react';
+import { Copy, Check, RotateCcw, Pencil, Trash2, X, BookOpen, PenLine, Menu as MenuIcon, ChevronsDown, Sparkles, Undo2 } from 'lucide-react';
 
-type Turn = { id?: number; role: 'user' | 'assistant'; content: string; _key?: string; draft?: boolean; seed?: string };
+// polished = 교정본(딥시크가 위반 구문만 다듬은 변형, null=없음). polished_show = 지금 교정본을 보는 중인지.
+//  원본(content)은 이야기 연속성의 기준(요약·앵커가 읽음). 교정본은 읽기용 변형 — 자유 토글.
+type Turn = {
+  id?: number;
+  role: 'user' | 'assistant';
+  content: string;
+  _key?: string;
+  draft?: boolean;
+  seed?: string;
+  polished?: string;
+  polished_show?: boolean;
+};
+
+// 화면에 보일 본문 — 교정본을 보는 중이고 교정본이 있으면 그걸, 아니면 원본.
+//  (교정 스트림 시작 직후 polished=''(빈 문자열)은 falsy → 원본으로 떨어져 깜빡임 없음.)
+const 표시본 = (t: Turn) => (t.polished_show && t.polished ? t.polished : t.content);
 type Story = { id: number; title: string };
 // 되짚은 자취 — 서버가 실제로 주입한 회차·문헌(확인 자취용).
 type Recall = { ep?: number[]; lore?: { n: number; t: string }[]; char?: string[] };
@@ -66,7 +81,7 @@ const nk = () => 'ck' + ++_kc;
 
 // 본문 생성 설정(모델·사고 깊이) — 빌더가 앱 '설정'에서 고르고 localStorage에 남는다. /api/story·regen 본문으로 보냄.
 const GEN_KEY = 'genCfg';
-const DEFAULT_GEN: GenConfig = { model: 'deepseek-v4-pro', effort: 'medium', enrich: true, polish: true }; // Opus 잠깐 걷어둠(2026-06-19, 비용). 연출 콘티·후보정 기본 켬(딥시크 보강)
+const DEFAULT_GEN: GenConfig = { model: 'deepseek-v4-pro', effort: 'medium', enrich: true }; // Opus 잠깐 걷어둠(2026-06-19, 비용). 연출 콘티 기본 켬(딥시크 보강)
 function loadGenCfg(): GenConfig {
   try {
     const p = JSON.parse(localStorage.getItem(GEN_KEY) || 'null');
@@ -75,7 +90,6 @@ function loadGenCfg(): GenConfig {
         model: p.model || DEFAULT_GEN.model,
         effort: p.effort || DEFAULT_GEN.effort,
         enrich: p.enrich !== false,
-        polish: p.polish !== false,
       };
   } catch {
     /* 기본값으로 */
@@ -383,7 +397,7 @@ export default function App() {
       const res = await fetch('/api/story', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages, story_id: storyId, model: genCfg.model, effort: genCfg.effort, polish: genCfg.polish }),
+        body: JSON.stringify({ messages, story_id: storyId, model: genCfg.model, effort: genCfg.effort }),
       });
 
       if (!res.ok || !res.body) {
@@ -491,7 +505,8 @@ export default function App() {
 
   async function 턴저장(id: number) {
     const content = editText;
-    setTurns((prev) => prev.map((x) => (x.id === id ? { ...x, content } : x)));
+    // 내용을 고치면 기존 교정본은 낡으니 비우고 보기를 원본으로(서버 updateTurn도 같이 비움).
+    setTurns((prev) => prev.map((x) => (x.id === id ? { ...x, content, polished: undefined, polished_show: false } : x)));
     setEditingTurn(null);
     try {
       await fetch('/api/turns', {
@@ -541,14 +556,15 @@ export default function App() {
     setBusy(true);
     setPendingRecall(hasAnchor(messages[messages.length - 1]?.content || '')); // 다시받기도 앵커 적용 — 회상 로딩 톤
     setEditingTurn(null);
-    setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: '' } : x)));
+    // 재작성 = 새 원본 → 기존 교정본 슬롯 리셋(스트림이 원본 자리에 보이도록 보기도 원본으로).
+    setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: '', polished: undefined, polished_show: false } : x)));
 
     let 본문 = '';
     try {
       const res = await fetch('/api/regen', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages, story_id: storyId, turn_id: targetId, model: genCfg.model, effort: genCfg.effort, polish: genCfg.polish }),
+        body: JSON.stringify({ messages, story_id: storyId, turn_id: targetId, model: genCfg.model, effort: genCfg.effort }),
       });
       if (!res.ok || !res.body) {
         const e = await res.text();
@@ -577,6 +593,69 @@ export default function App() {
       setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: old } : x)));
     } finally {
       setBusy(false);
+    }
+  }
+
+  // 교정 — 한 화의 원본을 딥시크가 위반 구문만 다듬어 교정본을 만든다(스트리밍). 원본은 그대로.
+  async function 교정하기(turnIndex: number) {
+    if (busy) return;
+    const target = turns[turnIndex];
+    if (!target || target.id == null || target.role !== 'assistant') return;
+    const targetId = target.id;
+    setBusy(true);
+    setEditingTurn(null);
+    // 교정본을 빈칸으로 시작 + 보기를 교정본으로 → 스트림이 그 자리에 쌓인다.
+    setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, polished: '', polished_show: true } : x)));
+    let 교정 = '';
+    try {
+      const res = await fetch('/api/story', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ polish: true, turn_id: targetId, story_id: storyId }),
+      });
+      if (!res.ok || !res.body) {
+        const e = await res.text();
+        setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, polished: undefined, polished_show: false } : x)));
+        showToast(e || '본문을 교정하지 못했습니다.');
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        교정 += decoder.decode(value, { stream: true });
+        setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, polished: 교정 } : x)));
+      }
+      if (!교정.trim()) {
+        setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, polished: undefined, polished_show: false } : x)));
+        showToast('교정 결과가 비어 돌아왔습니다.');
+      } else {
+        showToast('본문 교정을 마쳤습니다.');
+      }
+    } catch (e) {
+      console.error(e);
+      setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, polished: undefined, polished_show: false } : x)));
+      showToast('본문을 교정하지 못했습니다.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // 보기 전환(원본↔교정본) — 호출 없이 캐시된 교정본을 보여주거나 원본으로 되돌린다. 선택은 서버에 영속화.
+  async function 보기전환(turnIndex: number, show: boolean) {
+    const target = turns[turnIndex];
+    if (!target || target.id == null) return;
+    const targetId = target.id;
+    setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, polished_show: show } : x)));
+    try {
+      await fetch('/api/turns', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: targetId, polished_show: show }),
+      });
+    } catch {
+      /* 무시 — 이번 세션엔 적용됨 */
     }
   }
 
@@ -751,7 +830,7 @@ export default function App() {
                     t.role === 'assistant' ? (
                       <>
                         {epNo[i] > 0 && <div className="ep-no">{epNo[i]}화</div>}
-                        <StoryText content={t.content} />
+                        <StoryText content={표시본(t)} />
                       </>
                     ) : (
                       <div className="prompt-body">{t.content}</div>
@@ -767,7 +846,7 @@ export default function App() {
                         <button
                           className="turn-btn"
                           title={copied === i ? `${UI.copy}됨` : UI.copy}
-                          onClick={() => 복사하기(i, t.content)}
+                          onClick={() => 복사하기(i, 표시본(t))}
                         >
                           {copied === i ? <Check size={16} /> : <Copy size={16} />}
                         </button>
@@ -775,10 +854,25 @@ export default function App() {
                       {t.id != null ? (
                         <>
                           {t.role === 'assistant' && (
-                            <button className="turn-btn" title={UI.regen} onClick={() => 새로받기(i)}>
+                            <button className="turn-btn" title={UI.regen} onClick={() => 새로받기(i)} disabled={busy}>
                               <RotateCcw size={16} />
                             </button>
                           )}
+                          {/* 교정 ↔ 복원 — 교정본이 없으면 '교정'(딥시크 호출), 있으면 보기 토글(원본↔교정본, 호출 없음) */}
+                          {t.role === 'assistant' &&
+                            (t.polished == null ? (
+                              <button className="turn-btn" title={UI.polish} onClick={() => 교정하기(i)} disabled={busy}>
+                                <Sparkles size={16} />
+                              </button>
+                            ) : t.polished_show ? (
+                              <button className="turn-btn" title={UI.restore} onClick={() => 보기전환(i, false)} disabled={busy}>
+                                <Undo2 size={16} />
+                              </button>
+                            ) : (
+                              <button className="turn-btn" title={UI.polish} onClick={() => 보기전환(i, true)} disabled={busy}>
+                                <Sparkles size={16} />
+                              </button>
+                            ))}
                           <button className="turn-btn" title={UI.edit} onClick={() => 턴수정시작(t)}>
                             <Pencil size={16} />
                           </button>

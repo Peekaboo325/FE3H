@@ -11,10 +11,10 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
-import { saveTurn, touchStory, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
+import { saveTurn, touchStory, loadCharactersForInjection, loadLoreForInjection, getGuidance, getTurnContent, savePolished } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
-import { 서술자키, 서술자클라이언트, 머리글게이트, 직전화날짜, 본문생성 } from '../lib/llm.mjs';
+import { 서술자키, 서술자클라이언트, 머리글게이트, 직전화날짜, 본문생성, 본문교정 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
@@ -44,7 +44,13 @@ export default async function handler(req, res) {
     return res.status(r.error ? 500 : 200).end(JSON.stringify(r));
   }
 
-  const { model, effort, polish } = genConfig(req.body); // 서술자 모델·사고 깊이·후보정(기본 Opus/medium/켬). DeepSeek도 여기서 허용
+  // 교정(유저가 '교정' 버튼) — 한 화의 원본(turns.content)을 딥시크로 교정·스트리밍하고 turns.polished에 저장.
+  //  새 함수(api 12함수 한도) 대신 story의 서브모드로 둔다(enrich와 같은 결).
+  if (req.body?.polish) {
+    return handlePolish(req, res);
+  }
+
+  const { model, effort } = genConfig(req.body); // 서술자 모델·사고 깊이(기본 Opus/medium). DeepSeek도 여기서 허용
   const key = 서술자키(model); // 제공자에 맞는 키(클로드=ANTHROPIC_API_KEY / DeepSeek=DEEPSEEK_API_KEY)
   if (!key) {
     res.status(400).setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -147,8 +153,8 @@ export default async function handler(req, res) {
   let 본문 = '';
   const 게이트 = 머리글게이트(화수, 직전화날짜(대화), (s) => res.write(s)); // 머리글 누락 결정론적 보강
   try {
-    // 본문 생성 — DeepSeek은 2패스(생성→교정), Opus 등은 1패스. 마지막 패스만 게이트로 스트리밍·비용 로그(lib/llm.mjs).
-    await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수, polish });
+    // 본문 생성 — 단일 패스(보정 없음). 게이트로 스트리밍·비용 로그(lib/llm.mjs). 교정은 '교정' 버튼에서만.
+    await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수 });
     게이트.닫기();
     본문 = 게이트.값();
     // 완성된 본문을 영구 저장하고, 이야기의 최근 플레이 시각을 갱신한다.
@@ -161,6 +167,48 @@ export default async function handler(req, res) {
     const 사유 = err?.message || String(err);
     console.error('[서고] 클로드 호출 오류:', 사유);
     res.write(`\n\n[서고 오류] 본문 생성에 실패했습니다: ${사유}`);
+    res.end();
+  }
+}
+
+// ── 교정 서브모드 — 한 화 원본을 딥시크로 교정·스트리밍하고 turns.polished에 저장 ──────────
+//  교정은 어떤 모델이 쓴 화든 딥시크가 한다(빌더 확정 2026-06-25). 세계관·인물 없음(§3 — 교정에 필요한 것만).
+const POLISH_MODEL = 'deepseek-v4-pro';
+async function handlePolish(req, res) {
+  const key = 서술자키(POLISH_MODEL);
+  if (!key) {
+    res.status(400).setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.end('[서고] DEEPSEEK_API_KEY 가 없습니다.');
+    return;
+  }
+  const turnId = req.body?.turn_id ? Number(req.body.turn_id) : null;
+  if (!turnId) {
+    res.status(400).setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.end('[서고] 잘못된 교정 요청입니다.');
+    return;
+  }
+  const { content: 원본 } = await getTurnContent(turnId);
+  if (!원본?.trim()) {
+    res.status(400).setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.end('[서고] 교정할 본문이 없습니다.');
+    return;
+  }
+
+  const client = 서술자클라이언트(POLISH_MODEL);
+  res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
+  try {
+    const { text: 교정본 } = await 본문교정({ client, model: POLISH_MODEL, draft: 원본, write: (s) => res.write(s) });
+    if (교정본.trim()) {
+      const save = await savePolished(turnId, 교정본);
+      if (save.error) res.write(`\n\n[서고 오류] 교정본을 기록하지 못했습니다: ${save.error}`);
+    }
+    res.end();
+  } catch (err) {
+    const 사유 = err?.message || String(err);
+    console.error('[서고] 교정 오류:', 사유);
+    res.write(`\n\n[서고 오류] 교정에 실패했습니다: ${사유}`);
     res.end();
   }
 }

@@ -4,7 +4,7 @@
 //   DELETE ?id=123     → 한 턴 삭제
 //   DELETE ?story_id=7 → 그 장의 본문 전체 비우기(환원 — 연대 문헌도 함께 사라짐)
 
-import { loadTurns, updateTurn, deleteTurn, clearTurns, dbReady } from '../lib/db.mjs';
+import { loadTurns, updateTurn, deleteTurn, clearTurns, dbReady, setPolishedShow } from '../lib/db.mjs';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -16,9 +16,15 @@ export default async function handler(req, res) {
       return;
     }
     if (req.method === 'POST') {
-      const { id, content } = req.body || {};
+      const { id, content, polished_show } = req.body || {};
       if (!id) {
         res.status(400).end(JSON.stringify({ error: 'id가 필요합니다.' }));
+        return;
+      }
+      // 보기 토글만 영속화(원본↔교정본) — content 없이 polished_show만 온 경우.
+      if (content === undefined && polished_show !== undefined) {
+        const r = await setPolishedShow(Number(id), polished_show);
+        res.status(r.error ? 500 : 200).end(JSON.stringify(r));
         return;
       }
       const r = await updateTurn(Number(id), String(content ?? ''));
