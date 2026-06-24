@@ -39,14 +39,23 @@ for (const 파일 of 박제문서) {
 
 const SYSTEM = `${머리말}\n\n${조각.join('\n\n---\n\n')}`;
 
-// ─── DeepSeek 서술자 한정 본문 보정 ───────────────────────────────────────
-//  SYSTEM(박제 4종 = 모든 모델 공통)과 별개. DeepSeek에만 덧대는 절제 지침(lib/llm.mjs 모델별지침).
+// ─── DeepSeek 서술자 한정 본문 보정(교정 패스용) ─────────────────────────
+//  SYSTEM(박제 4종 = 모든 모델 공통)과 별개. DeepSeek '교정' 버튼에서 쓰는 절제 지침(lib/llm.mjs 교정역할).
 //  빌더는 worldview/딥시크_보정지침.md 만 고치고 'npm run bake' 하면 된다.
 let DEEPSEEK_TUNING = '';
 try {
   DEEPSEEK_TUNING = fs.readFileSync(path.join(srcDir, '딥시크_보정지침.md'), 'utf-8').trim();
 } catch {
   console.warn('[bake] 딥시크_보정지침.md 못 찾음 (DeepSeek 보정 건너뜀)');
+}
+
+// ─── DeepSeek 서술자 한정 본문 작법(생성 패스용) — '감각 먼저' 순서 원칙(설명충 완화) ───
+//  생성 단계에 가볍게 덧대 처음부터 덜 설명하게 한다(lib/llm.mjs 생성지침). 교정(보정지침)과 짝.
+let DEEPSEEK_CRAFT = '';
+try {
+  DEEPSEEK_CRAFT = fs.readFileSync(path.join(srcDir, '딥시크_생성지침.md'), 'utf-8').trim();
+} catch {
+  console.warn('[bake] 딥시크_생성지침.md 못 찾음 (DeepSeek 작법 건너뜀)');
 }
 
 // ─── DeepSeek 서술자 한정 '성인향 수위 가산'(한 단계 위) — 베이스 성인향 지침 위에 얹음 ───
@@ -87,14 +96,17 @@ const out =
   `export const NAMES = ${JSON.stringify(Object.keys(dict))};\n` +
   '// { 한글 → 영문 } — 서신(letters) 영문 서명 폴백용(명부 미등록 인연도 사전 표기로 서명).\n' +
   `export const NAME_DICT = ${JSON.stringify(dict)};\n` +
-  '// DeepSeek 서술자 한정 본문 보정(SYSTEM·박제 4종과 별개) — lib/llm.mjs 모델별지침()이 DeepSeek일 때만 시스템 끝에 덧댐.\n' +
+  '// DeepSeek 한정 본문 보정(교정 패스) — lib/llm.mjs 교정역할과 함께 \'교정\' 버튼 호출 system에 들어감.\n' +
   `export const DEEPSEEK_TUNING = ${JSON.stringify(DEEPSEEK_TUNING)};\n` +
-  '// DeepSeek 한정 성인향 수위 가산(한 단계 위) — 베이스 성인향 지침 위에 얹음. 모델별지침()이 DeepSeek일 때 덧댐.\n' +
+  '// DeepSeek 한정 본문 작법(생성 패스) — \'감각 먼저\' 순서 원칙. 생성지침()이 DeepSeek 생성 system에 가볍게 덧댐.\n' +
+  `export const DEEPSEEK_CRAFT = ${JSON.stringify(DEEPSEEK_CRAFT)};\n` +
+  '// DeepSeek 한정 성인향 수위 가산(한 단계 위) — 베이스 성인향 지침 위에 얹음. 생성지침()이 DeepSeek일 때 덧댐.\n' +
   `export const DEEPSEEK_ADULT = ${JSON.stringify(DEEPSEEK_ADULT)};\n`;
 fs.writeFileSync(path.join(libDir, 'worldview.mjs'), out, 'utf-8');
 
 console.log(`[bake] 세계관 박제 ${SYSTEM.length.toLocaleString()}자 → lib/worldview.mjs`);
-if (DEEPSEEK_TUNING) console.log(`[bake] DeepSeek 보정 ${DEEPSEEK_TUNING.length.toLocaleString()}자 → DEEPSEEK_TUNING`);
+if (DEEPSEEK_TUNING) console.log(`[bake] DeepSeek 보정(교정) ${DEEPSEEK_TUNING.length.toLocaleString()}자 → DEEPSEEK_TUNING`);
+if (DEEPSEEK_CRAFT) console.log(`[bake] DeepSeek 작법(생성) ${DEEPSEEK_CRAFT.length.toLocaleString()}자 → DEEPSEEK_CRAFT`);
 if (DEEPSEEK_ADULT) console.log(`[bake] DeepSeek 수위가산 ${DEEPSEEK_ADULT.length.toLocaleString()}자 → DEEPSEEK_ADULT`);
 
 const nameOut =
