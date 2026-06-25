@@ -487,19 +487,35 @@ export default function App() {
   function 턴수정시작(t: Turn) {
     if (t.id == null) return;
     setEditingTurn(t.id);
-    setEditText(t.content);
+    setEditText(표시본(t)); // 보고 있는 것을 편집 — 교정본 보는 중이면 교정본, 아니면 원본
   }
 
   async function 턴저장(id: number) {
-    const content = editText;
-    // 내용을 고치면 기존 교정본은 낡으니 비우고 보기를 원본으로(서버 updateTurn도 같이 비움).
-    setTurns((prev) => prev.map((x) => (x.id === id ? { ...x, content, polished: undefined, polished_show: false } : x)));
+    const text = editText;
+    const t = turns.find((x) => x.id === id);
+    const 교정본보는중 = !!(t && t.polished != null && t.polished_show);
     setEditingTurn(null);
+    if (교정본보는중) {
+      // 교정본을 수정 → polished만 갱신(원본·요약 불변, 복원하면 원본 그대로).
+      setTurns((prev) => prev.map((x) => (x.id === id ? { ...x, polished: text } : x)));
+      try {
+        await fetch('/api/turns', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id, polished: text }),
+        });
+      } catch {
+        /* 무시 */
+      }
+      return;
+    }
+    // 원본을 수정 → content 갱신. 기존 교정본은 낡으니 비우고 보기를 원본으로(서버 updateTurn도 같이 비움).
+    setTurns((prev) => prev.map((x) => (x.id === id ? { ...x, content: text, polished: undefined, polished_show: false } : x)));
     try {
       await fetch('/api/turns', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ id, content }),
+        body: JSON.stringify({ id, content: text }),
       });
     } catch {
       /* 무시 */

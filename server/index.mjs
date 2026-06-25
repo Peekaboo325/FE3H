@@ -78,16 +78,22 @@ app.get('/api/turns', async (req, res) => {
   res.json({ dbReady: dbReady(), turns: result.turns, error: result.error });
 });
 
-// 한 턴 수정 / 삭제 / 보기 토글
+// 한 턴 수정 / 삭제 / 보기 토글 / 교정본 수정
 app.post('/api/turns', async (req, res) => {
-  const { id, content, polished_show } = req.body || {};
+  const { id, content, polished, polished_show } = req.body || {};
   if (!id) {
     res.status(400).json({ error: 'id가 필요합니다.' });
     return;
   }
   // 보기 토글만 영속화(원본↔교정본) — content 없이 polished_show만 온 경우.
-  if (content === undefined && polished_show !== undefined) {
+  if (content === undefined && polished === undefined && polished_show !== undefined) {
     const r = await setPolishedShow(Number(id), polished_show);
+    res.status(r.error ? 500 : 200).json(r);
+    return;
+  }
+  // 교정본만 수정 — polished 칸만 갱신(원본·요약 불변).
+  if (content === undefined && polished !== undefined) {
+    const r = await savePolished(Number(id), String(polished ?? ''));
     res.status(r.error ? 500 : 200).json(r);
     return;
   }
