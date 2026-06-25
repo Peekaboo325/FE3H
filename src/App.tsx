@@ -8,6 +8,7 @@ import Guidance from './Guidance';
 import Stories from './Stories';
 import Menu, { type MenuItem } from './Menu';
 import StoryText from './StoryText';
+import AutoTextarea from './AutoTextarea';
 import LoadingIndicator from './Loading';
 import { hasAnchor } from './anchorDetect';
 import { stripMarkdown } from './podraScript';
@@ -134,7 +135,6 @@ export default function App() {
   );
   const 끝 = useRef<HTMLDivElement>(null);
   const 붙어있기 = useRef(true); // 바닥에 '붙어' 자동으로 따라갈지 — 위로 올라가 읽으면 false(따라가기 멈춤)
-  const editRef = useRef<HTMLTextAreaElement>(null);
   const composeRef = useRef<HTMLTextAreaElement>(null);
 
   function 모드전환() {
@@ -257,20 +257,7 @@ export default function App() {
     setPendingJump(turnId); // 위 effect가 렌더 후 스크롤
   }
 
-  // 편집박스 높이를 내용 분량에 맞춰 자동 조절 — 상한 없이 내용만큼 통째로 자란다.
-  // (상한을 두면 박스 '내부' 스크롤이 생기는데, iOS는 내부 스크롤에서 커서를 키보드에
-  //  딱 붙여 놓아 고치기 힘들다 — 바깥(.scroll) 스크롤로 넘겨야 scroll-padding 숨통이 먹는다)
-  useEffect(() => {
-    const el = editRef.current;
-    if (!el) return;
-    // ⚠️ height='auto'로 재는 순간 칸이 접혀 .scroll 높이가 출렁 → 매 입력(스페이스 등)마다
-    //  스크롤이 튀는 '널뛰기'. 높이를 재기 직전 스크롤 위치를 붙잡아 재고 나서 되돌린다.
-    const sc = document.querySelector('main.scroll');
-    const prev = sc ? sc.scrollTop : 0;
-    el.style.height = 'auto';
-    el.style.height = el.scrollHeight + 'px';
-    if (sc && sc.scrollTop !== prev) sc.scrollTop = prev;
-  }, [editText, editingTurn]);
+  // (수정칸 자동 높이는 src/AutoTextarea.tsx가 자체 처리 — 초안·일반 수정 둘 다 그 컴포넌트를 쓴다.)
 
   // 입력칸도 분량에 맞춰 자동 높이(처음 1줄 → 줄바꿈 시 늘어남, 40vh 상한).
   useEffect(() => {
@@ -747,7 +734,7 @@ export default function App() {
                 <div className="draft-label">전개 초안</div>
                 {dEditing ? (
                   <div className="turn-edit">
-                    <textarea value={editText} onChange={(e) => setEditText(e.target.value)} rows={3} />
+                    <AutoTextarea value={editText} onChange={setEditText} />
                     <div className="turn-actions">
                       <button
                         className="turn-btn"
@@ -809,12 +796,7 @@ export default function App() {
             >
               {editing ? (
                 <div className="turn-edit">
-                  <textarea
-                    ref={editRef}
-                    value={editText}
-                    onChange={(e) => setEditText(e.target.value)}
-                    rows={2}
-                  />
+                  <AutoTextarea value={editText} onChange={setEditText} />
                   <div className="turn-actions">
                     <button className="turn-btn" title={UI.save} onClick={() => 턴저장(editingTurn!)}>
                       <Check size={16} />
