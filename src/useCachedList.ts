@@ -11,6 +11,10 @@ import { idbGet, idbSet } from './idbCache';
 // ─────────────────────────────────────────────────────────────────────────
 
 const mem: Record<string, unknown[] | undefined> = {};
+const fetchedAt: Record<string, number> = {}; // 마지막으로 서버에서 받아온 시각(ms). 짧은 새 안의 중복 재다운로드를 막는다.
+const TTL = 5 * 60 * 1000; // 5분 — 같은 목록을 이 안에 다시 열어도 서버를 다시 치지 않는다(egress 절감의 핵심).
+//  ⚠️ 인물 목록엔 base64 초상·얼굴이 실려 한 번 받는 비용이 크다 → 마운트마다 재다운로드하던 것이
+//     수파베이스 egress를 폭증시킨 주범이었다. 저장·삭제는 force로 즉시 갱신하므로 내 변경은 바로 보인다.
 
 export function useCachedList<T>(endpoint: string | null, cacheKey: string, itemsKey: string) {
   const seed = endpoint ? ((mem[cacheKey] as T[] | undefined) ?? null) : ([] as T[]);
@@ -19,11 +23,17 @@ export function useCachedList<T>(endpoint: string | null, cacheKey: string, item
   const [dbReady, setDbReady] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
+  // force=true(기본): 무조건 새로 받는다 — 저장·삭제·반입 직후의 명시적 갱신.
+  // force=false: 마지막 수신이 TTL 안이면 건너뛴다 — 마운트마다 같은 목록을 또 내려받지 않는다.
+  const refresh = useCallback(async (force = true) => {
     if (!endpoint) {
       setItems([]);
       setLoading(false);
       return;
+    }
+    if (!force && fetchedAt[cacheKey] && Date.now() - fetchedAt[cacheKey] < TTL) {
+      setLoading(false);
+      return; // 신선한 캐시 — 서버를 치지 않는다.
     }
     try {
       const res = await fetch(endpoint);
@@ -32,6 +42,7 @@ export function useCachedList<T>(endpoint: string | null, cacheKey: string, item
       setErr(data.error || null);
       const list: T[] = Array.isArray(data[itemsKey]) ? data[itemsKey] : [];
       mem[cacheKey] = list as unknown[];
+      fetchedAt[cacheKey] = Date.now();
       setItems(list);
       idbSet(cacheKey, list).catch(() => {});
     } catch (e) {
@@ -59,7 +70,7 @@ export function useCachedList<T>(endpoint: string | null, cacheKey: string, item
         })
         .catch(() => {});
     }
-    refresh();
+    refresh(false); // 마운트 시엔 TTL 존중 — 신선하면 재다운로드 생략.
     return () => {
       alive = false;
     };
