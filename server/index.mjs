@@ -46,6 +46,7 @@ import { listLetters, updateLetter, deleteLetter } from '../lib/db.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 import { loadTurnsForSummary, getTurnContent, setTurnSummary, savePolished, setPolishedShow } from '../lib/db.mjs';
+import { migratePortraits } from '../lib/storage.mjs';
 import { runRestock, procureItem, SHOPS } from '../lib/supply.mjs';
 import { getSupply } from '../lib/db.mjs';
 import { summarizeEpisode } from '../lib/summarize.mjs';
@@ -189,6 +190,12 @@ app.post('/api/guidance', async (req, res) => {
 
 // ── 인물 프로필 (목록/저장/삭제) ──────────────────────────────────────────
 app.get('/api/characters', async (req, res) => {
+  // 한 번 돌리는 이전 — 기존 인물의 base64 초상을 Storage로 옮긴다(멱등). 브라우저로 주소만 열면 실행.
+  if (req.query?.migrate === 'portraits') {
+    const r = await migratePortraits();
+    res.status(r.error ? 500 : 200).json(r);
+    return;
+  }
   const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
   const { characters, error } = await listCharacters(storyId);
   res.json({ dbReady: dbReady(), characters, error });
