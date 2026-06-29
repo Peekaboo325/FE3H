@@ -414,21 +414,25 @@ export default function App() {
       const 본문길이 = 받은.trim().length;
       if (storyId && 본문길이 > 0 && !받은.includes('[서고 오류]')) {
         // 연결만 끊기고 서버는 끝까지 생성·저장했을 수 있다 → 잠깐 폴링해 완성본을 받아온다(본문 완성+버튼 복구).
+        //  ⚠️ 마지막 턴 하나만 확인한다(?last=1) — 전 회차를 다시 받지 않는다(egress 절감).
         for (let 시도 = 0; 시도 < 6; 시도++) {
           try {
-            const r = await fetch(`/api/turns?story_id=${storyId}`);
+            const r = await fetch(`/api/turns?story_id=${storyId}&last=1`);
             const d = await r.json();
-            const fresh = Array.isArray(d?.turns) ? (d.turns as Turn[]) : [];
-            const 끝 = fresh[fresh.length - 1];
+            const 끝 = Array.isArray(d?.turns) ? (d.turns as Turn[])[d.turns.length - 1] : null;
             const 저장길이 = 끝?.role === 'assistant' ? (끝.content?.trim().length || 0) : -1;
-            if (저장길이 >= 본문길이) {
-              // ⚠️ 통째 교체(setTurns(fresh))는 스트리밍 칸의 key를 tmp→id로 바꿔 리마운트→스크롤 튐을 부른다.
-              //  길이가 맞으면 '제자리 패치': 새 칸엔 id·최종 본문만 채우고 _key는 유지(앞 칸은 그대로 = 리마운트 0).
-              setTurns((prev) =>
-                fresh.length !== prev.length
-                  ? fresh // 정렬이 어긋나면 안전하게 통째로(드문 경우)
-                  : prev.map((t, idx) => (t.id == null && t._key ? { ...fresh[idx], _key: t._key } : t)),
-              );
+            if (끝 && 저장길이 >= 본문길이) {
+              // 화면의 마지막 칸이 스트리밍 placeholder(id 없음·_key 있음)면 저장된 id·최종 본문을 제자리 패치.
+              //  _key는 유지 → 리마운트 없음(스크롤 튐 방지). 구조가 예상과 다르면 그대로 둔다(부분 본문 유지).
+              setTurns((prev) => {
+                const last = prev[prev.length - 1];
+                if (last && last.id == null && last._key) {
+                  const patched = prev.slice();
+                  patched[patched.length - 1] = { ...(끝 as Turn), _key: last._key };
+                  return patched;
+                }
+                return prev;
+              });
               break;
             }
           } catch {

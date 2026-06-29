@@ -13,6 +13,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
 import {
   loadTurns,
+  loadLastTurn,
   saveTurn,
   updateTurn,
   deleteTurn,
@@ -72,7 +73,8 @@ app.get('/api/turns', async (req, res) => {
   const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
   let result = { turns: [], error: null };
   try {
-    result = await loadTurns(storyId);
+    // 복구 확인 — 마지막 턴만(전 회차 X). 끊긴 스트림이 서버엔 저장됐는지 가볍게 확인.
+    result = req.query?.last ? await loadLastTurn(storyId) : await loadTurns(storyId);
   } catch (e) {
     result = { turns: [], error: e?.message || String(e) };
   }
