@@ -50,6 +50,7 @@ import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 import { loadTurnsForSummary, getTurnContent, setTurnSummary, savePolished, setPolishedShow } from '../lib/db.mjs';
 import { migratePortraits } from '../lib/storage.mjs';
+import { 기록모티프 } from '../lib/motifs.mjs'; // 연출 소진 대장 갱신(반복 방지 B안)
 import { runRestock, procureItem, SHOPS } from '../lib/supply.mjs';
 import { getSupply } from '../lib/db.mjs';
 import { summarizeEpisode } from '../lib/summarize.mjs';
@@ -487,6 +488,7 @@ app.post('/api/story', async (req, res) => {
     if (본문.trim()) {
       await saveTurn('assistant', 본문, storyId);
       await touchStory(storyId);
+      await 기록모티프(storyId, 본문); // 연출 소진 대장 갱신(반복 방지 B안)
     }
     res.end();
   } catch (err) {
@@ -556,7 +558,10 @@ app.post('/api/regen', async (req, res) => {
     await 본문생성({ client, model, effort, system, messages, 게이트, tag: 'regen', 화수 });
     게이트.닫기();
     본문 = 게이트.값();
-    if (본문.trim()) await updateTurn(turnId, 본문, true); // 요약 무효화(재생성)
+    if (본문.trim()) {
+      await updateTurn(turnId, 본문, true); // 요약 무효화(재생성)
+      await 기록모티프(storyId, 본문); // 소진 대장에 새 버전 모티프도 반영
+    }
     res.end();
   } catch (err) {
     const 사유 = err?.message || String(err);

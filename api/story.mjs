@@ -19,6 +19,7 @@ import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 import { runEnrich } from '../lib/enrich.mjs';
+import { 기록모티프 } from '../lib/motifs.mjs'; // 연출 소진 대장 갱신(반복 방지 B안)
 import {
   parseAnchors,
   buildAnchorContext,
@@ -175,6 +176,7 @@ export default async function handler(req, res) {
     if (본문.trim()) {
       await saveTurn('assistant', 본문, storyId);
       await touchStory(storyId);
+      await 기록모티프(storyId, 본문); // 연출 소진 대장 갱신(다음 화 연출의 '되풀이 금지'용) — 실패해도 무해
     }
     res.end();
   } catch (err) {

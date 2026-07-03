@@ -6,6 +6,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { SYSTEM } from '../lib/worldview.mjs';
 import { updateTurn, loadCharactersForInjection, loadLoreForInjection, getGuidance } from '../lib/db.mjs';
+import { 기록모티프 } from '../lib/motifs.mjs'; // 연출 소진 대장 갱신(반복 방지 B안)
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
 import { 서술자키, 서술자클라이언트, 머리글게이트, 직전화날짜, 본문생성 } from '../lib/llm.mjs';
@@ -120,7 +121,10 @@ export default async function handler(req, res) {
     await 본문생성({ client, model, effort, system, messages, 게이트, tag: 'regen', 화수 });
     게이트.닫기();
     본문 = 게이트.값();
-    if (본문.trim()) await updateTurn(turnId, 본문, true); // 그 칸만 갱신 + 요약 무효화(재생성)
+    if (본문.trim()) {
+      await updateTurn(turnId, 본문, true); // 그 칸만 갱신 + 요약 무효화(재생성)
+      await 기록모티프(storyId, 본문); // 소진 대장에 새 버전 모티프도 반영(실패해도 무해)
+    }
     res.end();
   } catch (err) {
     const 사유 = err?.message || String(err);
