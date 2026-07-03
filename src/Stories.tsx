@@ -8,6 +8,7 @@ import Modal from './Modal';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
 import GenControls, { type GenConfig } from './Settings';
+import UsagePanel from './UsagePanel';
 
 type Story = { id: number; title: string; updated_at?: string };
 
@@ -289,6 +290,7 @@ export default function Stories({
             </ul>
           )}
           <GenControls config={genConfig} onChange={onGenChange} />
+          <UsagePanel />
         </div>
     </Modal>
   );

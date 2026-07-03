@@ -35,6 +35,8 @@ import {
   loadLoreForInjection,
   getGuidance,
   setGuidance,
+  getUsage,
+  resetUsage,
 } from '../lib/db.mjs';
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
@@ -117,7 +119,12 @@ app.delete('/api/turns', async (req, res) => {
 });
 
 // ── 이야기(세이브 슬롯) 관리 ──────────────────────────────────────────────
-app.get('/api/stories', async (_req, res) => {
+app.get('/api/stories', async (req, res) => {
+  if (req.query?.usage) {
+    // API 사용 내역(빌더 진단) — 천각의 박동 패널이 읽는다.
+    res.json({ usage: await getUsage() });
+    return;
+  }
   const { stories, error } = await listStories();
   res.json({ dbReady: dbReady(), stories, error });
 });
@@ -132,6 +139,11 @@ app.post('/api/stories', async (req, res) => {
 });
 
 app.delete('/api/stories', async (req, res) => {
+  if (req.query?.usage) {
+    const r = await resetUsage();
+    res.status(r.error ? 500 : 200).json(r);
+    return;
+  }
   const id = req.query?.id ?? req.body?.id;
   const r = await deleteStory(Number(id));
   res.status(r.error ? 500 : 200).json(r);

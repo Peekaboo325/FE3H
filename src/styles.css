@@ -2502,3 +2502,27 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 }
 .settings-opt:not(:disabled):hover { border-color: var(--accent); }
 .settings-opt.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface-2)); color: var(--accent); }
+
+/* API 사용 내역(빌더 진단) — 천각의 박동 하단. 평소엔 접어둘 수 있다. */
+.usage { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.usage--collapsed { align-items: flex-start; }
+.usage-head { display: flex; align-items: center; justify-content: space-between; }
+.usage-toggle {
+  background: none; border: none; color: var(--text-dim); font: inherit; font-size: 12.5px;
+  cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 2px;
+}
+.usage-toggle:hover { color: var(--accent); }
+.usage-empty { font-size: 12.5px; color: var(--text-dim); padding: 2px 0; }
+.usage-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.usage-row { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; }
+.usage-name { flex: 0 0 auto; color: var(--text); }
+.usage-meta { flex: 1 1 auto; color: var(--text-dim); font-variant-numeric: tabular-nums; text-align: right; }
+.usage-cost { flex: 0 0 auto; color: var(--accent); font-variant-numeric: tabular-nums; min-width: 66px; text-align: right; }
+.usage-total { margin-top: 2px; padding-top: 6px; border-top: 1px dashed var(--border); }
+.usage-total .usage-name { color: var(--text-dim); }
+.usage-reset {
+  align-self: flex-start; margin-top: 2px; background: none; border: none;
+  color: var(--text-dim); font: inherit; font-size: 12px; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.usage-reset:hover { color: var(--danger, #c0554e); }
