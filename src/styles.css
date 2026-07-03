@@ -270,43 +270,25 @@ body::before {
 .turn.story { color: var(--text); }
 .dim { color: var(--text-faint); }
 
-/* 전개된 유저 말풍선 = [초안](작가 1차) + [연출](콘티) 두 구역. 밋밋한 --- 대신 라벨 캡션 + 흐린 결로 나눈다. */
+/* 전개(초안·실행) 유저 말풍선 = [초안](작가 1차) + [연출](콘티)를 '한 박스' 안에서 캡션 + 내부 선으로 가른다.
+   캡션은 좌정렬(말풍선이 오른쪽 정렬돼도 내부는 왼쪽). --- 밋밋함 대체. */
 .composed-cap {
-  font-size: 11px; letter-spacing: 0.06em;
+  font-size: 11px; letter-spacing: 0.06em; text-align: left;
   color: color-mix(in srgb, var(--accent) 62%, var(--text-dim));
   margin-bottom: 4px;
 }
 .prompt-composed .composed-seed { color: var(--text-dim); }  /* 초안(작가 방향)은 한 톤 죽여 '날것'으로 구분 */
 .prompt-composed .composed-colt { color: var(--text); }       /* 연출은 기본 본문색 */
 .prompt-composed .composed-sep {
-  height: 1px; margin: 10px 0;
+  height: 1px; margin: 10px -13px;   /* 좌우 여백(13px)만큼 빼 박스 폭을 가득 가른다 */
   background: color-mix(in srgb, var(--accent) 22%, var(--border));
 }
-.prompt-composed .composed-cap:not(:first-child) { margin-top: 0; }
 
-/* 전개 초안(연출 콘티 2차) — 본문 아닌 '작가 길잡이'로 명확히 구분. 실행 전 게이트(딥시크). */
-.turn-draft .draft-label {
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--accent);
-  margin-bottom: 5px;
-}
+/* 전개 초안(연출 콘티 2차) — 본문 아닌 '작가 길잡이'로 금빛 톤 강조. 실행 전 게이트(딥시크). */
 .turn-draft .prompt-body {
   background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var(--surface)), var(--surface));
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
   color: var(--text);
-}
-/* 한 말풍선 안에 [유저 프롬프트(1차 원문)] --- [가공프롬프트(콘티)]. 1차는 '날것' 톤(강조 없음)으로 구분. */
-.turn-draft .draft-seed {
-  display: block;
-  background: var(--surface);
-  border-color: var(--border);
-  color: var(--text-dim);
-}
-.turn-draft .draft-sep {
-  height: 1px;
-  margin: 9px 0;
-  background: color-mix(in srgb, var(--accent) 30%, var(--border));
 }
 .turn-btn.draft-run {
   width: auto;

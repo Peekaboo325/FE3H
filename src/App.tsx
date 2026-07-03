@@ -35,8 +35,11 @@ type Turn = {
 //  (교정 스트림 시작 직후 polished=''(빈 문자열)은 falsy → 원본으로 떨어져 깜빡임 없음.)
 const 표시본 = (t: Turn) => (t.polished_show && t.polished ? t.polished : t.content);
 
-// 전개된 유저 말풍선 = '[초안](작가 1차 방향)' + '[연출](콘티)' 합본. 표시용으로 두 구역을 갈라낸다.
-//  새 형식: "[초안]\n…\n\n[연출]\n…"   / 옛 형식(잔존 데이터): "…\n\n---\n\n…"  둘 다 인식.
+// 전개된 유저 말풍선 = '[초안](작가 1차 방향)' + '[연출](콘티)' 합본. 표시·저장·편집이 같은 형식을 공유한다.
+//  형식: "[초안]\n{seed}\n\n[연출]\n{colt}"  (seed 없으면 colt만). 옛 "…\n\n---\n\n…"도 분해에서 인식.
+function 합본조립(seed: string | undefined, colt: string): string {
+  return seed && seed.trim() ? `[초안]\n${seed.trim()}\n\n[연출]\n${colt}` : colt;
+}
 function 합본분해(content: string): { seed: string; colt: string } | null {
   const m = content.match(/^\[초안\]\n([\s\S]*?)\n\n\[연출\]\n([\s\S]*)$/);
   if (m) return { seed: m[1].trim(), colt: m[2].trim() };
@@ -45,19 +48,24 @@ function 합본분해(content: string): { seed: string; colt: string } | null {
   return null;
 }
 
-// 유저 말풍선 본문 — 초안+연출 합본이면 [초안]/[연출] 캡션과 흐린 결로 나눠 그린다(밋밋한 --- 대체).
+// 초안+연출을 한 말풍선 안에서 [초안]/[연출] 캡션과 내부 선으로 가른다(박스 하나·좌정렬).
+function ComposedBody({ seed, colt, className }: { seed: string; colt: string; className?: string }) {
+  return (
+    <div className={'prompt-body prompt-composed' + (className ? ' ' + className : '')}>
+      <div className="composed-cap">[초안]</div>
+      <div className="composed-seed">{seed}</div>
+      <div className="composed-sep" />
+      <div className="composed-cap">[연출]</div>
+      <div className="composed-colt">{colt}</div>
+    </div>
+  );
+}
+
+// 유저 말풍선 본문 — 초안+연출 합본이면 갈라 그리고, 아니면 그냥 한 덩이.
 function UserBody({ content }: { content: string }) {
   const parts = 합본분해(content);
   if (!parts) return <div className="prompt-body">{content}</div>;
-  return (
-    <div className="prompt-body prompt-composed">
-      <div className="composed-cap">[초안]</div>
-      <div className="composed-seed">{parts.seed}</div>
-      <div className="composed-sep" />
-      <div className="composed-cap">[연출]</div>
-      <div className="composed-colt">{parts.colt}</div>
-    </div>
-  );
+  return <ComposedBody seed={parts.seed} colt={parts.colt} />;
 }
 
 type Story = { id: number; title: string };
@@ -386,9 +394,8 @@ export default function App() {
   async function 실행(i: number) {
     if (busy) return;
     const colt = turns[i]?.content || '';
-    const seed = turns[i]?.seed || '';
     // [초안](작가 1차 방향) + [연출](콘티) 라벨 합본 — 표시가 두 구역으로 갈라 그리고, 모델도 라벨로 둘을 구분.
-    const 합본 = seed ? `[초안]\n${seed}\n\n[연출]\n${colt}` : colt;
+    const 합본 = 합본조립(turns[i]?.seed, colt);
     const 다음: Turn[] = [
       ...turns.map((t, idx) => (idx === i ? { ...t, content: 합본, draft: undefined, seed: undefined } : t)),
       { role: 'assistant', content: '', _key: nk() },
@@ -778,7 +785,6 @@ export default function App() {
             const dEditing = draftEdit === i;
             return (
               <div key={t._key ?? 'draft-' + i} className="turn user turn-draft">
-                <div className="draft-label">전개 초안</div>
                 {dEditing ? (
                   <div className="turn-edit">
                     <AutoTextarea value={editText} onChange={setEditText} />
@@ -787,7 +793,17 @@ export default function App() {
                         className="turn-btn"
                         title={UI.save}
                         onClick={() => {
-                          setTurns((p) => p.map((x, idx) => (idx === i ? { ...x, content: editText } : x)));
+                          // 편집칸엔 [초안]+[연출] 합본이 들어 있다 → 다시 seed/콘티로 갈라 저장(초안 제거 시 seed 비움).
+                          const parts = 합본분해(editText);
+                          setTurns((p) =>
+                            p.map((x, idx) =>
+                              idx === i
+                                ? parts
+                                  ? { ...x, seed: parts.seed, content: parts.colt }
+                                  : { ...x, seed: undefined, content: editText }
+                                : x,
+                            ),
+                          );
                           setDraftEdit(null);
                         }}
                       >
@@ -800,15 +816,11 @@ export default function App() {
                   </div>
                 ) : (
                   <>
-                    {t.seed && (
-                      <>
-                        <div className="composed-cap">[초안]</div>
-                        <div className="prompt-body draft-seed">{t.seed}</div>
-                        <div className="draft-sep" />
-                        <div className="composed-cap">[연출]</div>
-                      </>
+                    {t.seed ? (
+                      <ComposedBody seed={t.seed} colt={t.content} />
+                    ) : (
+                      <div className="prompt-body">{t.content}</div>
                     )}
-                    <div className="prompt-body">{t.content}</div>
                     {mode === 'write' && (
                       <div className={'turn-actions' + (busy ? ' turn-actions--busy' : '')}>
                         <button className="turn-btn draft-run" onClick={() => 실행(i)} disabled={busy}>
@@ -821,7 +833,7 @@ export default function App() {
                           className="turn-btn"
                           title={UI.edit}
                           onClick={() => {
-                            setEditText(t.content);
+                            setEditText(합본조립(t.seed, t.content)); // 초안까지 함께 편집
                             setDraftEdit(i);
                           }}
                         >
