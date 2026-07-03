@@ -116,14 +116,15 @@ const nk = () => 'ck' + ++_kc;
 
 // 본문 생성 설정(모델·사고 깊이) — 빌더가 앱 '설정'에서 고르고 localStorage에 남는다. /api/story·regen 본문으로 보냄.
 const GEN_KEY = 'genCfg';
-// 연출·교정 모델 기본 = Flash·DeepSeek(현행 유지·추가 비용 0). 빌더가 설정에서 Sonnet/Opus로 올려 품질↑(비용↑).
+// 연출·교정 모델 기본 = DeepSeek(본문과 같은 모델·추가 비용 최소). 빌더가 설정에서 Sonnet/Opus로 올려 품질↑(비용↑).
 const DEFAULT_GEN: GenConfig = {
   model: 'deepseek-v4-pro',
   effort: 'medium',
   enrich: true,
-  conti: 'gemini-2.5-flash',
+  conti: 'deepseek-v4-pro',
   polish: 'deepseek-v4-pro',
 };
+const CONTI_IDS = ['deepseek-v4-pro', 'claude-sonnet-4-6', 'claude-opus-4-8']; // 연출 모델 유효값(옛 gemini는 default로 강등)
 function loadGenCfg(): GenConfig {
   try {
     const p = JSON.parse(localStorage.getItem(GEN_KEY) || 'null');
@@ -132,7 +133,7 @@ function loadGenCfg(): GenConfig {
         model: p.model || DEFAULT_GEN.model,
         effort: p.effort || DEFAULT_GEN.effort,
         enrich: p.enrich !== false,
-        conti: p.conti || DEFAULT_GEN.conti,
+        conti: CONTI_IDS.includes(p.conti) ? p.conti : DEFAULT_GEN.conti, // 옛 저장값 gemini → deepseek
         polish: p.polish || DEFAULT_GEN.polish,
       };
   } catch {
