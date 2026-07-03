@@ -180,6 +180,66 @@ export default function App() {
   const 붙어있기 = useRef(true); // 바닥에 '붙어' 자동으로 따라갈지 — 위로 올라가 읽으면 false(따라가기 멈춤)
   const composeRef = useRef<HTMLTextAreaElement>(null);
 
+  // 백그라운드 이탈 → 복귀 동기화(Fix B) — 폰을 내렸다 돌아왔을 때 서버가 저장한 완성본을 새로고침 없이 채운다.
+  //  Fix A가 '유실 없음'을 보장하고, 여기선 '자동 표시'만 맡는다. ⚠️ 살아있는 스트림은 절대 안 건드린다:
+  //  busy가 스스로 풀리면(정상 종료) 즉시 멈추고, 서버에 '완성된 assistant 저장본'이 있을 때만 스트리밍
+  //  placeholder(id 없음)를 제자리 패치(스크롤 안 튐). 부르는 건 마지막 턴 하나(?last=1)뿐 — egress 티끌.
+  const busyRef = useRef(busy);
+  busyRef.current = busy;
+  const storyIdRef = useRef(storyId);
+  storyIdRef.current = storyId;
+  const turnsRef = useRef(turns);
+  turnsRef.current = turns;
+  const hiddenBusyRef = useRef(false);
+  useEffect(() => {
+    let 동기화중 = false;
+    const 복귀동기화 = async () => {
+      if (동기화중) return;
+      동기화중 = true;
+      try {
+        const sid = storyIdRef.current;
+        await new Promise((r) => setTimeout(r, 1500)); // 살아있던 스트림이 스스로 끝날 여지
+        for (let i = 0; i < 6; i++) {
+          if (!busyRef.current || !sid) return; // 스트림이 정상 종료(자체 복구)했거나 장이 없으면 손 안 댐
+          try {
+            const r = await fetch(`/api/turns?story_id=${sid}&last=1`);
+            const d = await r.json();
+            const 끝턴 = Array.isArray(d?.turns) ? (d.turns as Turn[])[d.turns.length - 1] : null;
+            const last = turnsRef.current[turnsRef.current.length - 1];
+            // 서버에 완성된 본문이 있고, 화면 마지막이 스트리밍 placeholder(id 없음)일 때만 제자리 패치.
+            if (끝턴?.role === 'assistant' && 끝턴.content?.trim() && last && last.id == null && last._key) {
+              const key = last._key;
+              setTurns((prev) => {
+                const pl = prev[prev.length - 1];
+                if (!pl || pl.id != null) return prev; // 그새 정상 복구됐으면 그대로
+                const p = prev.slice();
+                p[p.length - 1] = { ...(끝턴 as Turn), _key: key };
+                return p;
+              });
+              setBusy(false); // 죽은 스트림이 못 푼 잠금 해제
+              return;
+            }
+          } catch {
+            /* 다음 시도 */
+          }
+          await new Promise((r) => setTimeout(r, 3000));
+        }
+      } finally {
+        hiddenBusyRef.current = false;
+        동기화중 = false;
+      }
+    };
+    const onVis = () => {
+      if (document.visibilityState === 'hidden') {
+        if (busyRef.current) hiddenBusyRef.current = true; // 생성 중에 백그라운드로 감
+      } else if (hiddenBusyRef.current) {
+        복귀동기화();
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+
   function 모드전환() {
     setMode((m) => {
       const next = m === 'read' ? 'write' : 'read';
