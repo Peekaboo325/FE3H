@@ -361,7 +361,11 @@ app.post('/api/story', async (req, res) => {
   // 윤색(연출 콘티) 전처리 — 본문 스트리밍 전, 짧은 1차를 2차 콘티로 펼쳐 JSON 반환(api/story.mjs와 같은 결).
   if (req.body?.enrich) {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    const r = await runEnrich({ storyId: req.body?.story_id ?? null, prompt: req.body?.prompt });
+    const r = await runEnrich({
+      storyId: req.body?.story_id ?? null,
+      prompt: req.body?.prompt,
+      model: req.body?.conti_model, // 연출 모델(Flash/Sonnet/Opus)
+    });
     return res.status(r.error ? 500 : 200).end(JSON.stringify(r));
   }
   // 교정(유저가 '교정' 버튼) — 원본을 딥시크로 교정·스트리밍하고 turns.polished에 저장(api/story.mjs와 같은 결).

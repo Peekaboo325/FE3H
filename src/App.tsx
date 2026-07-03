@@ -116,7 +116,8 @@ const nk = () => 'ck' + ++_kc;
 
 // 본문 생성 설정(모델·사고 깊이) — 빌더가 앱 '설정'에서 고르고 localStorage에 남는다. /api/story·regen 본문으로 보냄.
 const GEN_KEY = 'genCfg';
-const DEFAULT_GEN: GenConfig = { model: 'deepseek-v4-pro', effort: 'medium', enrich: true }; // Opus 잠깐 걷어둠(2026-06-19, 비용). 연출 콘티 기본 켬(딥시크 보강)
+// 연출 모델 기본 = Flash(현행 유지·추가 비용 0). 빌더가 설정에서 Sonnet/Opus로 올려 품질↑(비용↑).
+const DEFAULT_GEN: GenConfig = { model: 'deepseek-v4-pro', effort: 'medium', enrich: true, conti: 'gemini-2.5-flash' };
 function loadGenCfg(): GenConfig {
   try {
     const p = JSON.parse(localStorage.getItem(GEN_KEY) || 'null');
@@ -125,6 +126,7 @@ function loadGenCfg(): GenConfig {
         model: p.model || DEFAULT_GEN.model,
         effort: p.effort || DEFAULT_GEN.effort,
         enrich: p.enrich !== false,
+        conti: p.conti || DEFAULT_GEN.conti,
       };
   } catch {
     /* 기본값으로 */
@@ -337,7 +339,7 @@ export default function App() {
       const res = await fetch('/api/story', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ enrich: true, prompt: seed, story_id: storyId }),
+        body: JSON.stringify({ enrich: true, prompt: seed, story_id: storyId, conti_model: genCfg.conti }),
       });
       const d = await res.json().catch(() => ({}) as { colt?: string; error?: string });
       if (!res.ok || d.error || !d.colt) {
@@ -366,7 +368,7 @@ export default function App() {
       const res = await fetch('/api/story', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ enrich: true, prompt: seed, story_id: storyId }),
+        body: JSON.stringify({ enrich: true, prompt: seed, story_id: storyId, conti_model: genCfg.conti }),
       });
       const d = await res.json().catch(() => ({}) as { colt?: string; error?: string });
       if (!res.ok || d.error || !d.colt) {

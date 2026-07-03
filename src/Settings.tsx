@@ -2,11 +2,17 @@
 //  값은 App이 localStorage에 남기고 /api/story·regen 본문으로 보낸다(서버가 genConfig로 검증).
 //  ※ 빌더용 셋업 컨트롤이라 기술어를 남겨둔다(CLAUDE.md §1 예외).
 
-export type GenConfig = { model: string; effort: string; enrich: boolean };
+export type GenConfig = { model: string; effort: string; enrich: boolean; conti: string };
 
 const MODELS = [
   // ⚠️ Opus 4.8 잠깐 걷어둠(2026-06-19, 비용 사고) — 복구: { id: 'claude-opus-4-8', label: 'Opus 4.8' } 다시 추가
   { id: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro' },
+];
+// 연출 모델(콘티 2차) — Flash(싸고 빠름·연출 약함) / Sonnet·Opus(연출 강함, 비용↑). 서버 enrich가 허용목록 검증.
+const CONTI = [
+  { id: 'gemini-2.5-flash', label: 'Flash' },
+  { id: 'claude-sonnet-4-6', label: 'Sonnet' },
+  { id: 'claude-opus-4-8', label: 'Opus' },
 ];
 // 사고 깊이 = 클로드 effort. '낮음/중간'은 '높음'을 기대하게 해 어색 → 단계 표기(1단계=low, 2단계=medium).
 const EFFORTS = [
@@ -82,6 +88,14 @@ export default function GenControls({
         value={config.enrich ? 'on' : 'off'}
         onPick={(v) => onChange({ ...config, enrich: v === 'on' })}
         disabled={!isDeep}
+      />
+      {/* 연출 모델 — 콘티를 어느 모델이 짓나. 딥시크 + 연출 콘티 켬일 때만 의미(그 외 비활성). */}
+      <Group
+        label="연출 모델"
+        options={CONTI}
+        value={config.conti}
+        onPick={(conti) => onChange({ ...config, conti })}
+        disabled={!isDeep || !config.enrich}
       />
     </div>
   );
