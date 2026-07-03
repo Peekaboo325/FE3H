@@ -2501,14 +2501,21 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 
 /* API 사용 내역(빌더 진단) — 천각의 박동 하단. 평소엔 접어둘 수 있다.
    각 모델 = 2줄 카드(윗줄 이름…금액 / 아랫줄 상세) → 좁은 화면에서도 위계가 안 뭉갬. */
-.usage { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
-.usage-head { display: flex; align-items: baseline; justify-content: space-between; }
-.usage-title { font-size: 13px; color: var(--text-dim); }
-.usage-toggle {
-  background: none; border: none; color: var(--text-dim); font: inherit; font-size: 12.5px;
-  cursor: pointer; padding: 0;
+/* 천각의 박동 탭 바 — 기록 관리 / 집필 설정 / 사용 내역. (인물 뷰 .char-tabs와 결은 같되 모바일 스티키 얽힘 없이 독립) */
+.modal-tabs { display: flex; margin: 2px 0 0; border-bottom: 1px solid var(--border); }
+.modal-tab {
+  flex: 1 1 0; min-width: 0; padding: 11px 8px; margin-bottom: -1px;
+  border: none; border-bottom: 2px solid transparent; background: none;
+  color: var(--text-dim); font: inherit; font-size: 13.5px; white-space: nowrap;
+  cursor: pointer; transition: color 0.15s, border-color 0.15s;
 }
-.usage-toggle:hover { color: var(--accent); }
+.modal-tab:hover { color: var(--text); }
+.modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.tab-panel { padding-top: 16px; }
+/* 탭 안에선 설정 패널의 '위 구분선/여백'을 없앤다(위에 아무것도 없으므로). */
+.tab-panel > .settings { margin-top: 0; padding-top: 0; border-top: none; }
+
+.usage { display: flex; flex-direction: column; gap: 12px; }
 .usage-empty { font-size: 12.5px; color: var(--text-dim); }
 .usage-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .usage-row { display: flex; flex-direction: column; gap: 3px; }

@@ -33,6 +33,7 @@ export default function Stories({
   const [renamingId, setRenamingId] = useState<number | null>(null); // 개칭 중인 장
   const [renameText, setRenameText] = useState('');
   const [menuId, setMenuId] = useState<number | null>(null); // ⋯ 더보기 메뉴 펼친 장
+  const [tab, setTab] = useState<'records' | 'writing' | 'usage'>('records'); // 천각의 박동 탭
 
   // 메뉴 바깥을 누르면 닫는다(여는 클릭이 바로 닫지 않게 다음 틱부터 듣는다).
   useEffect(() => {
@@ -174,18 +175,51 @@ export default function Stories({
 
   return (
     <Modal onClose={onClose} title="천각의 박동">
-        {!dbReady && (
-          <p className="warn">기록의 샘이 닿지 않아 운명의 장을 기록하거나 갈무리할 수 없습니다.</p>
-        )}
-        {dbReady && err && (
-          <p className="warn">
-            이야기 표가 아직 없는 듯합니다. 안내된 SQL을 Supabase에서 한 번 실행하십시오.
-            <br />
-            <span className="dim">({err})</span>
-          </p>
-        )}
+      <div className="modal-tabs">
+        <button
+          className={'modal-tab' + (tab === 'records' ? ' active' : '')}
+          onClick={() => setTab('records')}
+        >
+          기록 관리
+        </button>
+        <button
+          className={'modal-tab' + (tab === 'writing' ? ' active' : '')}
+          onClick={() => setTab('writing')}
+        >
+          집필 설정
+        </button>
+        <button
+          className={'modal-tab' + (tab === 'usage' ? ' active' : '')}
+          onClick={() => setTab('usage')}
+        >
+          사용 내역
+        </button>
+      </div>
 
-        <div className="modal-body">
+      {tab === 'writing' && (
+        <div className="tab-panel">
+          <GenControls config={genConfig} onChange={onGenChange} />
+        </div>
+      )}
+      {tab === 'usage' && (
+        <div className="tab-panel">
+          <UsagePanel />
+        </div>
+      )}
+      {tab === 'records' && (
+        <div className="tab-panel">
+          {!dbReady && (
+            <p className="warn">기록의 샘이 닿지 않아 운명의 장을 기록하거나 갈무리할 수 없습니다.</p>
+          )}
+          {dbReady && err && (
+            <p className="warn">
+              이야기 표가 아직 없는 듯합니다. 안내된 SQL을 Supabase에서 한 번 실행하십시오.
+              <br />
+              <span className="dim">({err})</span>
+            </p>
+          )}
+
+          <div className="modal-body">
           <button className="new" onClick={새이야기}>
             ＋ 새로운 운명의 장
           </button>
@@ -289,9 +323,9 @@ export default function Stories({
               )}
             </ul>
           )}
-          <GenControls config={genConfig} onChange={onGenChange} />
-          <UsagePanel />
+          </div>
         </div>
+      )}
     </Modal>
   );
 }
