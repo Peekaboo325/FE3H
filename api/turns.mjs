@@ -1,17 +1,24 @@
 // /api/turns
 //   GET ?story_id=123          → 그 이야기의 본문(턴) 목록 (+ dbReady/error)
 //   GET ?story_id=123&last=1   → 마지막 턴 하나만(스트리밍 끊김 복구 확인용 — 전 회차 X)
+//   GET ?turn_id=123           → 그 칸 하나의 content만(재작성 끊김 복구 확인용)
 //   POST {id, content} → 한 턴 내용 수정
 //   DELETE ?id=123     → 한 턴 삭제
 //   DELETE ?story_id=7 → 그 장의 본문 전체 비우기(환원 — 연대 문헌도 함께 사라짐)
 
-import { loadTurns, loadLastTurn, updateTurn, deleteTurn, clearTurns, dbReady, setPolishedShow, savePolished } from '../lib/db.mjs';
+import { loadTurns, loadLastTurn, getTurnContent, updateTurn, deleteTurn, clearTurns, dbReady, setPolishedShow, savePolished } from '../lib/db.mjs';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   try {
     if (req.method === 'GET') {
       const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
+      // 재작성 복구 확인 — 그 칸 하나의 content만(끊긴 재작성을 서버가 끝내 저장했는지).
+      if (req.query?.turn_id) {
+        const { content } = await getTurnContent(Number(req.query.turn_id));
+        res.status(200).end(JSON.stringify({ content }));
+        return;
+      }
       // 복구 확인 — 마지막 턴만(전 회차 X). 끊긴 스트림이 서버엔 저장됐는지 가볍게 확인.
       if (req.query?.last) {
         const { turns, error } = await loadLastTurn(storyId);

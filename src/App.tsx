@@ -68,6 +68,23 @@ function UserBody({ content }: { content: string }) {
   return <ComposedBody seed={parts.seed} colt={parts.colt} />;
 }
 
+// 재작성이 끊겨도(백그라운드 이탈 등) 서버(Fix A)는 끝내 저장했을 수 있다 → 옛 걸로 되돌리기 전에 서버 저장본을 잠깐 확인.
+//  서버 content가 old와 다른 새 버전이면 그걸, 아니면 old(진짜 실패). 부르는 건 그 칸 하나(?turn_id) — egress 티끌.
+async function 서버턴복구(targetId: number, old: string): Promise<string> {
+  for (let i = 0; i < 5; i++) {
+    try {
+      const r = await fetch(`/api/turns?turn_id=${targetId}`);
+      const d = await r.json();
+      const 서버본 = typeof d?.content === 'string' ? d.content : '';
+      if (서버본.trim() && 서버본 !== old) return 서버본; // 새 버전이 저장됨
+    } catch {
+      /* 다음 시도 */
+    }
+    if (i < 4) await new Promise((r) => setTimeout(r, 2000));
+  }
+  return old; // 서버도 새 게 없으면(아직 생성 중이거나 진짜 실패) 옛 걸로
+}
+
 type Story = { id: number; title: string };
 // 되짚은 자취 — 서버가 실제로 주입한 회차·문헌(확인 자취용).
 type Recall = { ep?: number[]; lore?: { n: number; t: string }[]; char?: string[] };
@@ -697,11 +714,15 @@ export default function App() {
         setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: 본문 } : x)));
       }
       if (!본문.trim()) {
-        setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: old } : x)));
+        // 스트림이 빈손으로 끝남 → 서버에 새 저장본이 있으면 그걸, 없으면 옛 것.
+        const 회수 = await 서버턴복구(targetId, old);
+        setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: 회수 } : x)));
       }
     } catch (e) {
       console.error(e);
-      setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: old } : x)));
+      // 백그라운드 이탈 등으로 스트림이 끊겨도 서버는 재작성을 끝내 저장했을 수 있다 → 옛 걸로 되돌리기 전에 서버 확인.
+      const 회수 = await 서버턴복구(targetId, old);
+      setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: 회수 } : x)));
     } finally {
       setBusy(false);
     }

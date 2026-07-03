@@ -73,6 +73,12 @@ app.use(express.json({ limit: '1mb' }));
 // 특정 이야기의 본문을 불러온다 (화면 복원용).
 app.get('/api/turns', async (req, res) => {
   const storyId = req.query?.story_id ? Number(req.query.story_id) : null;
+  // 재작성 복구 확인 — 그 칸 하나의 content만(끊긴 재작성을 서버가 끝내 저장했는지).
+  if (req.query?.turn_id) {
+    const { content } = await getTurnContent(Number(req.query.turn_id));
+    res.json({ content });
+    return;
+  }
   let result = { turns: [], error: null };
   try {
     // 복구 확인 — 마지막 턴만(전 회차 X). 끊긴 스트림이 서버엔 저장됐는지 가볍게 확인.
