@@ -34,6 +34,32 @@ type Turn = {
 // 화면에 보일 본문 — 교정본을 보는 중이고 교정본이 있으면 그걸, 아니면 원본.
 //  (교정 스트림 시작 직후 polished=''(빈 문자열)은 falsy → 원본으로 떨어져 깜빡임 없음.)
 const 표시본 = (t: Turn) => (t.polished_show && t.polished ? t.polished : t.content);
+
+// 전개된 유저 말풍선 = '[초안](작가 1차 방향)' + '[연출](콘티)' 합본. 표시용으로 두 구역을 갈라낸다.
+//  새 형식: "[초안]\n…\n\n[연출]\n…"   / 옛 형식(잔존 데이터): "…\n\n---\n\n…"  둘 다 인식.
+function 합본분해(content: string): { seed: string; colt: string } | null {
+  const m = content.match(/^\[초안\]\n([\s\S]*?)\n\n\[연출\]\n([\s\S]*)$/);
+  if (m) return { seed: m[1].trim(), colt: m[2].trim() };
+  const old = content.match(/^([\s\S]*?)\n\n---\n\n([\s\S]*)$/); // 옛 --- 구분자 하위호환
+  if (old) return { seed: old[1].trim(), colt: old[2].trim() };
+  return null;
+}
+
+// 유저 말풍선 본문 — 초안+연출 합본이면 [초안]/[연출] 캡션과 흐린 결로 나눠 그린다(밋밋한 --- 대체).
+function UserBody({ content }: { content: string }) {
+  const parts = 합본분해(content);
+  if (!parts) return <div className="prompt-body">{content}</div>;
+  return (
+    <div className="prompt-body prompt-composed">
+      <div className="composed-cap">[초안]</div>
+      <div className="composed-seed">{parts.seed}</div>
+      <div className="composed-sep" />
+      <div className="composed-cap">[연출]</div>
+      <div className="composed-colt">{parts.colt}</div>
+    </div>
+  );
+}
+
 type Story = { id: number; title: string };
 // 되짚은 자취 — 서버가 실제로 주입한 회차·문헌(확인 자취용).
 type Recall = { ep?: number[]; lore?: { n: number; t: string }[]; char?: string[] };
@@ -361,7 +387,8 @@ export default function App() {
     if (busy) return;
     const colt = turns[i]?.content || '';
     const seed = turns[i]?.seed || '';
-    const 합본 = seed ? `${seed}\n\n---\n\n${colt}` : colt; // [유저 프롬프트] --- [가공프롬프트]
+    // [초안](작가 1차 방향) + [연출](콘티) 라벨 합본 — 표시가 두 구역으로 갈라 그리고, 모델도 라벨로 둘을 구분.
+    const 합본 = seed ? `[초안]\n${seed}\n\n[연출]\n${colt}` : colt;
     const 다음: Turn[] = [
       ...turns.map((t, idx) => (idx === i ? { ...t, content: 합본, draft: undefined, seed: undefined } : t)),
       { role: 'assistant', content: '', _key: nk() },
@@ -775,8 +802,10 @@ export default function App() {
                   <>
                     {t.seed && (
                       <>
+                        <div className="composed-cap">[초안]</div>
                         <div className="prompt-body draft-seed">{t.seed}</div>
                         <div className="draft-sep" />
+                        <div className="composed-cap">[연출]</div>
                       </>
                     )}
                     <div className="prompt-body">{t.content}</div>
@@ -835,7 +864,7 @@ export default function App() {
                         <StoryText content={표시본(t)} />
                       </>
                     ) : (
-                      <div className="prompt-body">{t.content}</div>
+                      <UserBody content={t.content} />
                     )
                   ) : busy ? (
                     <LoadingIndicator recall={pendingRecall} />
