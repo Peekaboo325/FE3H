@@ -83,6 +83,9 @@ export default function UsagePanel() {
           </div>
         </li>
       </ul>
+      {models.some((m) => m.startsWith('deepseek')) && (
+        <div className="usage-note">DeepSeek 피크 시간대(한국 10–13·15–19시)는 2배 반영(7/15~)</div>
+      )}
       <button className="usage-reset" onClick={reset}>
         기록 초기화
       </button>

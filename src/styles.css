@@ -2525,6 +2525,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .usage-meta { color: var(--text-dim); font-size: 12px; font-variant-numeric: tabular-nums; }
 .usage-total { margin-top: 2px; padding-top: 12px; border-top: 1px dashed var(--border); }
 .usage-total .usage-name { color: var(--text-dim); }
+.usage-note { font-size: 11px; color: var(--text-dim); text-align: center; }
 .usage-reset {
   align-self: center; margin-top: 4px; padding: 4px 10px;
   background: none; border: none; color: var(--text-dim);
