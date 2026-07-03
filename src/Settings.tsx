@@ -2,7 +2,7 @@
 //  값은 App이 localStorage에 남기고 /api/story·regen 본문으로 보낸다(서버가 genConfig로 검증).
 //  ※ 빌더용 셋업 컨트롤이라 기술어를 남겨둔다(CLAUDE.md §1 예외).
 
-export type GenConfig = { model: string; effort: string; enrich: boolean; conti: string };
+export type GenConfig = { model: string; effort: string; enrich: boolean; conti: string; polish: string };
 
 const MODELS = [
   // ⚠️ Opus 4.8 잠깐 걷어둠(2026-06-19, 비용 사고) — 복구: { id: 'claude-opus-4-8', label: 'Opus 4.8' } 다시 추가
@@ -11,6 +11,12 @@ const MODELS = [
 // 연출 모델(콘티 2차) — Flash(싸고 빠름·연출 약함) / Sonnet·Opus(연출 강함, 비용↑). 서버 enrich가 허용목록 검증.
 const CONTI = [
   { id: 'gemini-2.5-flash', label: 'Flash' },
+  { id: 'claude-sonnet-4-6', label: 'Sonnet' },
+  { id: 'claude-opus-4-8', label: 'Opus' },
+];
+// 교정 모델(윤문) — DeepSeek(절제·저비용) / Sonnet·Opus(문학 상향, 비용↑). Flash 제외(교정 voice 어긋남). 서버가 검증.
+const POLISH = [
+  { id: 'deepseek-v4-pro', label: 'DeepSeek' },
   { id: 'claude-sonnet-4-6', label: 'Sonnet' },
   { id: 'claude-opus-4-8', label: 'Opus' },
 ];
@@ -96,6 +102,13 @@ export default function GenControls({
         value={config.conti}
         onPick={(conti) => onChange({ ...config, conti })}
         disabled={!isDeep || !config.enrich}
+      />
+      {/* 교정 모델 — '교정' 버튼이 어느 모델로 윤문하나. 본문 모델과 무관하게 늘 유효. */}
+      <Group
+        label="교정 모델"
+        options={POLISH}
+        value={config.polish}
+        onPick={(polish) => onChange({ ...config, polish })}
       />
     </div>
   );

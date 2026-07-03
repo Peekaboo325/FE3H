@@ -41,7 +41,7 @@ import {
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
 import { runEnrich } from '../lib/enrich.mjs';
-import { 서술자키, 서술자클라이언트, 머리글게이트, 직전화날짜, 본문생성, 본문교정 } from '../lib/llm.mjs';
+import { 서술자키, 서술자클라이언트, 머리글게이트, 직전화날짜, 본문생성, 본문교정, 교정모델 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import analysisHandler from '../api/analysis.mjs'; // 보고서·임무·소지품·일지 통합 입구(Hobby 12함수 한도)
 import { runLetters, runDirectedLetter } from '../lib/letters.mjs';
@@ -561,12 +561,15 @@ app.post('/api/regen', async (req, res) => {
   }
 });
 
-// ── 교정 서브모드 — 한 화 원본을 딥시크로 교정·스트리밍하고 turns.polished에 저장(api/story.mjs handlePolish 미러) ──
-const POLISH_MODEL = 'deepseek-v4-pro';
+// ── 교정 서브모드 — 한 화 원본을 교정·스트리밍하고 turns.polished에 저장(api/story.mjs handlePolish 미러) ──
+//  교정 모델은 앱 설정에서(기본 DeepSeek, Sonnet/Opus로 문학 상향).
 async function handlePolish(req, res) {
-  const key = 서술자키(POLISH_MODEL);
+  const model = 교정모델(req.body?.polish_model); // 허용목록 검증(DeepSeek/Sonnet/Opus)
+  const key = 서술자키(model);
   if (!key) {
-    res.status(400).type('text/plain; charset=utf-8').end('[서고] DEEPSEEK_API_KEY 가 없습니다.');
+    res.status(400)
+      .type('text/plain; charset=utf-8')
+      .end(`[서고] ${model.startsWith('deepseek') ? 'DEEPSEEK_API_KEY' : 'ANTHROPIC_API_KEY'} 가 없습니다.`);
     return;
   }
   const turnId = req.body?.turn_id ? Number(req.body.turn_id) : null;
@@ -579,7 +582,7 @@ async function handlePolish(req, res) {
     res.status(400).type('text/plain; charset=utf-8').end('[서고] 교정할 본문이 없습니다.');
     return;
   }
-  const client = 서술자클라이언트(POLISH_MODEL);
+  const client = 서술자클라이언트(model);
   res.status(200).type('text/plain; charset=utf-8');
   // ⚠️ 백그라운드 이탈 대비 — 죽은 클라의 쓰기 실패가 교정본 저장을 못 끊게(본문 저장과 동일 결).
   res.on('error', () => {});
@@ -591,7 +594,7 @@ async function handlePolish(req, res) {
     }
   };
   try {
-    const { text: 교정본 } = await 본문교정({ client, model: POLISH_MODEL, draft: 원본, write: 안전쓰기 });
+    const { text: 교정본 } = await 본문교정({ client, model, draft: 원본, write: 안전쓰기 });
     if (교정본.trim()) {
       const save = await savePolished(turnId, 교정본);
       if (save.error) 안전쓰기(`\n\n[서고 오류] 교정본을 기록하지 못했습니다: ${save.error}`);
