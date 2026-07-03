@@ -66,7 +66,7 @@ export default function UsagePanel() {
   return (
     <div className="usage">
       <div className="usage-head">
-        <span className="settings-label">API 사용 내역</span>
+        <span className="usage-title">API 사용 내역</span>
         <button className="usage-toggle" onClick={toggleHide}>
           숨기기
         </button>
@@ -82,18 +82,21 @@ export default function UsagePanel() {
               const t = usage[m];
               return (
                 <li key={m} className="usage-row">
-                  <span className="usage-name">{라벨(m)}</span>
-                  <span className="usage-meta">
+                  <div className="usage-row-top">
+                    <span className="usage-name">{라벨(m)}</span>
+                    <span className="usage-cost">${비용(m, t).toFixed(4)}</span>
+                  </div>
+                  <div className="usage-meta">
                     {t.calls}회 · 입력 {t.in.toLocaleString()} / 출력 {t.out.toLocaleString()}
-                  </span>
-                  <span className="usage-cost">${비용(m, t).toFixed(4)}</span>
+                  </div>
                 </li>
               );
             })}
             <li className="usage-row usage-total">
-              <span className="usage-name">합계</span>
-              <span className="usage-meta" />
-              <span className="usage-cost">${total.toFixed(4)}</span>
+              <div className="usage-row-top">
+                <span className="usage-name">합계</span>
+                <span className="usage-cost">${total.toFixed(4)}</span>
+              </div>
             </li>
           </ul>
           <button className="usage-reset" onClick={reset}>
