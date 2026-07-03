@@ -105,7 +105,16 @@ export default async function handler(req, res) {
   }
 
   let 본문 = '';
-  const 게이트 = 머리글게이트(화수, 직전화날짜(messages), (s) => res.write(s)); // 머리글 누락 결정론적 보강
+  // ⚠️ 백그라운드 이탈 대비 — 죽은 클라의 쓰기 실패가 생성·저장을 못 끊게(api/story.mjs와 동일 결).
+  res.on('error', () => {});
+  const 안전쓰기 = (s) => {
+    try {
+      res.write(s);
+    } catch {
+      /* 죽은 클라 — 무시. 재생성·저장은 계속 */
+    }
+  };
+  const 게이트 = 머리글게이트(화수, 직전화날짜(messages), 안전쓰기); // 머리글 누락 결정론적 보강
   try {
     // 본문 생성 — 단일 패스(보정 없음). 게이트로 스트리밍·비용 로그(lib/llm.mjs). 교정은 '교정' 버튼에서만.
     await 본문생성({ client, model, effort, system, messages, 게이트, tag: 'regen', 화수 });
@@ -116,7 +125,7 @@ export default async function handler(req, res) {
   } catch (err) {
     const 사유 = err?.message || String(err);
     console.error('[서고] 재생성 오류:', 사유);
-    res.write(`\n\n[서고 오류] 재생성에 실패했습니다: ${사유}`);
+    안전쓰기(`\n\n[서고 오류] 재생성에 실패했습니다: ${사유}`);
     res.end();
   }
 }

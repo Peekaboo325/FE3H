@@ -463,7 +463,16 @@ app.post('/api/story', async (req, res) => {
   }
 
   let 본문 = '';
-  const 게이트 = 머리글게이트(화수, 직전화날짜(대화), (s) => res.write(s)); // 머리글 누락 결정론적 보강
+  // ⚠️ 백그라운드 이탈 대비 — 죽은 클라의 쓰기 실패가 생성·저장을 못 끊게(api/story.mjs와 동일 결).
+  res.on('error', () => {});
+  const 안전쓰기 = (s) => {
+    try {
+      res.write(s);
+    } catch {
+      /* 죽은 클라 — 무시. 본문 생성·저장은 계속 */
+    }
+  };
+  const 게이트 = 머리글게이트(화수, 직전화날짜(대화), 안전쓰기); // 머리글 누락 결정론적 보강
   try {
     // 본문 생성 — 단일 패스(보정 없음). 게이트로 스트리밍·비용 로그(lib/llm.mjs). 교정은 '교정' 버튼에서만.
     await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수 });
@@ -478,7 +487,7 @@ app.post('/api/story', async (req, res) => {
     const 사유 = err?.message || String(err);
     console.error('[서고] 클로드 호출 오류:', 사유);
     if (!res.headersSent) res.status(500).type('text/plain; charset=utf-8');
-    res.write(`\n\n[서고 오류] 본문 생성에 실패했습니다: ${사유}`);
+    안전쓰기(`\n\n[서고 오류] 본문 생성에 실패했습니다: ${사유}`);
     res.end();
   }
 });
@@ -526,7 +535,16 @@ app.post('/api/regen', async (req, res) => {
   res.status(200).type('text/plain; charset=utf-8');
 
   let 본문 = '';
-  const 게이트 = 머리글게이트(화수, 직전화날짜(messages), (s) => res.write(s)); // 머리글 누락 결정론적 보강
+  // ⚠️ 백그라운드 이탈 대비 — 죽은 클라의 쓰기 실패가 생성·저장을 못 끊게(api/story.mjs와 동일 결).
+  res.on('error', () => {});
+  const 안전쓰기 = (s) => {
+    try {
+      res.write(s);
+    } catch {
+      /* 죽은 클라 — 무시. 재생성·저장은 계속 */
+    }
+  };
+  const 게이트 = 머리글게이트(화수, 직전화날짜(messages), 안전쓰기); // 머리글 누락 결정론적 보강
   try {
     // 본문 생성 — 단일 패스(보정 없음). 게이트로 스트리밍·비용 로그(lib/llm.mjs). 교정은 '교정' 버튼에서만.
     await 본문생성({ client, model, effort, system, messages, 게이트, tag: 'regen', 화수 });
@@ -538,7 +556,7 @@ app.post('/api/regen', async (req, res) => {
     const 사유 = err?.message || String(err);
     console.error('[서고] 재생성 오류:', 사유);
     if (!res.headersSent) res.status(500).type('text/plain; charset=utf-8');
-    res.write(`\n\n[서고 오류] 재생성에 실패했습니다: ${사유}`);
+    안전쓰기(`\n\n[서고 오류] 재생성에 실패했습니다: ${사유}`);
     res.end();
   }
 });
@@ -563,18 +581,27 @@ async function handlePolish(req, res) {
   }
   const client = 서술자클라이언트(POLISH_MODEL);
   res.status(200).type('text/plain; charset=utf-8');
+  // ⚠️ 백그라운드 이탈 대비 — 죽은 클라의 쓰기 실패가 교정본 저장을 못 끊게(본문 저장과 동일 결).
+  res.on('error', () => {});
+  const 안전쓰기 = (s) => {
+    try {
+      res.write(s);
+    } catch {
+      /* 죽은 클라 — 무시. 교정·저장은 계속 */
+    }
+  };
   try {
-    const { text: 교정본 } = await 본문교정({ client, model: POLISH_MODEL, draft: 원본, write: (s) => res.write(s) });
+    const { text: 교정본 } = await 본문교정({ client, model: POLISH_MODEL, draft: 원본, write: 안전쓰기 });
     if (교정본.trim()) {
       const save = await savePolished(turnId, 교정본);
-      if (save.error) res.write(`\n\n[서고 오류] 교정본을 기록하지 못했습니다: ${save.error}`);
+      if (save.error) 안전쓰기(`\n\n[서고 오류] 교정본을 기록하지 못했습니다: ${save.error}`);
     }
     res.end();
   } catch (err) {
     const 사유 = err?.message || String(err);
     console.error('[서고] 교정 오류:', 사유);
     if (!res.headersSent) res.status(500).type('text/plain; charset=utf-8');
-    res.write(`\n\n[서고 오류] 교정에 실패했습니다: ${사유}`);
+    안전쓰기(`\n\n[서고 오류] 교정에 실패했습니다: ${사유}`);
     res.end();
   }
 }

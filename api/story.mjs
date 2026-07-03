@@ -155,13 +155,23 @@ export default async function handler(req, res) {
   }
 
   let 본문 = '';
-  const 게이트 = 머리글게이트(화수, 직전화날짜(대화), (s) => res.write(s)); // 머리글 누락 결정론적 보강
+  // ⚠️ 백그라운드 이탈·연결 끊김 대비: 폰(클라)이 사라져 res.write가 실패해도 '생성·DB 저장'은 끝까지 간다.
+  //  모델 생성은 서버↔모델 별도 연결이라 폰과 무관하게 완결됨 → 죽은 클라의 쓰기가 저장 경로를 끊지 않게만 막는다.
+  res.on('error', () => {}); // 소켓 비동기 에러(EPIPE 등) 무시 — 안 잡으면 함수가 통째로 죽어 저장이 날아감
+  const 안전쓰기 = (s) => {
+    try {
+      res.write(s);
+    } catch {
+      /* 죽은 클라 — 무시. 본문 생성·저장은 계속 */
+    }
+  };
+  const 게이트 = 머리글게이트(화수, 직전화날짜(대화), 안전쓰기); // 머리글 누락 결정론적 보강
   try {
     // 본문 생성 — 단일 패스(보정 없음). 게이트로 스트리밍·비용 로그(lib/llm.mjs). 교정은 '교정' 버튼에서만.
     await 본문생성({ client, model, effort, system, messages: 대화, 게이트, tag: 'story', 화수 });
     게이트.닫기();
     본문 = 게이트.값();
-    // 완성된 본문을 영구 저장하고, 이야기의 최근 플레이 시각을 갱신한다.
+    // 완성된 본문을 영구 저장하고, 이야기의 최근 플레이 시각을 갱신한다(폰이 이미 떠났어도 여기까지 온다).
     if (본문.trim()) {
       await saveTurn('assistant', 본문, storyId);
       await touchStory(storyId);
@@ -170,7 +180,7 @@ export default async function handler(req, res) {
   } catch (err) {
     const 사유 = err?.message || String(err);
     console.error('[서고] 클로드 호출 오류:', 사유);
-    res.write(`\n\n[서고 오류] 본문 생성에 실패했습니다: ${사유}`);
+    안전쓰기(`\n\n[서고 오류] 본문 생성에 실패했습니다: ${사유}`);
     res.end();
   }
 }
@@ -202,17 +212,25 @@ async function handlePolish(req, res) {
   res.status(200).setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('X-Accel-Buffering', 'no');
+  res.on('error', () => {}); // 백그라운드 이탈 대비 — 죽은 클라 소켓 에러가 교정본 저장을 못 끊게(본문 저장과 동일 결)
+  const 안전쓰기 = (s) => {
+    try {
+      res.write(s);
+    } catch {
+      /* 죽은 클라 — 무시. 교정·저장은 계속 */
+    }
+  };
   try {
-    const { text: 교정본 } = await 본문교정({ client, model: POLISH_MODEL, draft: 원본, write: (s) => res.write(s) });
+    const { text: 교정본 } = await 본문교정({ client, model: POLISH_MODEL, draft: 원본, write: 안전쓰기 });
     if (교정본.trim()) {
       const save = await savePolished(turnId, 교정본);
-      if (save.error) res.write(`\n\n[서고 오류] 교정본을 기록하지 못했습니다: ${save.error}`);
+      if (save.error) 안전쓰기(`\n\n[서고 오류] 교정본을 기록하지 못했습니다: ${save.error}`);
     }
     res.end();
   } catch (err) {
     const 사유 = err?.message || String(err);
     console.error('[서고] 교정 오류:', 사유);
-    res.write(`\n\n[서고 오류] 교정에 실패했습니다: ${사유}`);
+    안전쓰기(`\n\n[서고 오류] 교정에 실패했습니다: ${사유}`);
     res.end();
   }
 }
