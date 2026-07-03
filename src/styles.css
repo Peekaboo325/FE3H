@@ -2526,7 +2526,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .usage-total { margin-top: 2px; padding-top: 12px; border-top: 1px dashed var(--border); }
 .usage-total .usage-name { color: var(--text-dim); }
 .usage-reset {
-  align-self: flex-end; margin-top: 2px; background: none; border: none;
-  color: var(--text-dim); font: inherit; font-size: 12px; cursor: pointer;
+  align-self: center; margin-top: 4px; padding: 4px 10px;
+  background: none; border: none; color: var(--text-dim);
+  font: inherit; font-size: 12px; cursor: pointer;
 }
 .usage-reset:hover { color: var(--danger, #c0554e); }
