@@ -562,8 +562,13 @@ export default function App() {
       });
 
       if (!res.ok || !res.body) {
-        const 사유 = await res.text();
-        붙이기(사유 || '[연결 오류]');
+        // 실패 사유는 sans 토스트로(본문에 넣으면 영문 사유가 필기체가 돼 식별이 어렵다) + 빈 답변 칸 정리.
+        const 사유 = (await res.text())?.trim();
+        showToast(사유 || '전개가 이루어지지 않았습니다 — 다시 시도하십시오.');
+        setTurns((prev) => {
+          const last = prev[prev.length - 1];
+          return last && last.role === 'assistant' && last.id == null && !last.content ? prev.slice(0, -1) : prev;
+        });
         return;
       }
 
@@ -625,7 +630,11 @@ export default function App() {
         await loadTurnsFor(storyId);
       }
     } catch (e) {
-      붙이기(`\n\n[연결 오류] ${(e as Error).message}`);
+      // 본문엔 한글 표식만 남겨 어디서 끊겼는지 보이게 하고(라틴이 아니라 필기체 처리 안 받음),
+      //  영문 기술 메시지(Load failed 등)는 sans 토스트+콘솔로 — 본문에 넣으면 필기체가 돼 식별이 어렵다.
+      console.error('[전개] 스트림 오류:', e);
+      붙이기('\n\n[연결 오류]');
+      showToast('전개 도중 연결이 끊겼습니다 — 이어서 다시 시도하십시오.');
     } finally {
       setBusy(false);
     }
@@ -753,8 +762,10 @@ export default function App() {
         body: JSON.stringify({ messages, story_id: storyId, turn_id: targetId, model: genCfg.model, effort: genCfg.effort }),
       });
       if (!res.ok || !res.body) {
-        const e = await res.text();
-        setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: e || old } : x)));
+        // 실패 사유는 sans 토스트로(본문에 넣으면 영문 사유가 필기체가 돼 식별이 어렵다) + 본문은 옛것 유지.
+        const e = (await res.text())?.trim();
+        showToast(e || '재작성이 이루어지지 않았습니다 — 다시 시도하십시오.');
+        setTurns((prev) => prev.map((x) => (x.id === targetId ? { ...x, content: old } : x)));
         return;
       }
       // 되짚은 자취·안내를 헤더에서 읽어 토스트(전개와 동일) — 다시받기도 앵커 반영.
