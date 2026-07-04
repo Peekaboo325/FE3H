@@ -7,7 +7,6 @@ import { UI } from './strings';
 import { stripMarkdown } from './podraScript';
 import Modal from './Modal';
 import Button from './Button';
-import Checkbox from './Checkbox';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
 import GenControls, { type GenConfig } from './Settings';
@@ -47,7 +46,7 @@ export default function Stories({
   const [menuId, setMenuId] = useState<number | null>(null); // ⋯ 더보기 메뉴 펼친 장
   const [tab, setTab] = useState<'records' | 'writing' | 'usage'>('records'); // 천각의 박동 탭
   const [exportStory, setExportStory] = useState<Story | null>(null); // 반출 다이얼로그 대상 장
-  const [exportMd, setExportMd] = useState(true); // 반출 시 마크다운 양식 포함 여부
+  const [exportPick, setExportPick] = useState<boolean | null>(null); // 진행 중인 선택(true=포함/false=불포함) — 그 버튼만 로딩
   const [exportBusy, setExportBusy] = useState(false);
 
   // 반출 — 그 장의 본문(조수 화들)을 한 번 읽어 텍스트 파일로 내린다. 본문만(프롬프트·[초안]/[연출] 제외).
@@ -55,6 +54,7 @@ export default function Stories({
   async function 반출하기(s: Story, markdown: boolean) {
     if (exportBusy) return;
     setExportBusy(true);
+    setExportPick(markdown);
     try {
       const r = await fetch(`/api/turns?story_id=${s.id}`);
       const d = await r.json();
@@ -78,6 +78,7 @@ export default function Stories({
       showToast('장을 반출하지 못했습니다.');
     } finally {
       setExportBusy(false);
+      setExportPick(null);
     }
   }
 
@@ -345,7 +346,6 @@ export default function Stories({
                               className="row-menu-item"
                               onClick={() => {
                                 setMenuId(null);
-                                setExportMd(true);
                                 setExportStory(s);
                               }}
                             >
@@ -387,15 +387,26 @@ export default function Stories({
     </Modal>
 
     {exportStory && (
-      <Modal onClose={() => setExportStory(null)} title={exportStory.title}>
-        <div className="modal-body">
+      <Modal onClose={() => setExportStory(null)} title={exportStory.title} className="modal--export">
+        <div className="modal-body export-body">
           <p className="export-note">이 장의 본문을 텍스트 파일로 반출합니다.</p>
-          <div className="export-opt">
-            <Checkbox checked={exportMd} onChange={setExportMd} label="마크다운 양식 포함" />
-          </div>
+          <p className="export-q">마크다운 양식을 포함하겠습니까?</p>
           <div className="export-actions">
-            <Button variant="primary" loading={exportBusy} onClick={() => 반출하기(exportStory, exportMd)}>
-              {UI.export}
+            <Button
+              variant="primary"
+              loading={exportPick === true}
+              disabled={exportBusy}
+              onClick={() => 반출하기(exportStory, true)}
+            >
+              포함
+            </Button>
+            <Button
+              variant="secondary"
+              loading={exportPick === false}
+              disabled={exportBusy}
+              onClick={() => 반출하기(exportStory, false)}
+            >
+              불포함
             </Button>
           </div>
         </div>
