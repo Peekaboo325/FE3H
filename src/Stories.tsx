@@ -389,8 +389,8 @@ export default function Stories({
     {exportStory && (
       <Modal onClose={() => setExportStory(null)} title={exportStory.title} className="modal--export">
         <div className="modal-body export-body">
-          <p className="export-note">이 장의 본문을 텍스트 파일로 반출합니다.</p>
-          <p className="export-q">마크다운 양식을 포함하겠습니까?</p>
+          <p className="export-line">이 장의 본문을 텍스트 파일로 반출합니다.</p>
+          <p className="export-line">마크다운 양식을 포함하겠습니까?</p>
           <div className="export-actions">
             <Button
               variant="primary"

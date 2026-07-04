@@ -1699,8 +1699,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 /* 장 반출 다이얼로그 — 작고 가운데 정렬, 질문 + [포함]/[불포함] 두 버튼 */
 .modal--export { max-width: 400px; }
 .export-body { text-align: center; }
-.export-note { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin: 0; }
-.export-q { font-size: 14px; color: var(--text); margin: 12px 0 0; }
+.export-line { font-size: 14px; color: var(--text); line-height: 1.7; margin: 0; }
+.export-line + .export-line { margin-top: 10px; }
 .export-actions { display: flex; justify-content: center; gap: 10px; margin-top: 18px; }
 .daily-empty { margin: 0; font-size: 13px; color: var(--text-dim); }
 @media (max-width: 600px) {
