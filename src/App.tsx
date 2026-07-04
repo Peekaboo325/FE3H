@@ -196,6 +196,8 @@ export default function App() {
   );
   const 끝 = useRef<HTMLDivElement>(null);
   const 붙어있기 = useRef(true); // 바닥에 '붙어' 자동으로 따라갈지 — 위로 올라가 읽으면 false(따라가기 멈춤)
+  const 누름타이머 = useRef<number | null>(null); // 전개 버튼 길게 누르기 감지(친필)
+  const 길게눌림 = useRef(false);
   const composeRef = useRef<HTMLTextAreaElement>(null);
 
   // 백그라운드 이탈 → 복귀 동기화(Fix B) — 폰을 내렸다 돌아왔을 때 서버가 저장한 완성본을 새로고침 없이 채운다.
@@ -422,6 +424,61 @@ export default function App() {
     ];
     setInput('');
     await 본문스트리밍(다음, 입력);
+  }
+
+  // 친필 — 전개 버튼을 '길게' 눌렀을 때: 입력창의 글을 모델 호출 없이 그대로 한 화(본문)로 심는다.
+  //  여신이 짓는 '전개'와 대비 — 빌더가 손수 적어 넣는 글(원작 정경·다리 놓기·정합 심기). 비용 0·변형 0.
+  //  심은 화는 조수 턴으로 저장 → 요약·앵커가 생성된 화와 똑같이 읽어 간다.
+  async function 친필() {
+    const 글 = input.trim();
+    if (!글 || busy) return;
+    if (!storyId) {
+      showToast('먼저 운명의 장을 펼치십시오.');
+      return;
+    }
+    setInput('');
+    const _key = nk();
+    setTurns((prev) => [...prev, { role: 'assistant', content: 글, _key }]);
+    붙어있기.current = true;
+    requestAnimationFrame(() => 끝.current?.scrollIntoView({ behavior: 'smooth' }));
+    try {
+      const res = await fetch('/api/turns', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ story_id: storyId, role: 'assistant', content: 글 }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok && d?.turn?.id != null) {
+        setTurns((prev) => prev.map((t) => (t._key === _key ? { ...t, id: d.turn.id } : t)));
+      } else {
+        showToast(d?.error || '친필을 심지 못했습니다.');
+      }
+    } catch {
+      showToast('친필을 심지 못했습니다.');
+    }
+  }
+
+  // 전개 버튼 = 짧게 누르면 전개(생성), 길게(0.5초) 누르면 친필(손수 심기). 새 버튼 없이 한 버튼에 두 동작.
+  function 전개누름시작() {
+    if (busy || !input.trim()) return;
+    길게눌림.current = false;
+    누름타이머.current = window.setTimeout(() => {
+      길게눌림.current = true;
+      친필();
+    }, 500);
+  }
+  function 전개누름끝() {
+    if (누름타이머.current != null) {
+      clearTimeout(누름타이머.current);
+      누름타이머.current = null;
+    }
+  }
+  function 전개클릭() {
+    if (길게눌림.current) {
+      길게눌림.current = false; // 길게로 이미 친필했으니 이 클릭은 무시
+      return;
+    }
+    보내기();
   }
 
   // 연출 콘티 펼치기 — 짧은 1차를 2차 콘티로(/api/story?enrich). 결과는 'draft' 유저 말풍선으로(실행 전).
@@ -1147,7 +1204,15 @@ export default function App() {
               rows={1}
               disabled={busy}
             />
-            <button onClick={보내기} disabled={busy || !input.trim()}>
+            <button
+              onClick={전개클릭}
+              onPointerDown={전개누름시작}
+              onPointerUp={전개누름끝}
+              onPointerLeave={전개누름끝}
+              onContextMenu={(e) => e.preventDefault()}
+              disabled={busy || !input.trim()}
+              title="꾹 누르면 친필(손수 심기)"
+            >
               {busy ? <span className="spinner" /> : UI.submit}
             </button>
           </div>

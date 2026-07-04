@@ -6,7 +6,7 @@
 //   DELETE ?id=123     → 한 턴 삭제
 //   DELETE ?story_id=7 → 그 장의 본문 전체 비우기(환원 — 연대 문헌도 함께 사라짐)
 
-import { loadTurns, loadLastTurn, getTurnContent, updateTurn, deleteTurn, clearTurns, dbReady, setPolishedShow, savePolished } from '../lib/db.mjs';
+import { loadTurns, loadLastTurn, getTurnContent, updateTurn, deleteTurn, clearTurns, dbReady, setPolishedShow, savePolished, insertTurn } from '../lib/db.mjs';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -31,8 +31,14 @@ export default async function handler(req, res) {
       return;
     }
     if (req.method === 'POST') {
-      const { id, content, polished, polished_show } = req.body || {};
+      const { id, content, polished, polished_show, story_id, role } = req.body || {};
       if (!id) {
+        // 친필 — 모델 호출 없이 조수(본문) 턴 하나 심기(id 없이 story_id+content).
+        if (story_id && typeof content === 'string' && content.trim()) {
+          const r = await insertTurn(Number(story_id), role === 'user' ? 'user' : 'assistant', String(content));
+          res.status(r.error ? 500 : 200).end(JSON.stringify(r));
+          return;
+        }
         res.status(400).end(JSON.stringify({ error: 'id가 필요합니다.' }));
         return;
       }
