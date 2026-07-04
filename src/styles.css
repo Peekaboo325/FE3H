@@ -1682,6 +1682,24 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .daily-wallet-val { text-align: center; font-size: 17px; font-weight: 700; color: var(--accent); padding: 6px 0 2px; word-break: keep-all; }
 .daily-income-sub { text-align: center; font-size: 12px; color: var(--text-dim); }
 .daily-next-income { text-align: center; font-size: 12px; color: var(--accent); opacity: 0.85; margin-top: 3px; font-variant-numeric: tabular-nums; }
+
+/* 공용 체크박스(src/Checkbox.tsx) — 네모 상자 + 라벨, 켜지면 금빛+체크 */
+.checkbox { display: inline-flex; align-items: center; gap: 9px; background: none; border: none; padding: 4px 0; font: inherit; color: var(--text); cursor: pointer; }
+.checkbox-box {
+  width: 20px; height: 20px; flex-shrink: 0; border-radius: 6px;
+  border: 1.5px solid var(--border); background: var(--surface-2);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--accent-ink); transition: background 0.12s, border-color 0.12s;
+}
+.checkbox.on .checkbox-box { background: var(--accent); border-color: var(--accent); }
+.checkbox:hover .checkbox-box { border-color: var(--accent); }
+.checkbox-label { font-size: 14px; }
+.checkbox:disabled { opacity: 0.5; cursor: default; }
+
+/* 장 반출 다이얼로그 — 안내문 작게, 체크박스 여백, 반출 버튼 가운데 */
+.export-note { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin: 0; }
+.export-opt { margin: 16px 0; }
+.export-actions { display: flex; justify-content: center; margin-top: 18px; }
 .daily-empty { margin: 0; font-size: 13px; color: var(--text-dim); }
 @media (max-width: 600px) {
   .daily-grid { grid-template-columns: 1fr; grid-template-areas: 'ability' 'income' 'traits'; }

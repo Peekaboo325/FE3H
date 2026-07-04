@@ -7,6 +7,7 @@ import { UI } from './strings';
 import { stripMarkdown } from './podraScript';
 import Modal from './Modal';
 import Button from './Button';
+import Checkbox from './Checkbox';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
 import GenControls, { type GenConfig } from './Settings';
@@ -386,21 +387,13 @@ export default function Stories({
     </Modal>
 
     {exportStory && (
-      <Modal onClose={() => setExportStory(null)} title={`${UI.export} — 「${exportStory.title}」`}>
+      <Modal onClose={() => setExportStory(null)} title={exportStory.title}>
         <div className="modal-body">
-          <p className="dim">이 장의 본문(화)을 텍스트 파일로 반출합니다. 프롬프트·[초안]/[연출]은 빼고 본문만 담깁니다.</p>
-          <div className="settings-group">
-            <div className="settings-label">마크다운 양식</div>
-            <div className="settings-options">
-              <button className={'settings-opt' + (exportMd ? ' on' : '')} onClick={() => setExportMd(true)}>
-                포함
-              </button>
-              <button className={'settings-opt' + (!exportMd ? ' on' : '')} onClick={() => setExportMd(false)}>
-                글만
-              </button>
-            </div>
+          <p className="export-note">이 장의 본문을 텍스트 파일로 반출합니다.</p>
+          <div className="export-opt">
+            <Checkbox checked={exportMd} onChange={setExportMd} label="마크다운 양식 포함" />
           </div>
-          <div className="dialog-actions">
+          <div className="export-actions">
             <Button variant="primary" loading={exportBusy} onClick={() => 반출하기(exportStory, exportMd)}>
               {UI.export}
             </Button>
