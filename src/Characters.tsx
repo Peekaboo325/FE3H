@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment, type ReactNode } from 'react';
+import { useState, useEffect, useRef, Fragment, type ReactNode } from 'react';
 import { 이미지를_썸네일로 } from './imageUtils';
 import { showToast } from './toast';
 import { confirmAsk } from './dialog';
@@ -862,6 +862,36 @@ export default function Characters({
       showToast(`일지를 ${UI.erase}하지 못했습니다.`);
     }
   }
+
+  // 일상 정산 — 일상 탭을 열 때 '그 인물만'(전 인물 일괄 X — 이그레스 안전) 호출한다. 안 보던 사이
+  //  흐른 시간만큼 시간당 수입이 지갑에 적립돼 돌아온다(서버 순수 규칙·LLM 0). 실패는 조용히(치명 아님).
+  async function 일상정산(id: number) {
+    try {
+      const res = await fetch('/api/analysis?kind=daily', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ character_id: id }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) return;
+      setViewing((v) => (v && v.id === id ? { ...v, analysis: data.report } : v));
+    } catch {
+      /* 무시 — 다음 열람에서 다시 정산 */
+    }
+  }
+  // 트리거 = 일상 탭이 뜨고 현황이 정해진 인물일 때 한 번. 탭을 떠나면 리셋 → 다시 열면 재정산.
+  const 정산완료ref = useRef<number | null>(null);
+  useEffect(() => {
+    if (tab !== '일상' || !viewing?.id) {
+      정산완료ref.current = null;
+      return;
+    }
+    if (!viewing.analysis?.daily?.setup_at) return; // 현황 전엔 정산 없음
+    if (정산완료ref.current === viewing.id) return; // 이번 열람에서 이미 정산함
+    정산완료ref.current = viewing.id;
+    일상정산(viewing.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, viewing?.id, viewing?.analysis?.daily?.setup_at]);
 
   // 일상 세팅 저장 — 빌더가 일상 탭 안에서 깐 시작 등급·특성·수입을 daily 서랍에 새긴다(AI 안 거침, 순수 DB).
   //  patch = daily 부분 패치. 처음 저장하면 setup_at이 박혀 일상이 '깃든다'(가림 해제).

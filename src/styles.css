@@ -1679,7 +1679,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .daily-income { grid-area: income; }
 .daily-traits-cell { grid-area: traits; }
 .daily-ability-cell { grid-area: ability; display: flex; flex-direction: column; }
-.daily-income-val { text-align: center; font-size: 18px; font-weight: 700; color: var(--accent); padding: 6px 0 2px; }
+.daily-wallet-val { text-align: center; font-size: 17px; font-weight: 700; color: var(--accent); padding: 6px 0 2px; word-break: keep-all; }
+.daily-income-sub { text-align: center; font-size: 12px; color: var(--text-dim); }
 .daily-empty { margin: 0; font-size: 13px; color: var(--text-dim); }
 @media (max-width: 600px) {
   .daily-grid { grid-template-columns: 1fr; grid-template-areas: 'ability' 'income' 'traits'; }

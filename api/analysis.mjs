@@ -13,7 +13,7 @@ import { runReport } from '../lib/report.mjs';
 import { runQuests } from '../lib/quests.mjs';
 import { runItems, removeItem, reorderItems } from '../lib/items.mjs';
 import { runJournal, updateJournal, removeJournal } from '../lib/journal.mjs';
-import { saveDaily } from '../lib/daily.mjs';
+import { saveDaily, 정산 } from '../lib/daily.mjs';
 import { dbReady } from '../lib/db.mjs';
 
 const GEMINI_없음 = '분석관과의 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).';
@@ -74,8 +74,11 @@ export default async function handler(req, res) {
         return 막음(405, 미지원);
       }
       case 'daily': {
-        // 일상 세팅 저장(빌더 수기) — Gemini 안 거침(순수 DB). PUT {character_id, daily:{...}}
+        // 일상 — 모두 순수 DB·규칙(Gemini 안 거침).
+        //  PUT  {character_id, daily:{...}}  일상 세팅 저장(빌더 수기)
+        //  POST {character_id}               정산(열 때 정산 — 흐른 시간만큼 시간당 수입 적립)
         if (req.method === 'PUT') return 보냄(await saveDaily({ characterId, patch: req.body?.daily || null }));
+        if (req.method === 'POST') return 보냄(await 정산({ characterId }));
         return 막음(405, 미지원);
       }
       default:

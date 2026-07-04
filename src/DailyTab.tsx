@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { Settings } from 'lucide-react';
 import type { CharReport, DailyState, AbilityKey, Grade, IncomeGrade } from './useCharacters';
 import { TRAITS } from './traits';
+import { 화폐표기 } from './coin';
 import { UI } from './strings';
 import Button from './Button';
 import IconButton from './IconButton';
@@ -271,10 +272,11 @@ export default function DailyTab({
   return (
     <div className="daily">
       <div className="daily-grid">
-        {/* 좌상 — 수입(표시 자리, 적립 기능은 2·6단계) */}
+        {/* 좌상 — 지갑(정산으로 차오름) + 수입 등급(적립 속도) */}
         <div className="view-section daily-income">
-          <div className="view-label">수입</div>
-          <div className="daily-income-val">{daily?.income_grade ?? '없음'}</div>
+          <div className="view-label">지갑</div>
+          <div className="daily-wallet-val">{화폐표기(daily?.wallet ?? 0)}</div>
+          <div className="daily-income-sub">수입 · {daily?.income_grade ?? '없음'}</div>
         </div>
         {/* 좌하 — 특성(고른 것 칩으로) */}
         <div className="view-section daily-traits-cell">
