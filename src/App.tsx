@@ -476,16 +476,18 @@ export default function App() {
     }
   }
 
-  // 실행된 [연출] 칸에서 '연출만' 다시 받기 — 합본에 박힌 [초안]에서 새 콘티를 뽑아 갈아끼운다.
-  //  아래 본문(생성된 화)은 건드리지 않는다. 마음에 드는 연출을 고른 뒤, 본문은 그 칸의 '재작성'으로 따로 받는다
-  //  (본문 재작성이 이 칸의 최신 content를 읽어 가므로 자연히 새 연출을 반영). 연출은 싸고 본문은 비싸 — 연출만 굴려보게.
-  async function 연출재작성(i: number) {
+  // 유저 칸에 연출을 펼친다 — 두 쓰임 공용:
+  //  ① 평범한 프롬프트(연출 안 거친 칸)에 ✨ → 그 글을 씨앗 삼아 연출을 입혀 [초안]/[연출] 칸으로 바꾼다.
+  //  ② 이미 [초안]/[연출]인 칸에 ↺ → 박힌 [초안]에서 새 콘티로 갈아끼운다(연출만 다시).
+  //  ⚠️ 아래 본문(생성된 화)은 건드리지 않는다 — 본문·연출은 각각 따로 편집(빌더 원칙 2026-07-04).
+  //  본문을 새 연출에 맞추려면 그 화의 '재작성'으로 따로(재작성이 이 칸의 최신 content를 읽어 반영).
+  async function 연출펼치기(i: number) {
     if (busy) return;
     const t = turns[i];
     if (!t || t.id == null) return;
-    const parts = 합본분해(t.content);
-    if (!parts?.seed) {
-      showToast('다시 펼칠 초안이 없습니다.');
+    const seed = (합본분해(t.content)?.seed ?? t.content ?? '').trim(); // 합본이면 [초안], 평범하면 글 전체
+    if (!seed) {
+      showToast('펼칠 방향이 없습니다.');
       return;
     }
     const id = t.id;
@@ -494,14 +496,14 @@ export default function App() {
       const res = await fetch('/api/story', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ enrich: true, prompt: parts.seed, story_id: storyId, conti_model: genCfg.conti }),
+        body: JSON.stringify({ enrich: true, prompt: seed, story_id: storyId, conti_model: genCfg.conti }),
       });
       const d = await res.json().catch(() => ({}) as { colt?: string; error?: string });
       if (!res.ok || d.error || !d.colt) {
-        showToast(d.error || '연출을 다시 펼치지 못했습니다.');
+        showToast(d.error || '연출을 펼치지 못했습니다.');
         return;
       }
-      const 새합본 = 합본조립(parts.seed, d.colt);
+      const 새합본 = 합본조립(seed, d.colt);
       setTurns((p) => p.map((x) => (x.id === id ? { ...x, content: 새합본 } : x)));
       // 저장된 칸이라 DB에도 반영(새로고침해도 유지). 실패해도 이번 세션엔 이미 적용됨.
       try {
@@ -513,9 +515,9 @@ export default function App() {
       } catch {
         /* 무시 — 이번 세션엔 반영됨 */
       }
-      showToast('연출을 다시 펼쳤습니다.');
+      showToast('연출을 펼쳤습니다.');
     } catch {
-      showToast('연출을 다시 펼치지 못했습니다.');
+      showToast('연출을 펼치지 못했습니다.');
     } finally {
       setBusy(false);
     }
@@ -1061,12 +1063,21 @@ export default function App() {
                               <RotateCcw size={16} />
                             </button>
                           )}
-                          {/* 실행된 [연출] 칸 — 연출만 다시 받기(초안에서 새 콘티로 갈아끼움, 본문은 그대로) */}
+                          {/* [초안]/[연출] 칸 — 연출만 다시 받기(↺, 초안에서 새 콘티로 갈아끼움, 본문은 그대로) */}
                           {t.role === 'user' && 합본분해(t.content) && (
-                            <button className="turn-btn" title={UI.regen} onClick={() => 연출재작성(i)} disabled={busy}>
+                            <button className="turn-btn" title={UI.regen} onClick={() => 연출펼치기(i)} disabled={busy}>
                               <RotateCcw size={16} />
                             </button>
                           )}
+                          {/* 평범한 프롬프트 — 연출 켜졌을 때(딥시크) ✨로 연출을 입혀 [초안]/[연출] 칸으로. 본문은 그대로. */}
+                          {t.role === 'user' &&
+                            !합본분해(t.content) &&
+                            genCfg.model.startsWith('deepseek') &&
+                            genCfg.enrich && (
+                              <button className="turn-btn" title="연출" onClick={() => 연출펼치기(i)} disabled={busy}>
+                                <Sparkles size={16} />
+                              </button>
+                            )}
                           {/* 교정 ↔ 복원 — 교정본이 없으면 '교정'(딥시크 호출), 있으면 보기 토글(원본↔교정본, 호출 없음) */}
                           {t.role === 'assistant' &&
                             (t.polished == null ? (
