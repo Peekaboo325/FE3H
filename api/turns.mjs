@@ -19,9 +19,10 @@ export default async function handler(req, res) {
         res.status(200).end(JSON.stringify({ content }));
         return;
       }
-      // 복구 확인 — 마지막 턴만(전 회차 X). 끊긴 스트림이 서버엔 저장됐는지 가볍게 확인.
+      // 복구 확인 — 마지막 N턴만(전 회차 X). 끊긴 스트림이 서버엔 저장됐는지 가볍게 확인.
+      //   ?last=2면 유저(초안/연출)+조수 두 칸 — 실행 후 초안 칸 id까지 복구하려 꼬리를 조금 더 받는다.
       if (req.query?.last) {
-        const { turns, error } = await loadLastTurn(storyId);
+        const { turns, error } = await loadLastTurn(storyId, Number(req.query.last));
         res.status(200).end(JSON.stringify({ dbReady: dbReady(), turns, error }));
         return;
       }

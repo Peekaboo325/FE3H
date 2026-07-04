@@ -201,7 +201,8 @@ export default function App() {
   // 백그라운드 이탈 → 복귀 동기화(Fix B) — 폰을 내렸다 돌아왔을 때 서버가 저장한 완성본을 새로고침 없이 채운다.
   //  Fix A가 '유실 없음'을 보장하고, 여기선 '자동 표시'만 맡는다. ⚠️ 살아있는 스트림은 절대 안 건드린다:
   //  busy가 스스로 풀리면(정상 종료) 즉시 멈추고, 서버에 '완성된 assistant 저장본'이 있을 때만 스트리밍
-  //  placeholder(id 없음)를 제자리 패치(스크롤 안 튐). 부르는 건 마지막 턴 하나(?last=1)뿐 — egress 티끌.
+  //  placeholder(id 없음)를 제자리 패치(스크롤 안 튐). 부르는 건 꼬리 두 칸(?last=2)뿐 — egress 티끌.
+  //  꼬리 유저 칸(초안/연출)의 id까지 함께 채워야 그 컨트롤(수정·소각)도 살아난다.
   const busyRef = useRef(busy);
   busyRef.current = busy;
   const storyIdRef = useRef(storyId);
@@ -220,18 +221,25 @@ export default function App() {
         for (let i = 0; i < 6; i++) {
           if (!busyRef.current || !sid) return; // 스트림이 정상 종료(자체 복구)했거나 장이 없으면 손 안 댐
           try {
-            const r = await fetch(`/api/turns?story_id=${sid}&last=1`);
+            const r = await fetch(`/api/turns?story_id=${sid}&last=2`);
             const d = await r.json();
-            const 끝턴 = Array.isArray(d?.turns) ? (d.turns as Turn[])[d.turns.length - 1] : null;
+            const db = Array.isArray(d?.turns) ? (d.turns as Turn[]) : [];
+            const 끝턴 = db.length ? db[db.length - 1] : null;
             const last = turnsRef.current[turnsRef.current.length - 1];
             // 서버에 완성된 본문이 있고, 화면 마지막이 스트리밍 placeholder(id 없음)일 때만 제자리 패치.
             if (끝턴?.role === 'assistant' && 끝턴.content?.trim() && last && last.id == null && last._key) {
-              const key = last._key;
               setTurns((prev) => {
                 const pl = prev[prev.length - 1];
                 if (!pl || pl.id != null) return prev; // 그새 정상 복구됐으면 그대로
                 const p = prev.slice();
-                p[p.length - 1] = { ...(끝턴 as Turn), _key: key };
+                // 뒤에서부터 역할이 맞는 만큼만 짝지어 메꾼다 — 유저(초안/연출) 칸도 여기서 id를 받는다.
+                for (let k = 0; k < db.length; k++) {
+                  const pi = p.length - 1 - k;
+                  const dbT = db[db.length - 1 - k];
+                  const cur = p[pi];
+                  if (!cur || !dbT || cur.role !== dbT.role) break;
+                  if (cur.id == null && cur._key) p[pi] = { ...(dbT as Turn), _key: cur._key };
+                }
                 return p;
               });
               setBusy(false); // 죽은 스트림이 못 푼 잠금 해제
@@ -535,24 +543,29 @@ export default function App() {
       const 본문길이 = 받은.trim().length;
       if (storyId && 본문길이 > 0 && !받은.includes('[서고 오류]')) {
         // 연결만 끊기고 서버는 끝까지 생성·저장했을 수 있다 → 잠깐 폴링해 완성본을 받아온다(본문 완성+버튼 복구).
-        //  ⚠️ 마지막 턴 하나만 확인한다(?last=1) — 전 회차를 다시 받지 않는다(egress 절감).
+        //  ⚠️ 꼬리 두 칸만 확인한다(?last=2) — 전 회차를 다시 받지 않는다(egress 절감).
+        //  마지막 칸(조수 본문)뿐 아니라 그 위 유저 칸(초안/연출)의 id까지 함께 복구해야 컨트롤(수정·소각)이 뜬다.
         for (let 시도 = 0; 시도 < 6; 시도++) {
           try {
-            const r = await fetch(`/api/turns?story_id=${storyId}&last=1`);
+            const r = await fetch(`/api/turns?story_id=${storyId}&last=2`);
             const d = await r.json();
-            const 끝 = Array.isArray(d?.turns) ? (d.turns as Turn[])[d.turns.length - 1] : null;
+            const db = Array.isArray(d?.turns) ? (d.turns as Turn[]) : [];
+            const 끝 = db.length ? db[db.length - 1] : null;
             const 저장길이 = 끝?.role === 'assistant' ? (끝.content?.trim().length || 0) : -1;
             if (끝 && 저장길이 >= 본문길이) {
-              // 화면의 마지막 칸이 스트리밍 placeholder(id 없음·_key 있음)면 저장된 id·최종 본문을 제자리 패치.
-              //  _key는 유지 → 리마운트 없음(스크롤 튐 방지). 구조가 예상과 다르면 그대로 둔다(부분 본문 유지).
+              // 화면의 꼬리 칸들이 스트리밍 placeholder(id 없음·_key 있음)면 저장된 id·최종 본문을 제자리 패치.
+              //  뒤에서부터 역할이 맞는 만큼만 짝지어 메꾼다 — 유저(초안/연출) 칸도 여기서 id를 받아 컨트롤이 살아난다.
+              //  _key는 유지 → 리마운트 없음(스크롤 튐 방지). 어긋나면 거기서 멈춘다(부분 본문 유지).
               setTurns((prev) => {
-                const last = prev[prev.length - 1];
-                if (last && last.id == null && last._key) {
-                  const patched = prev.slice();
-                  patched[patched.length - 1] = { ...(끝 as Turn), _key: last._key };
-                  return patched;
+                const patched = prev.slice();
+                for (let k = 0; k < db.length; k++) {
+                  const pi = patched.length - 1 - k; // 화면 꼬리에서 k번째
+                  const dbT = db[db.length - 1 - k]; // DB 꼬리에서 k번째
+                  const cur = patched[pi];
+                  if (!cur || !dbT || cur.role !== dbT.role) break; // 정렬 어긋나면 중단
+                  if (cur.id == null && cur._key) patched[pi] = { ...(dbT as Turn), _key: cur._key };
                 }
-                return prev;
+                return patched;
               });
               break;
             }

@@ -82,8 +82,11 @@ app.get('/api/turns', async (req, res) => {
   }
   let result = { turns: [], error: null };
   try {
-    // 복구 확인 — 마지막 턴만(전 회차 X). 끊긴 스트림이 서버엔 저장됐는지 가볍게 확인.
-    result = req.query?.last ? await loadLastTurn(storyId) : await loadTurns(storyId);
+    // 복구 확인 — 마지막 N턴만(전 회차 X). 끊긴 스트림이 서버엔 저장됐는지 가볍게 확인.
+    //   ?last=2면 유저(초안/연출)+조수 두 칸 — 실행 후 초안 칸 id까지 복구.
+    result = req.query?.last
+      ? await loadLastTurn(storyId, Number(req.query.last))
+      : await loadTurns(storyId);
   } catch (e) {
     result = { turns: [], error: e?.message || String(e) };
   }
