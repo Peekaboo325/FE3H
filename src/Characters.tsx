@@ -622,6 +622,7 @@ export default function Characters({
   const [exploring, setExploring] = useState(false); // 소지품 탐색 중
   const [journaling, setJournaling] = useState(false); // 일지 술회 중
   const [dailySaving, setDailySaving] = useState(false); // 일상 세팅 기록 중
+  const [dailyMeta, setDailyMeta] = useState<{ tick_ms: number; per_tick: number } | null>(null); // 수입 박자·박자당 액수(카운트다운용)
   const [armedItemId, setArmedItemId] = useState<string | null>(null); // 소지품 소각 두 번 누르기 대상
   useEffect(() => setArmedItemId(null), [tab]); // 탭을 옮기면 활성 해제
   // ESC = 그 화면의 뒤로/취소(없으면 닫기) — 편집 중 실수로 패널 전체가 닫히지 않게 한 겹씩.
@@ -875,6 +876,7 @@ export default function Characters({
       const data = await res.json();
       if (!res.ok || data.error) return;
       setViewing((v) => (v && v.id === id ? { ...v, analysis: data.report } : v));
+      if (typeof data.tick_ms === 'number') setDailyMeta({ tick_ms: data.tick_ms, per_tick: data.per_tick ?? 0 });
     } catch {
       /* 무시 — 다음 열람에서 다시 정산 */
     }
@@ -1277,7 +1279,13 @@ export default function Characters({
                   onIssue={발급}
                 />
               ) : tab === '일상' ? (
-                <DailyTab report={viewing.analysis} saving={dailySaving} onSetup={일상세팅} />
+                <DailyTab
+                  report={viewing.analysis}
+                  saving={dailySaving}
+                  onSetup={일상세팅}
+                  meta={dailyMeta}
+                  onSettle={() => viewing?.id && 일상정산(viewing.id)}
+                />
               ) : tab === '임무' ? (
                 <QuestsView
                   report={viewing.analysis}

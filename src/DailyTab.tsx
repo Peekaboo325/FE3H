@@ -5,7 +5,7 @@
 //  0단계 = 껍데기(빈 3구획) + 현황 설정 면(빌더가 재능 ≤3·특성·수입을 직접 깐다 — AI 안 거침, 피플 생성하듯).
 //   재능 = 고른 능력 C·나머지 E에서 시작(start_grades로 파생 저장). 천장 C, B·A·S는 육성으로만.
 //   능력 적립·경제·상태·로그·버튼은 단계별로 채운다.
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Settings } from 'lucide-react';
 import type { CharReport, DailyState, AbilityKey, Grade, IncomeGrade } from './useCharacters';
 import { TRAITS } from './traits';
@@ -35,6 +35,12 @@ const 등급값 = (g?: string) => {
   const i = 등급사다리.indexOf(g ?? 'E');
   return i < 0 ? 0 : i / (등급사다리.length - 1); // 0(E)~1(S)
 };
+
+// 남은 시간 → M:SS(수입 카운트다운 표시용).
+function mmss(ms: number): string {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
 
 // 능력 6각 레이더 — 시작 등급을 육각형으로(SVG, 의존성 없음). 값은 등급→0~1 환산.
 function DailyRadar({ grades }: { grades?: Partial<Record<AbilityKey, Grade>> }) {
@@ -78,14 +84,40 @@ export default function DailyTab({
   report,
   saving,
   onSetup,
+  meta,
+  onSettle,
 }: {
   report?: CharReport | null;
   saving: boolean;
   onSetup: (patch: Partial<DailyState>) => Promise<boolean>;
+  meta?: { tick_ms: number; per_tick: number } | null; // 수입 박자·박자당 액수(서버 단일 출처)
+  onSettle?: () => void; // 카운트다운이 0이 되면 정산 트리거(뭉치 떨어뜨림)
 }) {
   const daily = report?.daily;
   const ready = !!daily?.setup_at; // 빌더가 세팅을 한 번 깔았는가
   const [mode, setMode] = useState<'view' | 'setup'>('view');
+
+  // 수입 카운트다운 — 다음 뭉치까지 남은 시간(순수 화면·서버 호출 0). 0이 되면 onSettle로 정산해 지갑이 눈앞에서 뛴다.
+  //  기준 = last_settled_at(항상 박자 경계) + 박자. 탭 닫으면 안 돌지만 돈은 열 때 정산으로 그대로 쌓임(어긋남 없음).
+  const [now, setNow] = useState(() => Date.now());
+  const 자동정산ref = useRef(0);
+  const lastMs = daily?.last_settled_at ? Date.parse(daily.last_settled_at) : NaN;
+  const tickMs = meta?.tick_ms ?? 0;
+  const perTick = meta?.per_tick ?? 0;
+  const 수입진행 = perTick > 0 && tickMs > 0 && !Number.isNaN(lastMs);
+  const 남음 = 수입진행 ? Math.max(0, lastMs + tickMs - now) : 0;
+  useEffect(() => {
+    if (!수입진행) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [수입진행]);
+  useEffect(() => {
+    // 0이 되면 정산(3초 가드로 중복·정체 방지 — 정산이 새 last_settled_at을 주면 남음이 리셋된다).
+    if (수입진행 && onSettle && 남음 <= 0 && now - 자동정산ref.current > 3000) {
+      자동정산ref.current = now;
+      onSettle();
+    }
+  }, [수입진행, 남음, now, onSettle]);
 
   // 세팅 폼 상태 — 진입할 때 기존값(편집)이나 기본값(신규: 재능·특성 없음·수입 없음)으로 채운다.
   const [talents, setTalents] = useState<AbilityKey[]>([]);
@@ -277,6 +309,9 @@ export default function DailyTab({
           <div className="view-label">지갑</div>
           <div className="daily-wallet-val">{화폐표기(daily?.wallet ?? 0)}</div>
           <div className="daily-income-sub">수입 · {daily?.income_grade ?? '없음'}</div>
+          {수입진행 && (
+            <div className="daily-next-income">다음 +{화폐표기(perTick)} · {mmss(남음)}</div>
+          )}
         </div>
         {/* 좌하 — 특성(고른 것 칩으로) */}
         <div className="view-section daily-traits-cell">
