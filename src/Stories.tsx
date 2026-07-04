@@ -1,14 +1,25 @@
 import { useEffect, useState } from 'react';
-import { Check, X, Pencil, Copy, Trash2, Eraser, MoreHorizontal } from 'lucide-react';
+import { Check, X, Pencil, Copy, Trash2, Eraser, MoreHorizontal, Download } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
 import { confirmAsk } from './dialog';
 import { showToast } from './toast';
 import { UI } from './strings';
+import { stripMarkdown } from './podraScript';
 import Modal from './Modal';
+import Button from './Button';
 import IconButton from './IconButton';
 import Spinner from './Spinner';
 import GenControls, { type GenConfig } from './Settings';
 import UsagePanel from './UsagePanel';
+
+// 장 본문(조수 화들)을 한 텍스트로 — 마크다운 그대로(markdown) 또는 글만(stripMarkdown). 화 사이 빈 줄.
+type Turn = { role: string; content?: string };
+function 장본문텍스트(turns: Turn[], markdown: boolean): string {
+  return turns
+    .filter((t) => t.role === 'assistant' && t.content?.trim())
+    .map((t) => (markdown ? t.content!.trim() : stripMarkdown(t.content!)))
+    .join('\n\n\n');
+}
 
 type Story = { id: number; title: string; updated_at?: string };
 
@@ -34,6 +45,40 @@ export default function Stories({
   const [renameText, setRenameText] = useState('');
   const [menuId, setMenuId] = useState<number | null>(null); // ⋯ 더보기 메뉴 펼친 장
   const [tab, setTab] = useState<'records' | 'writing' | 'usage'>('records'); // 천각의 박동 탭
+  const [exportStory, setExportStory] = useState<Story | null>(null); // 반출 다이얼로그 대상 장
+  const [exportMd, setExportMd] = useState(true); // 반출 시 마크다운 양식 포함 여부
+  const [exportBusy, setExportBusy] = useState(false);
+
+  // 반출 — 그 장의 본문(조수 화들)을 한 번 읽어 텍스트 파일로 내린다. 본문만(프롬프트·[초안]/[연출] 제외).
+  //  풀 리드지만 '전체를 받겠다'는 수동·드문 동작이라 정당(§9 이그레스 규율에 어긋나지 않음).
+  async function 반출하기(s: Story, markdown: boolean) {
+    if (exportBusy) return;
+    setExportBusy(true);
+    try {
+      const r = await fetch(`/api/turns?story_id=${s.id}`);
+      const d = await r.json();
+      const turns: Turn[] = Array.isArray(d?.turns) ? d.turns : [];
+      const text = 장본문텍스트(turns, markdown);
+      if (!text.trim()) {
+        showToast('반출할 본문이 없습니다.');
+        return;
+      }
+      const 날짜 = new Date().toISOString().slice(0, 10);
+      const 파일명 = `${(s.title || '운명의 장').replace(/[\\/:*?"<>|]/g, '_')}_${날짜}.txt`;
+      const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 파일명;
+      a.click();
+      URL.revokeObjectURL(url);
+      setExportStory(null);
+      showToast('장을 반출하였습니다.');
+    } catch {
+      showToast('장을 반출하지 못했습니다.');
+    } finally {
+      setExportBusy(false);
+    }
+  }
 
   // 메뉴 바깥을 누르면 닫는다(여는 클릭이 바로 닫지 않게 다음 틱부터 듣는다).
   useEffect(() => {
@@ -174,6 +219,7 @@ export default function Stories({
   }
 
   return (
+    <>
     <Modal onClose={onClose} title="천각의 박동">
       <div className="modal-tabs">
         <button
@@ -295,6 +341,17 @@ export default function Stories({
                               {UI.copy}
                             </button>
                             <button
+                              className="row-menu-item"
+                              onClick={() => {
+                                setMenuId(null);
+                                setExportMd(true);
+                                setExportStory(s);
+                              }}
+                            >
+                              <Download size={15} />
+                              {UI.export}
+                            </button>
+                            <button
                               className="row-menu-item danger"
                               onClick={() => {
                                 setMenuId(null);
@@ -327,5 +384,30 @@ export default function Stories({
         </div>
       )}
     </Modal>
+
+    {exportStory && (
+      <Modal onClose={() => setExportStory(null)} title={`${UI.export} — 「${exportStory.title}」`}>
+        <div className="modal-body">
+          <p className="dim">이 장의 본문(화)을 텍스트 파일로 반출합니다. 프롬프트·[초안]/[연출]은 빼고 본문만 담깁니다.</p>
+          <div className="settings-group">
+            <div className="settings-label">마크다운 양식</div>
+            <div className="settings-options">
+              <button className={'settings-opt' + (exportMd ? ' on' : '')} onClick={() => setExportMd(true)}>
+                포함
+              </button>
+              <button className={'settings-opt' + (!exportMd ? ' on' : '')} onClick={() => setExportMd(false)}>
+                글만
+              </button>
+            </div>
+          </div>
+          <div className="dialog-actions">
+            <Button variant="primary" loading={exportBusy} onClick={() => 반출하기(exportStory, exportMd)}>
+              {UI.export}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    )}
+    </>
   );
 }
