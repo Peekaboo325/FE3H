@@ -319,12 +319,20 @@ em, i { font-style: normal; }
 /* 문헌 권 번호 — '제N권 참조'의 기준점(제목 앞 인라인) — 이건 유지(번호 보여야 지목 가능) */
 .ep-no.jang { display: inline; margin: 0 6px 0 0; }
 .scene-break { text-align: center; color: var(--text-dim); font-size: 15px; letter-spacing: 0.4em; margin: 10px 0; }
+/* 작중 문서 인용(수배령·포고문·편지 등) — 웹/이메일 결의 '왼쪽 막대'를 걷고,
+   인쇄된 소설의 제사·비문처럼 좌우 여백으로 물러앉힌다. 이탤릭 금지(§1) — 톤·자간으로만 구분. */
 .turn.story blockquote {
-  margin: 0 0 12px;
-  padding-left: 12px;
-  border-left: 3px solid var(--border);
+  margin: 14px 26px;
+  padding: 0;
+  border: none;
   color: var(--text-dim);
+  font-size: 0.95em;
+  letter-spacing: 0.01em;
 }
+.turn.story blockquote p { margin: 0 0 8px; }
+.turn.story blockquote p:last-child { margin-bottom: 0; }
+/* 이어지는 문서 줄(수배 대상:·특징:…)은 한 문서로 묶이게 간격을 좁힌다 */
+.turn.story blockquote + blockquote { margin-top: -4px; }
 .turn.story ul,
 .turn.story ol { margin: 0 0 12px; padding-left: 22px; }
 .turn.story li { margin: 2px 0; }
