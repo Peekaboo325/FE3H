@@ -13,11 +13,17 @@ import GenControls, { type GenConfig } from './Settings';
 import UsagePanel from './UsagePanel';
 
 // 장 본문(조수 화들)을 한 텍스트로 — 마크다운 그대로(markdown) 또는 글만(stripMarkdown). 화 사이 빈 줄.
-type Turn = { role: string; content?: string };
+//  ⚠️ 원본이 아니라 '지금 보고 있는 판(표시본)'을 담는다 — 교정본을 보는 중인 화(polished_show)는 교정본으로.
+type Turn = { role: string; content?: string; polished?: string | null; polished_show?: boolean };
+function 표시본(t: Turn): string {
+  return (t.polished_show && t.polished ? t.polished : t.content) ?? '';
+}
 function 장본문텍스트(turns: Turn[], markdown: boolean): string {
   return turns
-    .filter((t) => t.role === 'assistant' && t.content?.trim())
-    .map((t) => (markdown ? t.content!.trim() : stripMarkdown(t.content!)))
+    .filter((t) => t.role === 'assistant')
+    .map((t) => 표시본(t))
+    .filter((본문) => 본문.trim())
+    .map((본문) => (markdown ? 본문.trim() : stripMarkdown(본문)))
     .join('\n\n\n');
 }
 
