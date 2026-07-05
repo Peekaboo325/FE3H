@@ -777,11 +777,35 @@ export default function App() {
     setArmedTurn(null);
     setTurns((prev) => prev.filter((x) => x.id !== id));
     if (editingTurn === id) setEditingTurn(null);
+    // DELETE 실패를 삼키지 않는다 — 화면만 지워지고 DB엔 남는 '유령 화'가 여기서 생길 수 있다.
     try {
-      await fetch(`/api/turns?id=${id}`, { method: 'DELETE' });
+      const r = await fetch(`/api/turns?id=${id}`, { method: 'DELETE' });
+      const d = await r.json().catch(() => ({}) as { error?: string });
+      if (!r.ok || d.error) showToast('소각이 기록에 반영되지 못했습니다 — 새로고침 후 다시 시도하십시오.');
     } catch {
-      /* 무시 */
+      showToast('소각이 기록에 반영되지 못했습니다 — 새로고침 후 다시 시도하십시오.');
     }
+  }
+
+  // 끊긴(id 없는) 답변 소각 — '화면 전용'으로 지우기 전에, 그 화가 실은 DB에 저장됐는지 꼬리를 확인한다.
+  //  저장돼 있으면(내용이 꼭 같으면) 그 id로 DB에서도 지운다 → 폰 백그라운드로 id가 안 실려도 '유령 화'를 안 남긴다.
+  //  정말 저장 안 된 것(꼬리와 내용이 다르거나 없음)만 화면에서만 치운다.
+  async function 끊긴답변소각(i: number) {
+    const t = turns[i];
+    const 글 = (t?.content || '').trim();
+    if (storyId && 글) {
+      try {
+        const r = await fetch(`/api/turns?story_id=${storyId}&last=1`);
+        const d = await r.json();
+        const 끝 = Array.isArray(d?.turns) ? (d.turns as Turn[])[d.turns.length - 1] : null;
+        if (끝?.id != null && 끝.role === 'assistant' && (끝.content || '').trim() === 글) {
+          await fetch(`/api/turns?id=${끝.id}`, { method: 'DELETE' }); // 실은 저장된 화 → DB에서도 소각
+        }
+      } catch {
+        /* 확인 실패 — 화면에서만 치운다(아래) */
+      }
+    }
+    setTurns((p) => p.filter((_, idx) => idx !== i));
   }
 
   // 한 답변 '새로 받기' — 앞 대화 + 그 프롬프트만 반영해 그 칸만 다시 씀(뒤는 그대로).
@@ -1163,12 +1187,12 @@ export default function App() {
                         </>
                       ) : (
                         t.role === 'assistant' && (
-                          // 저장 안 된(끊긴) 답변 — 화면에서만 치운다(소각).
+                          // 끊긴(id 없는) 답변 소각 — 실은 DB에 저장됐으면 그것까지 지운다(유령 화 방지).
                           <button
                             className="turn-btn"
                             title={UI.erase}
                             aria-label={UI.erase}
-                            onClick={() => setTurns((p) => p.filter((_, idx) => idx !== i))}
+                            onClick={() => 끊긴답변소각(i)}
                           >
                             <Trash2 size={16} />
                           </button>
