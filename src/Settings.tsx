@@ -8,9 +8,10 @@ const MODELS = [
   // ⚠️ Opus 4.8 잠깐 걷어둠(2026-06-19, 비용 사고) — 복구: { id: 'claude-opus-4-8', label: 'Opus 4.8' } 다시 추가
   { id: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro' },
 ];
-// 연출 모델(콘티 2차) — DeepSeek(연출만 시켰을 때 되는지 시험) / Sonnet·Opus(연출 강함, 비용↑). 서버 enrich가 허용목록 검증.
+// 연출 모델(콘티 2차) — Flash(저비용 기본) / Sonnet·Opus(연출 강함, 비용↑). 서버 enrich가 허용목록 검증.
+//  ⚠️ DeepSeek 자리를 다시 Flash로 되돌림(2026-07-04) — 딥시크는 연출가로선 편차·겉멋이 커 Flash로 원복.
 const CONTI = [
-  { id: 'deepseek-v4-pro', label: 'DeepSeek' },
+  { id: 'gemini-2.5-flash', label: 'Flash' },
   { id: 'claude-sonnet-4-6', label: 'Sonnet' },
   { id: 'claude-opus-4-8', label: 'Opus' },
 ];

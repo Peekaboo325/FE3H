@@ -138,10 +138,10 @@ const DEFAULT_GEN: GenConfig = {
   model: 'deepseek-v4-pro',
   effort: 'medium',
   enrich: true,
-  conti: 'deepseek-v4-pro',
+  conti: 'gemini-2.5-flash',
   polish: 'deepseek-v4-pro',
 };
-const CONTI_IDS = ['deepseek-v4-pro', 'claude-sonnet-4-6', 'claude-opus-4-8']; // 연출 모델 유효값(옛 gemini는 default로 강등)
+const CONTI_IDS = ['gemini-2.5-flash', 'claude-sonnet-4-6', 'claude-opus-4-8']; // 연출 모델 유효값(옛 저장값 deepseek → Flash default로 강등)
 function loadGenCfg(): GenConfig {
   try {
     const p = JSON.parse(localStorage.getItem(GEN_KEY) || 'null');
