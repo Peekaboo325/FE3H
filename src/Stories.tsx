@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { Check, X, Pencil, Copy, Trash2, Eraser, MoreHorizontal, Download } from 'lucide-react';
 import { defaultStoryTitle } from './storyTitle';
 import { confirmAsk } from './dialog';
@@ -25,6 +25,17 @@ function 장본문텍스트(turns: Turn[], markdown: boolean): string {
     .filter((본문) => 본문.trim())
     .map((본문) => (markdown ? 본문.trim() : stripMarkdown(본문)))
     .join('\n\n\n');
+}
+
+// 반입 — 파일 텍스트를 화 단위로 쪼갠다. 화 경계 = '## ' 제목 줄(반출이 내는 형식). 헤딩이 없으면 통째로 한 화.
+function 화로쪼개기(text: string): string[] {
+  const t = text.trim();
+  if (!t) return [];
+  const parts = t
+    .split(/(?=^##\s)/m)
+    .map((s) => s.trim())
+    .filter((s) => /^##\s/.test(s));
+  return parts.length ? parts : [t];
 }
 
 type Story = { id: number; title: string; updated_at?: string };
@@ -54,6 +65,69 @@ export default function Stories({
   const [exportStory, setExportStory] = useState<Story | null>(null); // 반출 다이얼로그 대상 장
   const [exportPick, setExportPick] = useState<boolean | null>(null); // 진행 중인 선택(true=포함/false=불포함) — 그 버튼만 로딩
   const [exportBusy, setExportBusy] = useState(false);
+  const [importing, setImporting] = useState(false); // 파일 반입 다이얼로그
+  const [importEps, setImportEps] = useState<string[]>([]); // 쪼갠 화들
+  const [importTitle, setImportTitle] = useState(''); // 새 장 제목(파일명에서)
+  const [importTarget, setImportTarget] = useState<'new' | 'current'>('new'); // 새 장 / 현재 장에 이어붙이기
+  const [importBusy, setImportBusy] = useState(false);
+
+  // 파일 선택 → 텍스트 읽어 화로 쪼갠다. 새 장 제목은 파일명에서.
+  function 파일선택(e: ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImportEps(화로쪼개기(String(reader.result || '')));
+      setImportTitle(f.name.replace(/\.(txt|md|markdown)$/i, '').trim() || defaultStoryTitle(list.length + 1));
+    };
+    reader.readAsText(f);
+  }
+
+  // 반입 실행 — 새 장을 만들거나 현재 장에, 쪼갠 화들을 모델 호출 없이 차례로 심는다.
+  async function 반입실행() {
+    if (importBusy || !importEps.length) return;
+    setImportBusy(true);
+    try {
+      let 대상id = currentStoryId;
+      let 대상제목 = list.find((s) => s.id === currentStoryId)?.title || '';
+      if (importTarget === 'new') {
+        const cr = await fetch('/api/stories', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ title: importTitle || defaultStoryTitle(list.length + 1) }),
+        });
+        const cd = await cr.json();
+        if (!cr.ok || !cd.story) {
+          showToast('새 장을 만들지 못했습니다.');
+          return;
+        }
+        대상id = cd.story.id;
+        대상제목 = cd.story.title;
+      }
+      if (!대상id) {
+        showToast('반입할 장이 없습니다.');
+        return;
+      }
+      const r = await fetch('/api/turns', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ story_id: 대상id, turns: importEps.map((c) => ({ role: 'assistant', content: c })) }),
+      });
+      const d = await r.json();
+      if (!r.ok || d.error) {
+        showToast(d.error || '반입하지 못했습니다.');
+        return;
+      }
+      showToast(`${d.count}개 화를 반입하였습니다.`);
+      setImporting(false);
+      setImportEps([]);
+      onSwitch(대상id, 대상제목); // 그 장을 열어 새로고침(반입한 화가 뜨게)
+    } catch {
+      showToast('반입하지 못했습니다.');
+    } finally {
+      setImportBusy(false);
+    }
+  }
 
   // 반출 — 그 장의 본문(조수 화들)을 한 번 읽어 텍스트 파일로 내린다. 본문만(프롬프트·[초안]/[연출] 제외).
   //  풀 리드지만 '전체를 받겠다'는 수동·드문 동작이라 정당(§9 이그레스 규율에 어긋나지 않음).
@@ -277,6 +351,17 @@ export default function Stories({
           <button className="new" onClick={새이야기}>
             ＋ 새로운 운명의 장
           </button>
+          <button
+            className="new"
+            onClick={() => {
+              setImportEps([]);
+              setImportTitle('');
+              setImportTarget('new');
+              setImporting(true);
+            }}
+          >
+            파일에서 {UI.import}
+          </button>
           {loading ? (
             <Spinner />
           ) : list.length === 0 ? (
@@ -415,6 +500,42 @@ export default function Stories({
               불포함
             </Button>
           </div>
+        </div>
+      </Modal>
+    )}
+
+    {importing && (
+      <Modal onClose={() => setImporting(false)} title={`본문 ${UI.import}`} className="modal--export">
+        <div className="modal-body export-body">
+          <p className="export-line">양식(각 화가 ## 제목으로 시작)에 맞는 .txt·.md 파일을 화로 쌓습니다.</p>
+          <div className="import-file">
+            <input type="file" accept=".txt,.md,.markdown,text/plain,text/markdown" onChange={파일선택} />
+          </div>
+          {importEps.length > 0 && (
+            <>
+              <p className="export-line">{importEps.length}개 화를 반입합니다.</p>
+              <div className="import-target">
+                <button
+                  className={'settings-opt' + (importTarget === 'new' ? ' on' : '')}
+                  onClick={() => setImportTarget('new')}
+                >
+                  새 장
+                </button>
+                <button
+                  className={'settings-opt' + (importTarget === 'current' ? ' on' : '')}
+                  disabled={!currentStoryId}
+                  onClick={() => setImportTarget('current')}
+                >
+                  이 장에 이어붙이기
+                </button>
+              </div>
+              <div className="export-actions">
+                <Button variant="primary" loading={importBusy} onClick={반입실행}>
+                  {UI.import}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     )}

@@ -48,7 +48,7 @@ import { runLetters, runDirectedLetter } from '../lib/letters.mjs';
 import { listLetters, updateLetter, deleteLetter } from '../lib/db.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
-import { loadTurnsForSummary, getTurnContent, setTurnSummary, savePolished, setPolishedShow, insertTurn } from '../lib/db.mjs';
+import { loadTurnsForSummary, getTurnContent, setTurnSummary, savePolished, setPolishedShow, insertTurn, insertTurns } from '../lib/db.mjs';
 import { migratePortraits } from '../lib/storage.mjs';
 import { 기록모티프 } from '../lib/motifs.mjs'; // 연출 소진 대장 갱신(반복 방지 B안)
 import { runRestock, procureItem, SHOPS } from '../lib/supply.mjs';
@@ -97,6 +97,12 @@ app.get('/api/turns', async (req, res) => {
 app.post('/api/turns', async (req, res) => {
   const { id, content, polished, polished_show, story_id, role } = req.body || {};
   if (!id) {
+    // 반입(대량) — 여러 화를 한 번에 심기(id 없이 story_id + turns 배열).
+    if (story_id && Array.isArray(req.body?.turns)) {
+      const r = await insertTurns(Number(story_id), req.body.turns);
+      res.status(r.error ? 500 : 200).json(r);
+      return;
+    }
     // 친필 — 모델 호출 없이 조수(본문) 턴 하나 심기(id 없이 story_id+content).
     if (story_id && typeof content === 'string' && content.trim()) {
       const r = await insertTurn(Number(story_id), role === 'user' ? 'user' : 'assistant', String(content));
