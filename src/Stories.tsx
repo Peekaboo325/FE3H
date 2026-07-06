@@ -348,20 +348,22 @@ export default function Stories({
           )}
 
           <div className="modal-body">
-          <button className="new" onClick={새이야기}>
-            ＋ 새로운 운명의 장
-          </button>
-          <button
-            className="new"
-            onClick={() => {
-              setImportEps([]);
-              setImportTitle('');
-              setImportTarget('new');
-              setImporting(true);
-            }}
-          >
-            파일에서 {UI.import}
-          </button>
+          <div className="records-actions">
+            <button className="new" onClick={새이야기}>
+              새로운 운명의 장
+            </button>
+            <button
+              className="new"
+              onClick={() => {
+                setImportEps([]);
+                setImportTitle('');
+                setImportTarget('new');
+                setImporting(true);
+              }}
+            >
+              파일에서 {UI.import}
+            </button>
+          </div>
           {loading ? (
             <Spinner />
           ) : list.length === 0 ? (
@@ -507,7 +509,6 @@ export default function Stories({
     {importing && (
       <Modal onClose={() => setImporting(false)} title={`본문 ${UI.import}`} className="modal--export">
         <div className="modal-body export-body">
-          <p className="export-line">양식(각 화가 ## 제목으로 시작)에 맞는 .txt·.md 파일을 화로 쌓습니다.</p>
           <div className="import-file">
             <input type="file" accept=".txt,.md,.markdown,text/plain,text/markdown" onChange={파일선택} />
           </div>
