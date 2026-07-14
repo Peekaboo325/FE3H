@@ -468,7 +468,9 @@ em, i { font-style: normal; }
   font-size: 15px;
   line-height: 1.6;
 }
-.compose button {
+/* ⚠️ 전개 버튼'만' — .compose button(footer 전부)으로 넓히지 말 것. 갈래 시트 등 footer 안
+   다른 버튼(카드·아이콘)에 고정 높이·inline-flex가 번져 글이 겹치는 사고가 났었다(2026-07-07). */
+.compose-inner > button {
   align-self: flex-end;
   display: inline-flex;
   align-items: center;
@@ -486,12 +488,12 @@ em, i { font-style: normal; }
   font-size: 15px;
   cursor: pointer;
 }
-.compose button:hover:not(:disabled) {
+.compose-inner > button:hover:not(:disabled) {
   border-color: var(--accent);
   box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 24%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent);
 }
-.compose button:disabled { opacity: 0.5; cursor: default; }
+.compose-inner > button:disabled { opacity: 0.5; cursor: default; }
 
 /* ── 모달(인물·견문록) ─────────────────────────────────── */
 .modal-bg {
