@@ -41,6 +41,7 @@ import {
 import { buildGuidanceBlock } from '../lib/guidance.mjs';
 import { genConfig } from '../lib/genConfig.mjs';
 import { runEnrich } from '../lib/enrich.mjs';
+import { runIdeate } from '../lib/ideate.mjs';
 import { 서술자키, 서술자클라이언트, 머리글게이트, 직전화날짜, 본문생성, 본문교정, 교정모델 } from '../lib/llm.mjs';
 import { buildCharacterContext } from '../lib/charContext.mjs';
 import analysisHandler from '../api/analysis.mjs'; // 보고서·임무·소지품·일지 통합 입구(Hobby 12함수 한도)
@@ -380,6 +381,15 @@ app.delete('/api/lore', async (req, res) => {
 });
 
 app.post('/api/story', async (req, res) => {
+  // 갈래(구상) — 막힌 순간 '다음에 일어날 수 있는 일' 셋(api/story.mjs와 같은 결).
+  if (req.body?.ideate) {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(400).end(JSON.stringify({ error: '갈래를 살필 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).' }));
+    }
+    const r = await runIdeate({ storyId: req.body?.story_id ?? null });
+    return res.status(r.error ? 500 : 200).end(JSON.stringify(r));
+  }
   // 윤색(연출 콘티) 전처리 — 본문 스트리밍 전, 짧은 1차를 2차 콘티로 펼쳐 JSON 반환(api/story.mjs와 같은 결).
   if (req.body?.enrich) {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');

@@ -19,6 +19,7 @@ import { buildCharacterContext } from '../lib/charContext.mjs';
 import { buildLoreContext } from '../lib/loreContext.mjs';
 import { prepareConversation, buildSummaryBlock } from '../lib/memory.mjs';
 import { runEnrich } from '../lib/enrich.mjs';
+import { runIdeate } from '../lib/ideate.mjs';
 import { 기록모티프 } from '../lib/motifs.mjs'; // 연출 소진 대장 갱신(반복 방지 B안)
 import {
   parseAnchors,
@@ -36,6 +37,16 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).end('POST만 받습니다.');
     return;
+  }
+
+  // 갈래(구상) — 막힌 순간 '다음에 일어날 수 있는 일' 셋을 JSON으로(도면 docs/갈래_설계.md). Flash·온디맨드.
+  if (req.body?.ideate) {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(400).end(JSON.stringify({ error: '갈래를 살필 통로가 아직 닫혀 있습니다(GEMINI_API_KEY 없음).' }));
+    }
+    const r = await runIdeate({ storyId: req.body?.story_id ?? null });
+    return res.status(r.error ? 500 : 200).end(JSON.stringify(r));
   }
 
   // 윤색(연출 콘티) 전처리 — 본문 스트리밍과 별개. 짧은 1차를 2차 콘티로 펼쳐 JSON으로 돌려준다(딥시크 경로의 실행 전 단계).

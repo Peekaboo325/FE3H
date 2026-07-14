@@ -428,6 +428,33 @@ em, i { font-style: normal; }
   margin: 0 auto;
   padding: 0 20px;
 }
+
+/* 갈래(구상) 시트 — 빈 입력창에서 부르면 compose 위에 후보 셋이 얹힌다(도면 docs/갈래_설계.md) */
+.galae-sheet {
+  max-width: 720px;
+  margin: 0 auto 10px;
+  padding: 10px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.galae-head { display: flex; align-items: center; justify-content: space-between; }
+.galae-cap { font-size: 12px; color: var(--accent); letter-spacing: 0.14em; }
+.galae-actions { display: flex; gap: 4px; }
+.galae-card {
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.6;
+}
+.galae-card:hover { border-color: var(--accent); }
+.galae-event { font-size: 14px; }
+.galae-stakes { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
 .compose textarea {
   flex: 1;
   resize: none;

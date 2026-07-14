@@ -163,6 +163,8 @@ export default function App() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [forks, setForks] = useState<{ event: string; stakes: string }[] | null>(null); // 갈래(구상) 후보 셋
+  const [forksBusy, setForksBusy] = useState(false);
   const [storyId, setStoryId] = useState<number | null>(null);
   const [storyTitle, setStoryTitle] = useState('');
   const [showChars, setShowChars] = useState(false);
@@ -407,6 +409,34 @@ export default function App() {
     setTurns([]);
     loadTurnsFor(id);
     setShowStories(false);
+  }
+
+  // 갈래(구상) — 막힌 순간(빈 입력창) '다음에 일어날 수 있는 일' 셋을 받아 고른다(도면 docs/갈래_설계.md).
+  //  고르면 입력창에 채워져 작가가 다듬은 뒤 직접 전개 — 기존 흐름(연출 콘티→본문) 앞에 구상 칸 하나를 붙인 것.
+  async function 갈래요청() {
+    if (busy || forksBusy) return;
+    if (!storyId) {
+      showToast('먼저 운명의 장을 펼치십시오.');
+      return;
+    }
+    setForksBusy(true);
+    try {
+      const res = await fetch('/api/story', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ ideate: true, story_id: storyId }),
+      });
+      const d = await res.json().catch(() => ({}) as { forks?: { event: string; stakes: string }[]; error?: string });
+      if (!res.ok || d.error || !Array.isArray(d.forks) || !d.forks.length) {
+        showToast(d.error || '갈래를 살피지 못했습니다 — 다시 시도하십시오.');
+        return;
+      }
+      setForks(d.forks);
+    } catch {
+      showToast('갈래를 살피지 못했습니다 — 다시 시도하십시오.');
+    } finally {
+      setForksBusy(false);
+    }
   }
 
   // 전개 버튼 — 딥시크면 '연출 콘티(2차)'부터 펼쳐 게이트로, Opus면 바로 본문.
@@ -1211,6 +1241,36 @@ export default function App() {
 
       {mode === 'write' && (
         <footer className="compose">
+          {forks && (
+            // 갈래 시트 — 후보 셋. 탭 = 입력창에 채움(작가가 다듬어 전개). ↺=다시 살핌, X=접음.
+            <div className="galae-sheet">
+              <div className="galae-head">
+                <span className="galae-cap">{UI.ideate}</span>
+                <div className="galae-actions">
+                  <button className="turn-btn" title={UI.regen} onClick={갈래요청} disabled={forksBusy}>
+                    {forksBusy ? <span className="spinner" /> : <RotateCcw size={15} />}
+                  </button>
+                  <button className="turn-btn" title={UI.close} onClick={() => setForks(null)}>
+                    <X size={15} />
+                  </button>
+                </div>
+              </div>
+              {forks.map((f, i) => (
+                <button
+                  key={i}
+                  className="galae-card"
+                  onClick={() => {
+                    setInput(f.event);
+                    setForks(null);
+                    composeRef.current?.focus();
+                  }}
+                >
+                  <div className="galae-event">{f.event}</div>
+                  {f.stakes && <div className="galae-stakes">{f.stakes}</div>}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="compose-inner">
             <textarea
               ref={composeRef}
@@ -1229,15 +1289,16 @@ export default function App() {
               disabled={busy}
             />
             <button
-              onClick={전개클릭}
+              onClick={() => (input.trim() ? 전개클릭() : 갈래요청())}
               onPointerDown={전개누름시작}
               onPointerUp={전개누름끝}
               onPointerLeave={전개누름끝}
               onContextMenu={(e) => e.preventDefault()}
-              disabled={busy || !input.trim()}
-              title="꾹 누르면 친필(손수 심기)"
+              disabled={busy || forksBusy}
+              title={input.trim() ? '꾹 누르면 친필(손수 심기)' : `${UI.ideate} — 다음 이야기의 길목을 살핍니다`}
             >
-              {busy ? <span className="spinner" /> : UI.submit}
+              {/* 빈 입력창 = 막힌 순간 → 버튼이 '갈래'로 변신(구상). 글을 쓰면 도로 '전개'. 버튼 수 불변. */}
+              {busy || forksBusy ? <span className="spinner" /> : input.trim() ? UI.submit : UI.ideate}
             </button>
           </div>
         </footer>
